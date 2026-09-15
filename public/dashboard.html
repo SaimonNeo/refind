@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <a href="/report-lost.html">Report lost</a>
+      <a href="/report-found.html">Report found</a>
+      <a href="/profile.html">Profile</a>
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container section-tight">
+  <div class="flex-between flex-wrap gap-16 mb-24">
+    <div>
+      <h2 id="welcome">Welcome back</h2>
+      <p class="muted">Here's everything you've reported and matched.</p>
+    </div>
+    <div class="flex gap-12">
+      <a href="/report-lost.html" class="btn btn-outline btn-sm">+ Report Lost</a>
+      <a href="/report-found.html" class="btn btn-clay btn-sm">+ Report Found</a>
+    </div>
+  </div>
+
+  <div class="stat-cards mb-32" id="stat-cards"></div>
+
+  <div class="dash-tabs">
+    <button class="dash-tab active" data-tab="lost">My Lost Items</button>
+    <button class="dash-tab" data-tab="found">My Found Items</button>
+    <button class="dash-tab" data-tab="claims">My Claims</button>
+  </div>
+
+  <div id="tab-content" class="mt-24">
+    <div id="loading" class="text-center" style="padding:48px 0;">Loading…</div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireLogin();
+  const user = getUser();
+  document.getElementById('welcome').textContent = `Welcome back, ${user.name.split(' ')[0]}`;
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  let myLost = [], myFound = [], myClaims = [];
+  let activeTab = 'lost';
+
+  function statCard(num, label) {
+    return `<div class="stat-card"><div class="stat-card-num">${num}</div><div class="stat-card-label">${label}</div></div>`;
+  }
+
+  function renderStats() {
+    const activeLost = myLost.filter(i => i.status === 'active').length;
+    const activeFound = myFound.filter(i => i.status === 'active').length;
+    const resolved = [...myLost, ...myFound].filter(i => i.status === 'claimed' || i.status === 'resolved').length;
+    document.getElementById('stat-cards').innerHTML = [
+      statCard(myLost.length, 'Lost items reported'),
+      statCard(myFound.length, 'Found items reported'),
+      statCard(resolved, 'Items recovered'),
+      statCard(myClaims.length, 'Claims submitted'),
+    ].join('');
+  }
+
+  function renderTab() {
+    const content = document.getElementById('tab-content');
+    if (activeTab === 'lost') {
+      content.innerHTML = myLost.length
+        ? `<div class="item-grid">${myLost.map(dashItemCard).join('')}</div>`
+        : emptyBlock('No lost items reported', 'When you report something lost, it shows up here with its match status.', '/report-lost.html', 'Report a lost item');
+    } else if (activeTab === 'found') {
+      content.innerHTML = myFound.length
+        ? `<div class="item-grid">${myFound.map(dashItemCard).join('')}</div>`
+        : emptyBlock('No found items reported', 'Handed something in? Report it so the owner can find it.', '/report-found.html', 'Report a found item');
+    } else {
+      content.innerHTML = myClaims.length
+        ? `<div class="claims-list">${myClaims.map(claimRow).join('')}</div>`
+        : emptyBlock('No claims yet', 'Claims you submit on found items will appear here.', '/browse.html', 'Browse found items');
+    }
+  }
+
+  function emptyBlock(title, body, href, cta) {
+    return `<div class="empty-state"><h3>${title}</h3><p>${body}</p><a href="${href}" class="btn btn-primary mt-16">${cta}</a></div>`;
+  }
+
+  function dashItemCard(item) {
+    const matchLink = item.type === 'lost'
+      ? `/matches.html?lostItemId=${item.id}`
+      : `/matches.html?foundItemId=${item.id}`;
+    const editLink = item.type === 'lost' ? `/report-lost.html?edit=${item.id}` : `/report-found.html?edit=${item.id}`;
+    const canManage = item.status === 'active' || item.status === 'matched';
+    return `
+      <div class="item-card">
+        <div class="item-card-img">${item.image ? `<img src="${escapeHtml(item.image)}" alt="">` : '<span>No photo</span>'}</div>
+        <div class="item-card-body">
+          <div class="item-card-top">
+            <span class="badge ${statusBadgeClass(item.status)}">${item.status}</span>
+          </div>
+          <h3 class="item-card-title">${escapeHtml(item.title)}</h3>
+          <div class="item-card-meta"><span>${escapeHtml(item.category)}</span><span>${escapeHtml(item.location)}</span></div>
+          <div class="flex gap-8 mt-8 flex-wrap">
+            <a href="/item.html?id=${item.id}" class="btn btn-ghost btn-sm">View</a>
+            <a href="${matchLink}" class="btn btn-outline btn-sm">Matches</a>
+            ${canManage ? `<a href="${editLink}" class="btn btn-ghost btn-sm">Edit</a>` : ''}
+            ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="withdrawItem(${item.id})">Withdraw</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function withdrawItem(id) {
+    const ok = await confirmDialog({
+      title: 'Withdraw this report?',
+      body: 'This marks it as no longer active. You can still see it in your history, but it will stop showing up in matches and search.',
+      confirmLabel: 'Withdraw',
+    });
+    if (!ok) return;
+    try {
+      await api.post(`/items/${id}/withdraw`, {});
+      toast('Report withdrawn.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  function claimRow(c) {
+    const statusClass = { approved: 'badge-claimed', pending: 'badge-active', manual_review: 'badge-matched', rejected: 'badge-lost' }[c.status] || 'badge-active';
+    const showConfirm = c.status === 'approved' && !c.claimant_confirmed;
+    const handover = c.handover_location || c.handover_datetime || c.collection_instructions;
+    return `
+      <div class="claim-row card">
+        <div>
+          <div class="item-card-title" style="font-size:1rem;">${escapeHtml(c.item_title)}</div>
+          <div class="small muted">${timeAgo(c.created_at)}</div>
+          ${handover ? `<div class="small mt-8">
+            ${c.handover_location ? `Pickup at ${escapeHtml(c.handover_location)}. ` : ''}
+            ${c.handover_datetime ? `${new Date(c.handover_datetime).toLocaleString()}. ` : ''}
+            ${c.collection_instructions ? escapeHtml(c.collection_instructions) : ''}
+          </div>` : ''}
+        </div>
+        <div class="flex gap-8" style="align-items:center;">
+          <span class="badge ${statusClass}">${c.status.replace('_', ' ')}</span>
+          ${showConfirm ? `<button class="btn btn-moss btn-sm" onclick="confirmReceipt(${c.id})">I got it</button>` : ''}
+          ${c.claimant_confirmed ? `<span class="small muted">Confirmed received</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  async function confirmReceipt(claimId) {
+    const ok = await confirmDialog({
+      title: 'Confirm you received this item?',
+      body: 'This marks the report as fully resolved.',
+      confirmLabel: 'Yes, I have it',
+      danger: false,
+    });
+    if (!ok) return;
+    try {
+      await api.post(`/claims/${claimId}/confirm`, {});
+      toast('Marked as recovered. Glad it found its way back!');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  document.querySelectorAll('.dash-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      renderTab();
+    });
+  });
+
+  async function load() {
+    try {
+      const [lostRes, foundRes, claimsRes] = await Promise.all([
+        api.get(`/items?userId=${user.id}&type=lost&status=active`),
+        api.get(`/items?userId=${user.id}&type=found&status=active`),
+        api.get('/claims/mine'),
+      ]);
+      // also fetch resolved/claimed items owned by user for accurate stats
+      const [lostAll, foundAll] = await Promise.all([
+        api.get(`/items?userId=${user.id}&type=lost`),
+        api.get(`/items?userId=${user.id}&type=found`),
+      ]);
+      myLost = lostAll.items;
+      myFound = foundAll.items;
+      myClaims = claimsRes.claims;
+
+      document.getElementById('loading').remove();
+      renderStats();
+      renderTab();
+    } catch (err) {
+      document.getElementById('tab-content').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

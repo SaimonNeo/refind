@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your profile — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .profile-wrap { max-width: 560px; margin: 0 auto; padding: 44px 24px 96px; }
+  .profile-card { padding: 30px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <span id="admin-panel-link" style="display:none;"><a href="/admin/dashboard.html">Admin panel</a></span>
+      <a href="/dashboard.html" id="dash-link">Dashboard</a>
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="profile-wrap">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+    <h2 style="margin:0;">Your profile</h2>
+    <span id="role-badge" class="badge" style="display:none;"></span>
+  </div>
+  <p id="profile-subtitle" class="muted mb-24">Keep this current — it's what other students and admins see when you report or claim something.</p>
+
+  <div class="card profile-card mb-24">
+    <div id="profile-alert"></div>
+    <form id="profile-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="student_id" id="id-label">Student ID</label>
+          <input type="text" id="student_id" placeholder="e.g. U20231001">
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone">
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" disabled>
+        <p class="hint" id="email-hint">Email can't be changed here — contact an admin if it needs updating.</p>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="bio" id="bio-label">About you (optional)</label>
+        <textarea id="bio" placeholder="Shown to admins reviewing your reports and claims."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary mt-16" id="save-btn">Save changes</button>
+    </form>
+  </div>
+
+  <div class="card profile-card">
+    <h3>Change password</h3>
+    <div id="password-alert"></div>
+    <form id="password-form">
+      <div class="field">
+        <label for="currentPassword">Current password</label>
+        <input type="password" id="currentPassword" required>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="newPassword">New password</label>
+        <input type="password" id="newPassword" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-outline mt-16" id="password-btn">Update password</button>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireLogin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  async function loadProfile() {
+    const { user } = await api.get('/auth/me');
+    document.getElementById('name').value = user.name;
+    document.getElementById('student_id').value = user.student_id || '';
+    document.getElementById('phone').value = user.phone || '';
+    document.getElementById('email').value = user.email;
+    document.getElementById('bio').value = user.bio || '';
+
+    const isAdmin = user.role === 'admin';
+    const roleBadge = document.getElementById('role-badge');
+    const idLabel = document.getElementById('id-label');
+    const idInput = document.getElementById('student_id');
+    const subtitle = document.getElementById('profile-subtitle');
+    const bioLabel = document.getElementById('bio-label');
+    const bioText = document.getElementById('bio');
+    const emailHint = document.getElementById('email-hint');
+    const adminLink = document.getElementById('admin-panel-link');
+
+    if (isAdmin) {
+      roleBadge.textContent = 'Administrator';
+      roleBadge.className = 'badge badge-lost';
+      roleBadge.style.display = 'inline-flex';
+      idLabel.textContent = 'Staff / Admin ID';
+      idInput.placeholder = 'e.g. ADM-001 or STF-1042';
+      subtitle.textContent = 'Manage your administrator account details, credentials, and contact info.';
+      bioLabel.textContent = 'Department / Role notes (optional)';
+      bioText.placeholder = 'e.g. Campus Security & Lost and Found office.';
+      emailHint.textContent = 'System-assigned administrator email address.';
+      if (adminLink) adminLink.style.display = 'inline';
+    } else {
+      roleBadge.textContent = 'Student';
+      roleBadge.className = 'badge badge-found';
+      roleBadge.style.display = 'inline-flex';
+      idLabel.textContent = 'Student ID';
+      idInput.placeholder = 'e.g. U20231001';
+      subtitle.textContent = "Keep this current — it's what other students and admins see when you report or claim something.";
+      bioLabel.textContent = 'About you (optional)';
+      bioText.placeholder = 'Shown to admins reviewing your reports and claims.';
+      emailHint.textContent = "Email can't be changed here — contact an admin if it needs updating.";
+      if (adminLink) adminLink.style.display = 'none';
+    }
+  }
+  loadProfile();
+
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    try {
+      const { user } = await api.patch('/auth/me', {
+        name: document.getElementById('name').value.trim(),
+        student_id: document.getElementById('student_id').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        bio: document.getElementById('bio').value.trim(),
+      });
+      const stored = getUser();
+      setSession(getToken(), { ...stored, ...user });
+      toast('Profile updated.');
+    } catch (err) {
+      document.getElementById('profile-alert').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save changes';
+    }
+  });
+
+  document.getElementById('password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('password-btn');
+    btn.disabled = true;
+    btn.textContent = 'Updating…';
+    document.getElementById('password-alert').innerHTML = '';
+    try {
+      await api.patch('/auth/me/password', {
+        currentPassword: document.getElementById('currentPassword').value,
+        newPassword: document.getElementById('newPassword').value,
+      });
+      toast('Password updated.');
+      document.getElementById('password-form').reset();
+    } catch (err) {
+      document.getElementById('password-alert').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Update password';
+    }
+  });
+</script>
+</body>
+</html>

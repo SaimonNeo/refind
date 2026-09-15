@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a lost item — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .form-wrap { max-width: 640px; margin: 0 auto; padding: 44px 24px 96px; }
+  .form-card { padding: 30px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <a href="/dashboard.html">Dashboard</a>
+      <span id="notif-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="form-wrap">
+  <div class="badge badge-lost mb-16">Lost item report</div>
+  <h2 id="page-heading">What did you lose?</h2>
+  <p class="muted mb-24">The more specific your description, the better the matching engine — and the AI reading it — can find it.</p>
+
+  <div class="card form-card">
+    <div id="duplicate-warning"></div>
+    <div id="alert-area"></div>
+    <form id="lost-form">
+      <div class="field">
+        <label for="title">Item title</label>
+        <input type="text" id="title" required placeholder="e.g. Black Lenovo laptop backpack">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="">Select category</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="color">Color</label>
+          <input type="text" id="color" placeholder="e.g. black">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="brand">Brand (optional)</label>
+          <input type="text" id="brand" placeholder="e.g. Lenovo">
+        </div>
+        <div class="field">
+          <label for="location">Where you lost it</label>
+          <select id="location" required>
+            <option value="">Select location</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="event_date">Date/time lost</label>
+        <input type="datetime-local" id="event_date">
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Distinguishing details: keychain, stickers, scratches, contents, brand markings…" maxlength="2000"></textarea>
+      </div>
+      <div class="field">
+        <label for="image">Photo (optional)</label>
+        <input type="file" id="image" accept="image/*">
+        <div class="image-preview" id="image-preview"><img id="image-preview-img" alt="Preview"></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Submit lost report</button>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireLogin();
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+  populateSelect('category', ITEM_CATEGORIES);
+  populateSelect('location', CAMPUS_LOCATIONS);
+
+  const params = new URLSearchParams(window.location.search);
+  const editId = params.get('edit');
+  const form = document.getElementById('lost-form');
+  const alertArea = document.getElementById('alert-area');
+  const submitBtn = document.getElementById('submit-btn');
+
+  document.getElementById('image').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const preview = document.getElementById('image-preview');
+    if (!file) { preview.style.display = 'none'; return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('image-preview-img').src = ev.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  async function loadForEdit() {
+    if (!editId) return;
+    document.getElementById('page-heading').textContent = 'Edit your lost report';
+    submitBtn.textContent = 'Save changes';
+    try {
+      const { item } = await api.get(`/items/${editId}`);
+      document.getElementById('title').value = item.title;
+      document.getElementById('category').value = item.category;
+      document.getElementById('color').value = item.color || '';
+      document.getElementById('brand').value = item.brand || '';
+      document.getElementById('location').value = item.location;
+      document.getElementById('description').value = item.description || '';
+      if (item.event_date) document.getElementById('event_date').value = item.event_date.slice(0, 16);
+      if (item.image) {
+        document.getElementById('image-preview-img').src = item.image;
+        document.getElementById('image-preview').style.display = 'block';
+      }
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  loadForEdit();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertArea.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = editId ? 'Saving…' : 'Submitting…';
+    try {
+      const fd = new FormData();
+      if (!editId) fd.append('type', 'lost');
+      fd.append('title', document.getElementById('title').value.trim());
+      fd.append('category', document.getElementById('category').value);
+      fd.append('color', document.getElementById('color').value.trim());
+      fd.append('brand', document.getElementById('brand').value.trim());
+      fd.append('location', document.getElementById('location').value);
+      fd.append('event_date', document.getElementById('event_date').value);
+      fd.append('description', document.getElementById('description').value.trim());
+      const file = document.getElementById('image').files[0];
+      if (file) fd.append('image', file);
+
+      if (editId) {
+        await apiRequest(`/items/${editId}`, { method: 'PATCH', body: fd, isForm: true });
+        window.location.href = '/dashboard.html';
+      } else {
+        const data = await api.post('/items', fd, true);
+        if (data.possibleDuplicates && data.possibleDuplicates.length) {
+          sessionStorage.setItem('refind_dupe_notice', '1');
+        }
+        window.location.href = `/matches.html?lostItemId=${data.item.id}`;
+      }
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = editId ? 'Save changes' : 'Submit lost report';
+    }
+  });
+
+  // Light duplicate nudge: check as the reporter fills in title, category and
+  // location, without blocking submission.
+  let dupeTimer;
+  ['title', 'category', 'location'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', () => {
+      clearTimeout(dupeTimer);
+      dupeTimer = setTimeout(checkDuplicates, 500);
+    });
+  });
+
+  async function checkDuplicates() {
+    const title = document.getElementById('title').value.trim();
+    const category = document.getElementById('category').value;
+    const location = document.getElementById('location').value;
+    const box = document.getElementById('duplicate-warning');
+    if (!title || !category || !location || editId) { box.innerHTML = ''; return; }
+    try {
+      const user = getUser();
+      const { items } = await api.get(`/items?userId=${user.id}&type=lost&category=${encodeURIComponent(category)}&location=${encodeURIComponent(location)}`);
+      const titleWords = new Set(title.toLowerCase().split(/\s+/).filter(w => w.length > 2));
+      const similar = items.filter(i => {
+        const words = i.title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+        return words.filter(w => titleWords.has(w)).length >= Math.min(2, titleWords.size);
+      });
+      box.innerHTML = similar.length
+        ? `<div class="alert alert-info">This looks similar to a report you already filed: "${escapeHtml(similar[0].title)}". You can still submit if this is a different item.</div>`
+        : '';
+    } catch { box.innerHTML = ''; }
+  }
+</script>
+</body>
+</html>

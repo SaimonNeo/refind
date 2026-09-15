@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReFind — campus lost and found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
+  .hero p.lede { font-size: 1.08rem; max-width: 48ch; }
+  .hero-actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+  .board {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; box-shadow: var(--shadow);
+  }
+  .board-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 0.9rem; }
+  .board-row:last-child { border-bottom: none; }
+  .board-row .k { color: var(--ink-soft); }
+  .board-score { font-family: var(--font-num); font-size: 2.2rem; font-weight: 700; text-align: center; margin: 2px 0 12px; color: var(--clay-deep); }
+  .board-caption { text-align: center; color: var(--ink-soft); font-size: 0.85rem; margin-bottom: 10px; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 36px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat-num { font-family: var(--font-num); font-size: 1.9rem; font-weight: 700; }
+  .stat-label { font-size: 0.85rem; color: var(--ink-soft); }
+  .how { margin-top: 20px; }
+  .how-item { display: flex; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .how-item:last-child { border-bottom: none; }
+  .how-item h3 { margin-bottom: 4px; }
+  .how-item p { margin-bottom: 0; }
+  .cta-split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+  .cta-box { padding: 26px; border-radius: var(--radius); }
+  .cta-lost { background: #f1ddd0; border: 1px solid #e0bda3; }
+  .cta-found { background: #dde8d9; border: 1px solid #bcd3b6; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; padding-top: 40px; }
+    .stats-row, .cta-split { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <a href="/report-lost.html">Report lost</a>
+      <a href="/report-found.html">Report found</a>
+      <span id="nav-auth-area"></span>
+    </div>
+  </div>
+</nav>
+
+<header class="container hero">
+  <div class="hero-copy">
+    <h1>Lost something on campus?<br>Someone may have already turned it in.</h1>
+    <p class="lede">ReFind checks every lost report against everything that's been handed in, scoring category, color, location and timing together with an AI read of the description — so you don't have to keep refreshing a lost and found binder.</p>
+    <div class="hero-actions">
+      <a href="/report-lost.html" class="btn btn-primary">I lost something</a>
+      <a href="/report-found.html" class="btn btn-clay">I found something</a>
+      <a href="/browse.html" class="btn btn-outline">Browse reports</a>
+    </div>
+  </div>
+  <div class="board">
+    <div class="board-caption">a potential match, found automatically</div>
+    <div class="board-score">94%</div>
+    <div class="board-row"><span class="k">Category</span><span class="num">25/25</span></div>
+    <div class="board-row"><span class="k">Color</span><span class="num">15/15</span></div>
+    <div class="board-row"><span class="k">Location</span><span class="num">18/20</span></div>
+    <div class="board-row"><span class="k">Time</span><span class="num">14/15</span></div>
+    <div class="board-row"><span class="k">Description similarity</span><span class="num">22/25</span></div>
+  </div>
+</header>
+
+<section class="container stats-row" id="stats-row">
+  <div><div class="stat-num" id="stat-total">—</div><div class="stat-label">reports on file right now</div></div>
+  <div><div class="stat-num" id="stat-lost">—</div><div class="stat-label">lost, still looking</div></div>
+  <div><div class="stat-num" id="stat-found">—</div><div class="stat-label">found, waiting for an owner</div></div>
+</section>
+
+<section class="container section">
+  <h2>How a report actually gets matched</h2>
+  <div class="how">
+    <div class="how-item">
+      <div><a href="/report-lost.html" class="btn btn-ghost btn-sm" style="pointer-events:none;">1</a></div>
+      <div>
+        <h3>You file a report</h3>
+        <p>Category, color, location and a short description — a photo helps but isn't required either way.</p>
+      </div>
+    </div>
+    <div class="how-item">
+      <div><a href="#" class="btn btn-ghost btn-sm" style="pointer-events:none;">2</a></div>
+      <div>
+        <h3>The engine checks it against everything else</h3>
+        <p>Every lost report is scored against every found report on five signals, and the description gets a semantic read on top of the structured fields.</p>
+      </div>
+    </div>
+    <div class="how-item">
+      <div><a href="#" class="btn btn-ghost btn-sm" style="pointer-events:none;">3</a></div>
+      <div>
+        <h3>You verify and collect</h3>
+        <p>Claiming something means answering a detail only the real owner would know — no ID card required to prove it's yours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container section-tight">
+  <div class="cta-split">
+    <div class="cta-box cta-lost">
+      <h3>Lost something?</h3>
+      <p>File a report and it'll start getting checked against new drop-offs right away.</p>
+      <a href="/report-lost.html" class="btn btn-primary">Report a lost item</a>
+    </div>
+    <div class="cta-box cta-found">
+      <h3>Found something?</h3>
+      <p>Thanks for not just leaving it. A quick report helps the owner find their way back to it.</p>
+      <a href="/report-found.html" class="btn btn-clay">Report a found item</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container flex-between flex-wrap gap-16">
+    <span>ReFind, run by the campus lost and found office.</span>
+    <a href="/browse.html">See what's been turned in</a>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  function renderNav() {
+    const area = document.getElementById('nav-auth-area');
+    const user = getUser();
+    if (user) {
+      area.innerHTML = `<a href="/dashboard.html">Dashboard</a>` +
+        (user.role === 'admin' ? ` <a href="/admin/dashboard.html">Admin</a>` : '') +
+        notifBellHtml() +
+        ` <a href="#" id="logout-link">Log out</a>`;
+      document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+      initNotifBell();
+    } else {
+      area.innerHTML = `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
+    }
+  }
+  renderNav();
+
+  async function loadStats() {
+    try {
+      const [lostRes, foundRes] = await Promise.all([
+        api.get('/items?type=lost&status=active'),
+        api.get('/items?type=found&status=active'),
+      ]);
+      document.getElementById('stat-total').textContent = lostRes.items.length + foundRes.items.length;
+      document.getElementById('stat-lost').textContent = lostRes.items.length;
+      document.getElementById('stat-found').textContent = foundRes.items.length;
+    } catch (e) {
+      document.getElementById('stats-row').style.display = 'none';
+    }
+  }
+  loadStats();
+</script>
+</body>
+</html>

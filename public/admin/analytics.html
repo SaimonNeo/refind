@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Analytics — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html" class="active">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>Analytics</h2>
+    <p class="muted mb-24">How the campus is losing, finding, and recovering things.</p>
+
+    <div id="loading">Loading…</div>
+    <div id="content" style="display:none;">
+      <div class="admin-stat-grid" id="stat-grid" style="grid-template-columns: repeat(3, 1fr);"></div>
+
+      <div class="chart-grid">
+        <div class="panel">
+          <h3>Lost vs. Found</h3>
+          <div class="chart-frame"><canvas id="lostVsFoundChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Recovery rate</h3>
+          <div class="chart-frame"><canvas id="recoveryChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="chart-grid mt-24">
+        <div class="panel">
+          <h3>Items by category</h3>
+          <div class="bar-list" id="category-bars"></div>
+        </div>
+        <div class="panel">
+          <h3>Items by location</h3>
+          <div class="bar-list" id="location-bars"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  function barRows(data, containerId) {
+    const max = Math.max(...data.map(d => d.count), 1);
+    document.getElementById(containerId).innerHTML = data.map(d => `
+      <div class="bar-row">
+        <span class="lbl">${d.category || d.location}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(d.count / max) * 100}%"></div></div>
+        <span class="n">${d.count}</span>
+      </div>
+    `).join('') || '<p class="muted small">No data yet.</p>';
+  }
+
+  async function load() {
+    try {
+      const data = await api.get('/admin/analytics');
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      document.getElementById('stat-grid').innerHTML = `
+        <div class="admin-stat"><div class="num">${data.totalItems}</div><div class="lbl">Total items</div></div>
+        <div class="admin-stat"><div class="num">${data.recovered}</div><div class="lbl">Recovered</div></div>
+        <div class="admin-stat"><div class="num">${data.recoveryRate}%</div><div class="lbl">Recovery rate</div></div>
+      `;
+
+      if (typeof Chart === 'undefined') {
+        // Charting library failed to load (offline / CDN blocked) — fall
+        // back to plain numbers so the page still communicates the data.
+        document.getElementById('lostVsFoundChart').closest('.chart-frame').outerHTML =
+          `<p class="muted small">Lost: ${data.lostVsFound.lost}, found: ${data.lostVsFound.found}</p>`;
+        document.getElementById('recoveryChart').closest('.chart-frame').outerHTML =
+          `<p class="muted small">Recovered: ${data.recovered}, still active: ${data.totalItems - data.recovered}</p>`;
+      } else {
+        new Chart(document.getElementById('lostVsFoundChart').getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Lost', 'Found'],
+            datasets: [{ data: [data.lostVsFound.lost, data.lostVsFound.found], backgroundColor: ['#7a4a2e', '#3b6e52'] }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+
+        new Chart(document.getElementById('recoveryChart').getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Recovered', 'Still active'],
+            datasets: [{ data: [data.recovered, data.totalItems - data.recovered], backgroundColor: ['#3b6e52', '#e4ddc9'] }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+      }
+
+      barRows(data.byCategory, 'category-bars');
+      barRows(data.byLocation, 'location-bars');
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

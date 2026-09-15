@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Recovered items — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html" class="active">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>Recovered items</h2>
+    <p class="muted mb-24">Everything that's been claimed or fully returned to its owner.</p>
+
+    <div id="loading">Loading…</div>
+    <table class="admin-table" id="recovered-table" style="display:none;">
+      <thead><tr><th>Item</th><th>Reported by</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div id="empty" class="empty-state" style="display:none;"><h3>Nothing recovered yet</h3><p>Approved claims and confirmed handovers will show up here.</p></div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/items.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  async function load() {
+    try {
+      const { items } = await api.get('/admin/recovered');
+      document.getElementById('loading').style.display = 'none';
+      if (!items.length) {
+        document.getElementById('empty').style.display = 'block';
+        return;
+      }
+      const table = document.getElementById('recovered-table');
+      table.style.display = 'table';
+      table.querySelector('tbody').innerHTML = items.map(i => `
+        <tr>
+          <td>${escapeHtml(i.title)}</td>
+          <td>${escapeHtml(i.reporter_name)}</td>
+          <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
+          <td>${timeAgo(i.created_at)}</td>
+          <td><a href="/item.html?id=${i.id}" class="btn btn-ghost btn-sm">View</a></td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

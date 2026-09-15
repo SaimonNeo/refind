@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a found item — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .form-wrap { max-width: 640px; margin: 0 auto; padding: 44px 24px 96px; }
+  .form-card { padding: 30px; }
+  .verify-box { background: var(--paper-dim); border: 1px dashed var(--line); border-radius: var(--radius); padding: 18px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <a href="/dashboard.html">Dashboard</a>
+      <span id="notif-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="form-wrap">
+  <div class="badge badge-found mb-16">Found item report</div>
+  <h2 id="page-heading">What did you find?</h2>
+  <p class="muted mb-24">Thanks for handing it in. Add a private verification detail so only the real owner can claim it.</p>
+
+  <div class="card form-card">
+    <div id="alert-area"></div>
+    <form id="found-form">
+      <div class="field">
+        <label for="title">Item title</label>
+        <input type="text" id="title" required placeholder="e.g. Dark Lenovo laptop bag">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="">Select category</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="color">Color</label>
+          <input type="text" id="color" placeholder="e.g. black">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="brand">Brand (optional)</label>
+          <input type="text" id="brand" placeholder="e.g. Lenovo">
+        </div>
+        <div class="field">
+          <label for="location">Where you found it</label>
+          <select id="location" required>
+            <option value="">Select location</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="event_date">Date/time found</label>
+        <input type="datetime-local" id="event_date">
+      </div>
+      <div class="field">
+        <label for="description">Public description</label>
+        <textarea id="description" placeholder="General details visible to everyone browsing — avoid the one identifying detail only the owner would know." maxlength="2000"></textarea>
+      </div>
+      <div class="field">
+        <label for="storage_location">Where it's being kept</label>
+        <input type="text" id="storage_location" placeholder="e.g. Handed in at the Student Center front desk">
+      </div>
+      <div class="field">
+        <label for="image">Photo (optional)</label>
+        <input type="file" id="image" accept="image/*">
+        <div class="image-preview" id="image-preview"><img id="image-preview-img" alt="Preview"></div>
+      </div>
+
+      <div class="verify-box mt-16 mb-16">
+        <h3 style="font-size:1rem; margin-bottom:4px;">Ownership verification (recommended)</h3>
+        <p class="small muted mb-16">This detail stays private and is never shown publicly. A claimant must answer it correctly before the item is released.</p>
+        <div class="field">
+          <label for="verification_question">Verification question</label>
+          <input type="text" id="verification_question" placeholder="e.g. What's the unique identifying feature of this item?">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="verification_answer">Expected answer</label>
+          <input type="text" id="verification_answer" placeholder="e.g. red keychain shaped like a cat">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-clay btn-block" id="submit-btn">Submit found report</button>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireLogin();
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+  populateSelect('category', ITEM_CATEGORIES);
+  populateSelect('location', CAMPUS_LOCATIONS);
+
+  const params = new URLSearchParams(window.location.search);
+  const editId = params.get('edit');
+  const form = document.getElementById('found-form');
+  const alertArea = document.getElementById('alert-area');
+  const submitBtn = document.getElementById('submit-btn');
+
+  document.getElementById('image').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const preview = document.getElementById('image-preview');
+    if (!file) { preview.style.display = 'none'; return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('image-preview-img').src = ev.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  async function loadForEdit() {
+    if (!editId) return;
+    document.getElementById('page-heading').textContent = 'Edit your found report';
+    submitBtn.textContent = 'Save changes';
+    try {
+      const { item } = await api.get(`/items/${editId}`);
+      document.getElementById('title').value = item.title;
+      document.getElementById('category').value = item.category;
+      document.getElementById('color').value = item.color || '';
+      document.getElementById('brand').value = item.brand || '';
+      document.getElementById('location').value = item.location;
+      document.getElementById('description').value = item.description || '';
+      document.getElementById('storage_location').value = item.storage_location || '';
+      if (item.event_date) document.getElementById('event_date').value = item.event_date.slice(0, 16);
+      if (item.image) {
+        document.getElementById('image-preview-img').src = item.image;
+        document.getElementById('image-preview').style.display = 'block';
+      }
+      if (item.has_verification) {
+        document.querySelector('.verify-box p.hint, .verify-box p.small').insertAdjacentHTML('afterend',
+          '<p class="small" style="color:var(--moss-deep);">A verification question is already set. Leave both fields blank to keep it as is, or fill both in to replace it.</p>');
+      }
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  loadForEdit();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertArea.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = editId ? 'Saving…' : 'Submitting…';
+    try {
+      const fd = new FormData();
+      if (!editId) fd.append('type', 'found');
+      fd.append('title', document.getElementById('title').value.trim());
+      fd.append('category', document.getElementById('category').value);
+      fd.append('color', document.getElementById('color').value.trim());
+      fd.append('brand', document.getElementById('brand').value.trim());
+      fd.append('location', document.getElementById('location').value);
+      fd.append('event_date', document.getElementById('event_date').value);
+      fd.append('description', document.getElementById('description').value.trim());
+      fd.append('storage_location', document.getElementById('storage_location').value.trim());
+      const vq = document.getElementById('verification_question').value.trim();
+      const va = document.getElementById('verification_answer').value.trim();
+      if (vq && va) {
+        fd.append('verification_question', vq);
+        fd.append('verification_answer', va);
+      }
+      const file = document.getElementById('image').files[0];
+      if (file) fd.append('image', file);
+
+      if (editId) {
+        await apiRequest(`/items/${editId}`, { method: 'PATCH', body: fd, isForm: true });
+        window.location.href = '/dashboard.html';
+      } else {
+        const data = await api.post('/items', fd, true);
+        window.location.href = `/item.html?id=${data.item.id}`;
+      }
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = editId ? 'Save changes' : 'Submit found report';
+    }
+  });
+</script>
+</body>
+</html>

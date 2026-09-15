@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign up — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .auth-wrap { max-width: 440px; margin: 0 auto; padding: 64px 24px 96px; }
+  .auth-card { padding: 32px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links"><a href="/login.html">Log in</a></div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <h2 class="text-center">Create your account</h2>
+  <p class="text-center muted mb-24">Report items and track matches with a free student account.</p>
+  <div class="card auth-card">
+    <div id="alert-area"></div>
+    <form id="register-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required placeholder="Jamie Rivera">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="you@university.edu">
+      </div>
+      <div class="field">
+        <label for="student_id">Student ID (optional)</label>
+        <input type="text" id="student_id" placeholder="e.g. U20231001">
+      </div>
+      <div class="field">
+        <label for="phone">Phone (optional)</label>
+        <input type="tel" id="phone" placeholder="+1 555 123 4567">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="6" placeholder="At least 6 characters">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Create account</button>
+    </form>
+    <p class="small text-center mt-16">Already registered? <a href="/login.html">Log in</a></p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const form = document.getElementById('register-form');
+  const alertArea = document.getElementById('alert-area');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertArea.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account…';
+    try {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const student_id = document.getElementById('student_id').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+      const data = await api.post('/auth/register', { name, email, phone, student_id, password });
+      setSession(data.token, data.user);
+      window.location.href = '/dashboard.html';
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account';
+    }
+  });
+
+  if (getToken()) window.location.href = '/dashboard.html';
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .auth-wrap { max-width: 420px; margin: 0 auto; padding: 64px 24px 96px; }
+  .auth-card { padding: 32px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links"><a href="/register.html">Sign up</a></div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <h2 class="text-center">Welcome back</h2>
+  <p class="text-center muted mb-24">Log in to manage your reports and matches.</p>
+  <div class="card auth-card">
+    <div id="alert-area"></div>
+    <form id="login-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="you@university.edu">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Log in</button>
+    </form>
+    <p class="small text-center mt-16">No account? <a href="/register.html">Sign up</a></p>
+    <div class="divider"></div>
+    <p class="small muted text-center">Demo accounts (after <code class="mono">npm run seed</code>):<br>
+      student1@campus.edu / password123<br>
+      admin@campus.edu / admin123</p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const form = document.getElementById('login-form');
+  const alertArea = document.getElementById('alert-area');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertArea.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging in…';
+    try {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const data = await api.post('/auth/login', { email, password });
+      setSession(data.token, data.user);
+      window.location.href = data.user.role === 'admin' ? '/admin/dashboard.html' : '/dashboard.html';
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Log in';
+    }
+  });
+
+  if (getToken()) window.location.href = '/dashboard.html';
+</script>
+</body>
+</html>

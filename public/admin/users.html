@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Users — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html" class="active">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>Users</h2>
+    <p class="muted mb-24">Suspending an account blocks login immediately and signs out any active session on their next request.</p>
+
+    <div id="loading">Loading…</div>
+    <table class="admin-table" id="users-table" style="display:none;">
+      <thead><tr><th>Name</th><th>Email</th><th>Student / Staff ID</th><th>Role</th><th>Reports filed</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  async function load() {
+    try {
+      const { users } = await api.get('/admin/users');
+      document.getElementById('loading').style.display = 'none';
+      const table = document.getElementById('users-table');
+      table.style.display = 'table';
+      table.querySelector('tbody').innerHTML = users.map(u => `
+        <tr>
+          <td>${escapeHtml(u.name)}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td>${escapeHtml(u.student_id || '—')}</td>
+          <td>${escapeHtml(u.role)}</td>
+          <td>${u.item_count}</td>
+          <td><span class="badge ${u.suspended ? 'badge-lost' : 'badge-found'}">${u.suspended ? 'suspended' : 'active'}</span></td>
+          <td>${u.role === 'admin' ? '' : `
+            <button class="btn btn-sm ${u.suspended ? 'btn-primary' : 'btn-danger'}" onclick="toggleSuspend(${u.id}, ${u.suspended ? 'false' : 'true'})">
+              ${u.suspended ? 'Unsuspend' : 'Suspend'}
+            </button>
+          `}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function toggleSuspend(id, suspend) {
+    const ok = await confirmDialog({
+      title: suspend ? 'Suspend this user?' : 'Unsuspend this user?',
+      body: suspend ? 'They will be logged out and unable to log back in until unsuspended.' : 'They will be able to log in again.',
+      confirmLabel: suspend ? 'Suspend' : 'Unsuspend',
+      danger: suspend,
+    });
+    if (!ok) return;
+    try {
+      await api.patch(`/admin/users/${id}`, { suspended: suspend });
+      toast(suspend ? 'User suspended.' : 'User unsuspended.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

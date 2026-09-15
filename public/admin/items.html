@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Items — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html" class="active">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>All items</h2>
+    <p class="muted mb-24">Every lost and found report on the platform, including resolved ones.</p>
+
+    <div id="loading">Loading…</div>
+    <table class="admin-table" id="items-table" style="display:none;">
+      <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  async function load() {
+    try {
+      const { items } = await api.get('/admin/items');
+      document.getElementById('loading').style.display = 'none';
+      const table = document.getElementById('items-table');
+      table.style.display = 'table';
+      table.querySelector('tbody').innerHTML = items.map(i => `
+        <tr id="item-row-${i.id}">
+          <td>${escapeHtml(i.title)}</td>
+          <td><span class="badge ${i.type === 'lost' ? 'badge-lost' : 'badge-found'}">${i.type}</span></td>
+          <td>${escapeHtml(i.category)}</td>
+          <td>${escapeHtml(i.location)}</td>
+          <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
+          <td>${timeAgo(i.created_at)}</td>
+          <td class="flex gap-8">
+            <a href="/item.html?id=${i.id}" class="btn btn-ghost btn-sm">View</a>
+            <button class="btn btn-danger btn-sm" onclick="removeItem(${i.id})">Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function removeItem(id) {
+    const ok = await confirmDialog({
+      title: 'Remove this report?',
+      body: 'Use this for fraudulent or inappropriate reports. This permanently deletes the report and any matches or claims tied to it.',
+      confirmLabel: 'Remove',
+    });
+    if (!ok) return;
+    try {
+      await api.del(`/admin/items/${id}`);
+      toast('Report removed.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

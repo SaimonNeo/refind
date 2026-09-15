@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Item Details — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .item-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px 0 80px; }
+  .item-photo { aspect-ratio: 4/3; background: var(--paper-dim); border: 1px solid var(--line); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--ink-soft); overflow: hidden; }
+  .item-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .meta-list { display: grid; gap: 10px; margin: 20px 0; }
+  .meta-row { display: flex; justify-content: space-between; font-size: 0.92rem; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .meta-row .k { color: var(--ink-soft); }
+  @media (max-width: 800px) { .item-detail { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <span id="nav-auth-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div id="loading" class="text-center" style="padding:80px 0;">Loading item…</div>
+  <div id="error-area"></div>
+  <div id="item-detail" class="item-detail" style="display:none;"></div>
+</div>
+
+<footer class="footer"><div class="container">ReFind — campus lost &amp; found.</div></footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  function renderNav() {
+    const area = document.getElementById('nav-auth-area');
+    const user = getUser();
+    area.innerHTML = user
+      ? `<a href="/dashboard.html">Dashboard</a>${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
+    const l = document.getElementById('logout-link');
+    if (l) l.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    if (user) initNotifBell();
+  }
+  renderNav();
+
+  const params = new URLSearchParams(window.location.search);
+  const itemId = params.get('id');
+  const user = getUser();
+
+  async function load() {
+    if (!itemId) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-area').innerHTML = `<div class="alert alert-error">No item specified.</div>`;
+      return;
+    }
+    try {
+      const { item } = await api.get(`/items/${itemId}`);
+      render(item);
+    } catch (err) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-area').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function render(item) {
+    document.title = `${item.title} — ReFind`;
+    document.getElementById('loading').style.display = 'none';
+    const wrap = document.getElementById('item-detail');
+    wrap.style.display = 'grid';
+
+    const isOwner = user && user.id === item.user_id;
+    const canClaim = user && item.type === 'found' && !isOwner && item.status === 'active';
+
+    wrap.innerHTML = `
+      <div>
+        <div class="item-photo">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">` : '<span>No photo provided</span>'}</div>
+      </div>
+      <div>
+        <div class="flex gap-8 mb-16">
+          <span class="badge ${item.type === 'lost' ? 'badge-lost' : 'badge-found'}">${item.type.toUpperCase()}</span>
+          <span class="badge ${statusBadgeClass(item.status)}">${item.status}</span>
+        </div>
+        <h2>${escapeHtml(item.title)}</h2>
+        <p>${escapeHtml(item.description || 'No further description provided.')}</p>
+        <div class="meta-list">
+          <div class="meta-row"><span class="k">Category</span><span>${escapeHtml(item.category)}</span></div>
+          <div class="meta-row"><span class="k">Color</span><span>${escapeHtml(item.color || '—')}</span></div>
+          <div class="meta-row"><span class="k">Brand</span><span>${escapeHtml(item.brand || '—')}</span></div>
+          <div class="meta-row"><span class="k">Location</span><span>${escapeHtml(item.location)}</span></div>
+          <div class="meta-row"><span class="k">Reported</span><span>${timeAgo(item.created_at)}</span></div>
+          ${item.storage_location ? `<div class="meta-row"><span class="k">Being kept at</span><span>${escapeHtml(item.storage_location)}</span></div>` : ''}
+        </div>
+        <div class="flex gap-12 flex-wrap" id="actions"></div>
+      </div>
+    `;
+
+    const actions = document.getElementById('actions');
+    if (canClaim) {
+      actions.innerHTML = `<a href="/claim.html?itemId=${item.id}" class="btn btn-clay">Claim this item</a>`;
+    } else if (isOwner && item.status !== 'withdrawn') {
+      const editLink = item.type === 'lost' ? `/report-lost.html?edit=${item.id}` : `/report-found.html?edit=${item.id}`;
+      const matchLink = item.type === 'lost' ? `/matches.html?lostItemId=${item.id}` : `/matches.html?foundItemId=${item.id}`;
+      actions.innerHTML = `
+        <a href="${matchLink}" class="btn btn-primary">View potential matches</a>
+        <a href="${editLink}" class="btn btn-outline">Edit</a>
+        ${item.status === 'active' || item.status === 'matched' ? `<button class="btn btn-ghost" id="withdraw-btn">Withdraw</button>` : ''}
+      `;
+      const withdrawBtn = document.getElementById('withdraw-btn');
+      if (withdrawBtn) withdrawBtn.addEventListener('click', () => withdrawThisItem(item.id));
+    } else if (!user) {
+      actions.innerHTML = `<a href="/login.html" class="btn btn-outline">Log in to claim or view matches</a>`;
+    }
+  }
+
+  async function withdrawThisItem(id) {
+    const ok = await confirmDialog({
+      title: 'Withdraw this report?',
+      body: 'This marks it as no longer active. It stops showing up in matches and search.',
+      confirmLabel: 'Withdraw',
+    });
+    if (!ok) return;
+    try {
+      await api.post(`/items/${id}/withdraw`, {});
+      toast('Report withdrawn.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

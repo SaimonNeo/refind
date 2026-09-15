@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Audit log — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html" class="active">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>Audit log</h2>
+    <p class="muted mb-24">A record of account and report actions worth being able to trace back later.</p>
+
+    <div id="loading">Loading…</div>
+    <table class="admin-table" id="log-table" style="display:none;">
+      <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  async function load() {
+    try {
+      const { entries } = await api.get('/admin/audit-log');
+      document.getElementById('loading').style.display = 'none';
+      const table = document.getElementById('log-table');
+      table.style.display = 'table';
+      table.querySelector('tbody').innerHTML = entries.length ? entries.map(e => `
+        <tr>
+          <td>${timeAgo(e.created_at)}</td>
+          <td>${escapeHtml(e.actor_name || 'system')}</td>
+          <td>${escapeHtml(e.action.replace(/_/g, ' '))}</td>
+          <td>${escapeHtml(e.target_type || '')}${e.target_id ? ' #' + e.target_id : ''}</td>
+          <td class="small muted">${escapeHtml(e.details || '')}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" class="muted">No actions recorded yet.</td></tr>`;
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

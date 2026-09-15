@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Claims — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
+    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html" class="active">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+  <main class="admin-main">
+    <h2>Claims</h2>
+    <p class="muted mb-24">Claims flagged for manual review need a human decision. Auto-approved and auto-rejected claims are shown for audit.</p>
+
+    <div id="loading">Loading…</div>
+    <table class="admin-table" id="claims-table" style="display:none;">
+      <thead><tr><th>Item</th><th>Claimant</th><th>Match</th><th>Confidence</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="approve-backdrop">
+  <div class="modal-box" style="max-width:460px;">
+    <h3>Approve claim</h3>
+    <p class="small muted mb-16">Set collection details so the claimant knows where and when to pick it up.</p>
+    <div class="field">
+      <label for="handover-location">Handover location</label>
+      <input type="text" id="handover-location" placeholder="e.g. Lost &amp; Found Office, Student Center">
+    </div>
+    <div class="field">
+      <label for="handover-datetime">Handover date/time</label>
+      <input type="datetime-local" id="handover-datetime">
+    </div>
+    <div class="field" style="margin-bottom:0;">
+      <label for="collection-instructions">Instructions</label>
+      <textarea id="collection-instructions" placeholder="e.g. Bring your student ID card to the front desk."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="approve-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="approve-confirm">Approve claim</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  function statusBadge(status) {
+    const map = { approved: 'badge-claimed', pending: 'badge-active', manual_review: 'badge-matched', rejected: 'badge-lost' };
+    return `<span class="badge ${map[status] || 'badge-active'}">${status.replace('_', ' ')}</span>`;
+  }
+
+  function matchLabel(c) {
+    if (c.match_score === null || c.match_score === undefined) {
+      return '<span class="small muted">Direct claim<br>(no lost report)</span>';
+    }
+    const score = Math.round(c.match_score);
+    let colorClass = 'badge-active';
+    if (score >= 80) colorClass = 'badge-claimed';
+    else if (score >= 55) colorClass = 'badge-matched';
+
+    return `
+      <div>
+        <span class="badge ${colorClass}" style="font-size:0.82rem; font-weight:600;">${score}% match</span>
+        ${c.match_ai_score ? `<br><span class="small muted">AI: ${c.match_ai_score}/25 pts</span>` : ''}
+        ${c.lost_title ? `<br><span class="small muted" title="${escapeHtml(c.lost_title)}" style="display:inline-block; max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Lost: "${escapeHtml(c.lost_title)}"</span>` : ''}
+      </div>
+    `;
+  }
+
+  function confidenceLabel(score) {
+    if (score === null || score === undefined) return '—';
+    if (score >= 85) return `<span style="color: var(--moss-deep); font-weight:600;">${score} — high</span>`;
+    if (score >= 50) return `<span style="color: #8a5f16; font-weight:600;">${score} — medium</span>`;
+    return `<span style="color: var(--danger); font-weight:600;">${score} — low</span>`;
+  }
+
+  async function load() {
+    try {
+      const { claims } = await api.get('/admin/claims');
+      document.getElementById('loading').style.display = 'none';
+      const table = document.getElementById('claims-table');
+      table.style.display = 'table';
+      table.querySelector('tbody').innerHTML = claims.map(c => `
+        <tr id="claim-row-${c.id}">
+          <td>${escapeHtml(c.item_title)}</td>
+          <td>${escapeHtml(c.claimant_name)}<br><span class="small muted">${escapeHtml(c.claimant_email)}</span>${c.claimant_phone ? `<br><span class="small muted">${escapeHtml(c.claimant_phone)}</span>` : ''}${c.id_proof_image ? `<br><a href="${escapeHtml(c.id_proof_image)}" target="_blank" class="small">ID proof</a>` : ''}</td>
+          <td>${matchLabel(c)}</td>
+          <td>${confidenceLabel(c.confidence_score)}</td>
+          <td>${timeAgo(c.created_at)}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td>${c.status === 'manual_review' || c.status === 'pending' ? `
+            <div class="flex gap-8">
+              <button class="btn btn-primary btn-sm" onclick="openApprove(${c.id})">Approve</button>
+              <button class="btn btn-danger btn-sm" onclick="reject(${c.id})">Reject</button>
+            </div>
+          ` : ''}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  let pendingApproveId = null;
+
+  function openApprove(claimId) {
+    pendingApproveId = claimId;
+    document.getElementById('handover-location').value = '';
+    document.getElementById('handover-datetime').value = '';
+    document.getElementById('collection-instructions').value = '';
+    document.getElementById('approve-backdrop').classList.add('open');
+  }
+
+  document.getElementById('approve-cancel').addEventListener('click', () => {
+    document.getElementById('approve-backdrop').classList.remove('open');
+  });
+
+  document.getElementById('approve-confirm').addEventListener('click', async () => {
+    try {
+      await api.patch(`/admin/claims/${pendingApproveId}`, {
+        status: 'approved',
+        handover_location: document.getElementById('handover-location').value.trim(),
+        handover_datetime: document.getElementById('handover-datetime').value,
+        collection_instructions: document.getElementById('collection-instructions').value.trim(),
+      });
+      document.getElementById('approve-backdrop').classList.remove('open');
+      toast('Claim approved.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
+  async function reject(claimId) {
+    const ok = await confirmDialog({
+      title: 'Reject this claim?',
+      body: 'The claimant will be notified. This does not remove the item report.',
+      confirmLabel: 'Reject',
+    });
+    if (!ok) return;
+    try {
+      await api.patch(`/admin/claims/${claimId}`, { status: 'rejected' });
+      toast('Claim rejected.');
+      load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

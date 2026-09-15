@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claim an item — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .claim-wrap { max-width: 560px; margin: 0 auto; padding: 44px 24px 96px; }
+  .claim-card { padding: 30px; }
+  .result-box { text-align: center; padding: 30px; }
+  .result-icon { font-size: 2.2rem; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/dashboard.html">Dashboard</a>
+      <span id="notif-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="claim-wrap">
+  <div id="loading" class="text-center">Loading item…</div>
+  <div id="claim-area" style="display:none;">
+    <h2 id="item-title"></h2>
+    <p class="muted mb-24">To protect the real owner, answer a private detail before this item is released to you. If you're not sure, answer as best you can — a close answer just goes to a person for a quick check instead of an automatic approval.</p>
+    <div class="card claim-card">
+      <div id="alert-area"></div>
+      <div id="question-area"></div>
+      <form id="claim-form" style="display:none;">
+        <div class="field">
+          <label id="question-label" for="answer">Verification question</label>
+          <input type="text" id="answer" placeholder="Your answer">
+        </div>
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input type="tel" id="phone" placeholder="So the finder or an admin can reach you">
+        </div>
+        <div class="field">
+          <label for="idProof">ID proof (optional)</label>
+          <input type="file" id="idProof" accept="image/*,.pdf">
+          <p class="hint">A student ID photo speeds up manual review if your answer isn't an exact match. Only the item's finder and admins can see this.</p>
+        </div>
+        <button type="submit" class="btn btn-clay btn-block" id="submit-btn">Submit claim</button>
+      </form>
+    </div>
+  </div>
+  <div id="result-area" style="display:none;"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script>
+  requireLogin();
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  const params = new URLSearchParams(window.location.search);
+  const itemId = params.get('itemId');
+
+  async function init() {
+    if (!itemId) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">No item specified.</div>`;
+      return;
+    }
+    try {
+      const [{ item }, verifyInfo] = await Promise.all([
+        api.get(`/items/${itemId}`),
+        api.get(`/claims/verification-question/${itemId}`),
+      ]);
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('claim-area').style.display = 'block';
+      document.getElementById('item-title').textContent = `Claim: ${item.title}`;
+
+      const form = document.getElementById('claim-form');
+      const qArea = document.getElementById('question-area');
+
+      if (verifyInfo.hasVerification && verifyInfo.question) {
+        document.getElementById('question-label').textContent = verifyInfo.question;
+        form.style.display = 'block';
+      } else {
+        qArea.innerHTML = `<div class="alert alert-info">The finder didn't set a verification question for this item. Your claim will go to an admin for a manual check.</div>`;
+        form.style.display = 'block';
+        document.getElementById('question-label').textContent = 'Anything that helps confirm this is yours (optional)';
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+        try {
+          const fd = new FormData();
+          fd.append('itemId', itemId);
+          fd.append('answer', document.getElementById('answer').value.trim());
+          fd.append('phone', document.getElementById('phone').value.trim());
+          const file = document.getElementById('idProof').files[0];
+          if (file) fd.append('idProof', file);
+
+          const { claim } = await api.post('/claims', fd, true);
+          showResult(claim.status);
+        } catch (err) {
+          document.getElementById('alert-area').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+          btn.disabled = false;
+          btn.textContent = 'Submit claim';
+        }
+      });
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function showResult(status) {
+    document.getElementById('claim-area').style.display = 'none';
+    const resultArea = document.getElementById('result-area');
+    resultArea.style.display = 'block';
+
+    const configs = {
+      approved: { icon: '✓', title: 'Claim approved', body: 'Your answer matched. Check your dashboard for collection details once the finder or an admin sets them.', cls: 'alert-success' },
+      manual_review: { icon: '…', title: 'Sent for a manual check', body: "Someone will review your claim shortly and follow up through your notifications.", cls: 'alert-info' },
+      rejected: { icon: '✕', title: 'Claim not verified', body: "We couldn't verify your answer. If you think this is a mistake, reach out to the lost and found office directly.", cls: 'alert-error' },
+    };
+    const c = configs[status] || configs.manual_review;
+
+    resultArea.innerHTML = `
+      <div class="card result-box">
+        <div class="result-icon">${c.icon}</div>
+        <h3>${c.title}</h3>
+        <p class="muted">${c.body}</p>
+        <a href="/dashboard.html" class="btn btn-primary mt-16">Back to dashboard</a>
+      </div>
+    `;
+  }
+
+  init();
+</script>
+</body>
+</html>

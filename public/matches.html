@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potential Matches — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .match-list { display: grid; gap: 20px; margin-top: 24px; }
+  .match-card { padding: 24px; }
+  .match-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .match-title { font-family: var(--font-display); font-size: 1.2rem; margin: 4px 0; }
+  .confidence-tag { font-family: var(--font-num); font-size: 0.72rem; padding: 3px 8px; border-radius: 20px; background: var(--paper-dim); color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/dashboard.html">Dashboard</a>
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container section-tight">
+  <div id="header-area"></div>
+  <div id="loading" class="text-center" style="padding:48px 0;">Finding potential matches…</div>
+  <div id="error-area"></div>
+  <div id="match-list" class="match-list"></div>
+  <div id="empty" class="empty-state" style="display:none;">
+    <h3>No potential matches yet</h3>
+    <p>We'll keep checking new reports against yours automatically. Check back soon.</p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireLogin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  const params = new URLSearchParams(window.location.search);
+  const lostItemId = params.get('lostItemId');
+  const foundItemId = params.get('foundItemId');
+
+  function scoreRow(label, value, max) {
+    const pct = max ? Math.round((value / max) * 100) : 0;
+    return `
+      <div class="score-row">
+        <span class="label">${label}</span>
+        <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+        <span class="value">${value}/${max}</span>
+      </div>
+    `;
+  }
+
+  function matchCardHtml(m, counterpartTitle, counterpartCategory, counterpartLocation, counterpartId, counterpartType) {
+    const features = (m.matching_features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('');
+    return `
+      <div class="flyer-card match-card">
+        <div class="match-top">
+          <div>
+            <span class="badge ${counterpartType === 'lost' ? 'badge-lost' : 'badge-found'}">${counterpartType.toUpperCase()}</span>
+            <div class="match-title">${escapeHtml(counterpartTitle)}</div>
+            <div class="muted small">${escapeHtml(counterpartCategory)} in ${escapeHtml(counterpartLocation)}</div>
+          </div>
+          <div class="text-center">
+            <div class="score-big">${Math.round(m.score)}%</div>
+            <span class="confidence-tag">AI confidence: ${escapeHtml(m.matching_features && m.matching_features.length ? 'medium-high' : 'n/a')}</span>
+          </div>
+        </div>
+        <div class="score-breakdown">
+          ${scoreRow('Category', m.category_score, 25)}
+          ${scoreRow('Color', m.color_score, 15)}
+          ${scoreRow('Location', m.location_score, 20)}
+          ${scoreRow('Time', m.time_score, 15)}
+          ${scoreRow('AI similarity', m.ai_score, 25)}
+        </div>
+        <details class="why-match">
+          <summary>Why this matched</summary>
+          <p class="small mb-8">${escapeHtml(m.explanation || '')}</p>
+          ${features ? `<ul class="small">${features}</ul>` : ''}
+        </details>
+        <div class="mt-16">
+          <a href="/item.html?id=${counterpartId}" class="btn btn-outline btn-sm">View item</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function load() {
+    const headerArea = document.getElementById('header-area');
+    const loading = document.getElementById('loading');
+    const listEl = document.getElementById('match-list');
+    const emptyEl = document.getElementById('empty');
+
+    try {
+      let matches, sourceItem, mode;
+      if (lostItemId) {
+        mode = 'lost';
+        const itemRes = await api.get(`/items/${lostItemId}`);
+        sourceItem = itemRes.item;
+        const matchRes = await api.get(`/matches/for-lost-item/${lostItemId}`);
+        matches = matchRes.matches;
+      } else if (foundItemId) {
+        mode = 'found';
+        const itemRes = await api.get(`/items/${foundItemId}`);
+        sourceItem = itemRes.item;
+        const matchRes = await api.get(`/matches/for-found-item/${foundItemId}`);
+        matches = matchRes.matches;
+      } else {
+        throw new Error('No item specified.');
+      }
+
+      headerArea.innerHTML = `
+        <div class="badge ${sourceItem.type === 'lost' ? 'badge-lost' : 'badge-found'} mb-16">${sourceItem.type.toUpperCase()} REPORT</div>
+        <h2>Matches for "${escapeHtml(sourceItem.title)}"</h2>
+        <p class="muted">Ranked by total score across category, color, location, time, and AI similarity.</p>
+      `;
+
+      loading.style.display = 'none';
+
+      if (!matches.length) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      listEl.innerHTML = matches.map((m) => {
+        if (mode === 'lost') {
+          return matchCardHtml(m, m.found_title, m.found_category, m.found_location, m.found_item_id, 'found');
+        }
+        return matchCardHtml(m, m.lost_title, m.lost_category, m.lost_location, m.lost_item_id, 'lost');
+      }).join('');
+    } catch (err) {
+      loading.style.display = 'none';
+      document.getElementById('error-area').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

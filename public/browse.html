@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Items — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .filters {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: end;
+    padding: 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    margin-bottom: 28px;
+  }
+  .filters .field { margin-bottom: 0; min-width: 160px; flex: 1; }
+  .filters input, .filters select { padding: 9px 11px; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html" class="active">Browse</a>
+      <a href="/report-lost.html">Report Lost</a>
+      <a href="/report-found.html">Report Found</a>
+      <span id="nav-auth-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="container section-tight">
+  <h2>Browse reports</h2>
+  <p class="muted mb-24">Search everything the campus has lost and found.</p>
+
+  <div class="filters">
+    <div class="field">
+      <label for="q">Search</label>
+      <input type="text" id="q" placeholder="e.g. backpack, wallet, ID card">
+    </div>
+    <div class="field">
+      <label for="type">Type</label>
+      <select id="type"><option value="">All</option><option value="lost">Lost</option><option value="found">Found</option></select>
+    </div>
+    <div class="field">
+      <label for="category">Category</label>
+      <select id="category"><option value="">All categories</option></select>
+    </div>
+    <div class="field">
+      <label for="location">Location</label>
+      <select id="location"><option value="">All locations</option></select>
+    </div>
+    <div class="field">
+      <label for="color">Color</label>
+      <input type="text" id="color" placeholder="e.g. black">
+    </div>
+    <div class="field">
+      <label for="brand">Brand</label>
+      <input type="text" id="brand" placeholder="e.g. Lenovo">
+    </div>
+    <div class="field">
+      <label for="dateFrom">From</label>
+      <input type="date" id="dateFrom">
+    </div>
+    <div class="field">
+      <label for="dateTo">To</label>
+      <input type="date" id="dateTo">
+    </div>
+    <div class="field">
+      <label for="sort">Sort</label>
+      <select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
+    </div>
+    <button class="btn btn-primary" id="search-btn">Search</button>
+  </div>
+
+  <div id="results" class="item-grid"></div>
+  <div id="empty" class="empty-state" style="display:none;">
+    <h3>No items match your search</h3>
+    <p>Try clearing a filter, or check back later — new reports come in all the time.</p>
+  </div>
+</div>
+
+<footer class="footer"><div class="container">ReFind — campus lost &amp; found.</div></footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  function renderNav() {
+    const area = document.getElementById('nav-auth-area');
+    const user = getUser();
+    area.innerHTML = user
+      ? `<a href="/dashboard.html">Dashboard</a> ${user.role === 'admin' ? '<a href="/admin/dashboard.html">Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) logoutLink.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    if (user) initNotifBell();
+  }
+  renderNav();
+  populateSelect('category', ITEM_CATEGORIES);
+  populateSelect('location', CAMPUS_LOCATIONS);
+
+  const resultsEl = document.getElementById('results');
+  const emptyEl = document.getElementById('empty');
+
+  async function search() {
+    resultsEl.innerHTML = skeletonCards(6);
+    emptyEl.style.display = 'none';
+    const params = new URLSearchParams();
+    const q = document.getElementById('q').value.trim();
+    const type = document.getElementById('type').value;
+    const category = document.getElementById('category').value;
+    const location = document.getElementById('location').value;
+    const color = document.getElementById('color').value.trim();
+    const brand = document.getElementById('brand').value.trim();
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    const sort = document.getElementById('sort').value;
+    if (q) params.set('q', q);
+    if (type) params.set('type', type);
+    if (category) params.set('category', category);
+    if (location) params.set('location', location);
+    if (color) params.set('color', color);
+    if (brand) params.set('brand', brand);
+    if (dateFrom) params.set('dateFrom', dateFrom);
+    if (dateTo) params.set('dateTo', dateTo);
+    if (sort) params.set('sort', sort);
+
+    try {
+      const data = await api.get(`/items?${params.toString()}`);
+      if (!data.items.length) {
+        resultsEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+      resultsEl.innerHTML = data.items.map(itemCardHtml).join('');
+    } catch (err) {
+      resultsEl.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  document.getElementById('search-btn').addEventListener('click', search);
+  document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+  ['type', 'category', 'location', 'sort'].forEach((id) => document.getElementById(id).addEventListener('change', search));
+
+  search();
+</script>
+</body>
+</html>
