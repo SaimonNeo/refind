@@ -11,15 +11,18 @@
 const MAX_DESCRIPTION_LENGTH = 800;
 const REQUEST_TIMEOUT_MS = 18000;
 
-const AI_PROVIDER = () => process.env.AI_PROVIDER || 'gemini';
+const AI_PROVIDER = () => (process.env.AI_PROVIDER || 'gemini').trim().replace(/^["']|["']$/g, '');
 const AI_MODEL = () => {
-  const model = process.env.AI_MODEL;
-  if (!model || model === 'gemini-flash-latest' || model === 'gemini-3.8-flash') {
-    return 'gemini-flash-lite-latest';
+  const model = (process.env.AI_MODEL || '').trim().replace(/^["']|["']$/g, '');
+  if (!model || model.includes('1.5') || model.includes('2.0') || model.includes('2.5') || model === 'gemini-flash-latest' || model === 'gemini-3.8-flash') {
+    return 'gemini-3.5-flash-lite';
   }
   return model;
 };
-const GEMINI_API_KEY = () => process.env.GEMINI_API_KEY || '';
+const GEMINI_API_KEY = () => {
+  const raw = process.env.GEMINI_API_KEY || '';
+  return raw.trim().replace(/^["']|["']$/g, '');
+};
 
 function sanitize(text) {
   if (!text) return '';
@@ -107,17 +110,22 @@ async function callGemini(prompt, retries = 1) {
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: 'application/json',
+      },
+    };
+    if (model.includes('3.6') || model.includes('3.7')) {
+      payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    }
+
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: 'application/json',
-        },
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {

@@ -47,6 +47,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+app.get('/api/health/ai', async (req, res) => {
+  const aiService = require('./services/aiService');
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+  const maskedKey = apiKey ? `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}` : '(none)';
+  try {
+    const testResult = await aiService.compareItems(
+      { title: 'Lenovo Tab 3', description: 'Tab with a black Key Chain' },
+      { title: 'Lenovo Tab 3', description: 'Have A keychain' }
+    );
+    res.json({
+      status: testResult.usedFallback ? 'fallback' : 'ok',
+      apiKeyConfigured: !!apiKey,
+      apiKeyMasked: maskedKey,
+      modelUsed: process.env.AI_MODEL || 'gemini-3.5-flash-lite',
+      testResult,
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message, apiKeyConfigured: !!apiKey, apiKeyMasked: maskedKey });
+  }
+});
+
 // Fallback to index.html for unknown non-API GET requests (simple SPA-ish nav)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
