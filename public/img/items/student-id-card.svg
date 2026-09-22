@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgCard" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#fdfbf7"/>
+      <stop offset="100%" stop-color="#e8e2d5"/>
+    </radialGradient>
+    <linearGradient id="headerG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="chipG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="130%">
+      <feDropShadow dx="2" dy="10" stdDeviation="12" flood-color="#332a1e" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgCard)"/>
+  
+  <!-- Subtle floor shadow -->
+  <ellipse cx="200" cy="255" rx="120" ry="14" fill="#2d2416" opacity="0.18"/>
+
+  <!-- Student ID Card (horizontal CR80 credit card ratio) -->
+  <g transform="rotate(2 200 150)" filter="url(#cardShadow)">
+    <!-- Base Card Body -->
+    <rect x="75" y="65" width="250" height="160" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+
+    <!-- Navy Header Bar -->
+    <path d="M 75 79 C 75 71, 81 65, 89 65 L 311 65 C 319 65, 325 71, 325 79 L 325 110 L 75 110 Z" fill="url(#headerG)"/>
+
+    <!-- University Crest Icon & Title in Header -->
+    <circle cx="98" cy="88" r="10" fill="#facc15" opacity="0.9"/>
+    <polygon points="98,81 105,94 91,94" fill="#1e3a8a"/>
+    <text x="116" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="800" fill="#ffffff" letter-spacing="0.8">CAMPUS UNIVERSITY</text>
+    <text x="116" y="96" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="7" font-weight="600" fill="#93c5fd" letter-spacing="0.4">OFFICIAL STUDENT IDENTITY</text>
+
+    <!-- Student Photo Placeholder Frame -->
+    <rect x="95" y="125" width="58" height="70" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+    <!-- Student Silhouette in Photo -->
+    <circle cx="124" cy="148" r="13" fill="#94a3b8"/>
+    <path d="M 104 190 C 104 172, 144 172, 144 190 Z" fill="#94a3b8"/>
+
+    <!-- EMV Smart Chip -->
+    <rect x="168" y="125" width="26" height="20" rx="4" fill="url(#chipG)" stroke="#a16207" stroke-width="0.8"/>
+    <line x1="168" y1="135" x2="194" y2="135" stroke="#a16207" stroke-width="0.6"/>
+    <line x1="181" y1="125" x2="181" y2="145" stroke="#a16207" stroke-width="0.6"/>
+
+    <!-- Student Info Typography -->
+    <text x="168" y="160" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#0f172a">PRIYA NAIR</text>
+    <text x="168" y="174" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="600" fill="#475569">ID: <tspan fill="#1e3a8a">U20231003</tspan></text>
+    <text x="168" y="186" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="7.5" font-weight="500" fill="#64748b">Batch 2024 · Sec A</text>
+
+    <!-- Mini Barcode at bottom -->
+    <g transform="translate(168, 196)">
+      <line x1="0" y1="0" x2="0" y2="14" stroke="#0f172a" stroke-width="2"/>
+      <line x1="4" y1="0" x2="4" y2="14" stroke="#0f172a" stroke-width="1"/>
+      <line x1="8" y1="0" x2="8" y2="14" stroke="#0f172a" stroke-width="2.5"/>
+      <line x1="13" y1="0" x2="13" y2="14" stroke="#0f172a" stroke-width="1"/>
+      <line x1="17" y1="0" x2="17" y2="14" stroke="#0f172a" stroke-width="1.5"/>
+      <line x1="22" y1="0" x2="22" y2="14" stroke="#0f172a" stroke-width="3"/>
+      <line x1="28" y1="0" x2="28" y2="14" stroke="#0f172a" stroke-width="1"/>
+      <line x1="33" y1="0" x2="33" y2="14" stroke="#0f172a" stroke-width="2"/>
+      <line x1="38" y1="0" x2="38" y2="14" stroke="#0f172a" stroke-width="1.5"/>
+      <line x1="43" y1="0" x2="43" y2="14" stroke="#0f172a" stroke-width="2.5"/>
+      <line x1="48" y1="0" x2="48" y2="14" stroke="#0f172a" stroke-width="1"/>
+      <line x1="53" y1="0" x2="53" y2="14" stroke="#0f172a" stroke-width="2"/>
+    </g>
+
+    <!-- Contactless Wave Emblem -->
+    <path d="M 305 132 A 6 6 0 0 1 305 142 M 308 128 A 11 11 0 0 1 308 146 M 311 124 A 16 16 0 0 1 311 150" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -43,6 +43,20 @@ function migrateSchema() {
       UPDATE users SET batch = '2024', section = 'A', avatar = '/img/avatars/female.svg' WHERE email = 'student3@campus.edu';
       UPDATE users SET batch = 'Staff', section = 'Security', avatar = '/img/avatars/admin.svg' WHERE email = 'admin@campus.edu';
     `);
+
+    // Backfill standard demo items with default images if currently null
+    db.exec(`
+      UPDATE items SET image = '/img/items/headphones-white.svg' WHERE title LIKE '%headphone%';
+      UPDATE items SET image = '/img/items/backpack-black.svg' WHERE (title LIKE '%backpack%' OR title LIKE '%laptop bag%') AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/iphone-blue.svg' WHERE (title LIKE '%iPhone%' OR title LIKE '%i-Phone%') AND (image IS NULL OR image = '' OR image = '/img/items/headphones-white.svg');
+      UPDATE items SET image = '/img/items/student-id-card.svg' WHERE title LIKE '%ID card%' AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/calculator-casio.svg' WHERE title LIKE '%calculator%' AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/water-bottle-green.svg' WHERE title LIKE '%water bottle%' AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/umbrella-black.svg' WHERE title LIKE '%umbrella%' AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/wallet-brown.svg' WHERE title LIKE '%wallet%' AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/usb-drive-black.svg' WHERE (title LIKE '%USB%' OR title LIKE '%flash drive%') AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/notebook-blue.svg' WHERE title LIKE '%notebook%' AND (image IS NULL OR image = '');
+    `);
   } catch (err) {
     console.error('Migration error:', err.message);
   }

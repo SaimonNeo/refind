@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgG" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#f5f0e8"/>
+      <stop offset="100%" stop-color="#ded4c5"/>
+    </radialGradient>
+    <linearGradient id="bodyG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#343942"/>
+      <stop offset="50%" stop-color="#23272e"/>
+      <stop offset="100%" stop-color="#181a1f"/>
+    </linearGradient>
+    <linearGradient id="pouchG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a2e37"/>
+      <stop offset="100%" stop-color="#1a1d23"/>
+    </linearGradient>
+    <linearGradient id="redKeyG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#1e1810" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgG)"/>
+  
+  <!-- Subtle floor shadow -->
+  <ellipse cx="200" cy="265" rx="100" ry="16" fill="#18140e" opacity="0.22"/>
+
+  <!-- Backpack Group -->
+  <g filter="url(#dropShadow)">
+    <!-- Top Handle -->
+    <path d="M 172 65 C 172 45, 228 45, 228 65" fill="none" stroke="#252930" stroke-width="10" stroke-linecap="round"/>
+    
+    <!-- Main Backpack Body -->
+    <path d="M 140 100 C 140 60, 260 60, 260 100 L 272 235 C 272 250, 258 255, 240 255 L 160 255 C 142 255, 128 250, 128 235 Z" fill="url(#bodyG)"/>
+
+    <!-- Subtle Stitching / Accent Piping -->
+    <path d="M 148 102 C 148 72, 252 72, 252 102 L 262 235" fill="none" stroke="#4b5563" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.6"/>
+
+    <!-- Front Zip Pouch -->
+    <path d="M 145 155 C 145 140, 255 140, 255 155 L 258 238 C 258 248, 248 250, 235 250 L 165 250 C 152 250, 142 248, 142 238 Z" fill="url(#pouchG)"/>
+    
+    <!-- Pouch Zipper Track -->
+    <path d="M 150 156 Q 200 150 250 156" fill="none" stroke="#111317" stroke-width="4"/>
+    <path d="M 150 156 Q 200 150 250 156" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="2,2"/>
+    
+    <!-- Main Compartment Zipper -->
+    <path d="M 144 100 C 144 65, 256 65, 256 100" fill="none" stroke="#111317" stroke-width="4.5"/>
+    <path d="M 144 100 C 144 65, 256 65, 256 100" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-dasharray="2.5,2"/>
+
+    <!-- Side Mesh Pocket -->
+    <path d="M 128 175 L 132 230 C 132 238, 138 240, 142 240 L 140 170 Z" fill="#181a1e" opacity="0.8"/>
+    <line x1="128" y1="175" x2="140" y2="170" stroke="#475569" stroke-width="2"/>
+
+    <!-- Brand Label Badge (Lenovo style minimal tag) -->
+    <rect x="220" y="215" width="28" height="9" rx="2" fill="#ef4444"/>
+    <text x="234" y="222" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="5" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">LENOVO</text>
+
+    <!-- Zipper Pull with Red Keychain Tag (Cat shaped detail) -->
+    <g transform="translate(162, 155)">
+      <!-- Zipper Slider & Ring -->
+      <rect x="-3" y="0" width="6" height="8" rx="1.5" fill="#d1d5db"/>
+      <circle cx="0" cy="12" r="5" fill="none" stroke="#f59e0b" stroke-width="2"/>
+      
+      <!-- Red Cat-Shaped Keychain -->
+      <path d="M -9 22 L -6 16 L -2 19 L 2 19 L 6 16 L 9 22 C 11 26, 10 35, 0 37 C -10 35, -11 26, -9 22 Z" fill="url(#redKeyG)"/>
+      <circle cx="-3" cy="25" r="1.5" fill="#fef2f2"/>
+      <circle cx="3" cy="25" r="1.5" fill="#fef2f2"/>
+      <path d="M -1.5 28 L 0 30 L 1.5 28" fill="none" stroke="#fef2f2" stroke-width="1" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

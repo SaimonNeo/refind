@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgPhone" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#ebf1f8"/>
+      <stop offset="100%" stop-color="#d1dce7"/>
+    </radialGradient>
+    <linearGradient id="blueCase" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="40%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="cameraPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#1e40af"/>
+    </linearGradient>
+    <filter id="phoneShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="2" dy="12" stdDeviation="14" flood-color="#1e3a8a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgPhone)"/>
+  
+  <!-- Subtle floor shadow -->
+  <ellipse cx="204" cy="268" rx="80" ry="14" fill="#0f172a" opacity="0.2"/>
+
+  <!-- Phone Group slightly tilted for modern showcase angle -->
+  <g transform="rotate(-6 200 150)" filter="url(#phoneShadow)">
+    <!-- Outer Phone Silicone Case -->
+    <rect x="140" y="42" width="120" height="216" rx="24" fill="url(#blueCase)" stroke="#1e40af" stroke-width="2"/>
+
+    <!-- Case Edge Highlight -->
+    <rect x="142" y="44" width="116" height="212" rx="22" fill="none" stroke="#93c5fd" stroke-width="1.2" opacity="0.4"/>
+
+    <!-- Square Camera Bump (iPhone 13 diagonal arrangement) -->
+    <rect x="148" y="50" width="48" height="48" rx="14" fill="url(#cameraPlate)" stroke="#1d4ed8" stroke-width="1.5"/>
+
+    <!-- Top Left Lens -->
+    <circle cx="162" cy="64" r="9" fill="#0f172a" stroke="#3b82f6" stroke-width="1.8"/>
+    <circle cx="162" cy="64" r="6" fill="#1e293b"/>
+    <circle cx="160" cy="62" r="2.5" fill="#38bdf8" opacity="0.8"/>
+
+    <!-- Bottom Right Lens (Diagonal) -->
+    <circle cx="182" cy="84" r="9" fill="#0f172a" stroke="#3b82f6" stroke-width="1.8"/>
+    <circle cx="182" cy="84" r="6" fill="#1e293b"/>
+    <circle cx="180" cy="82" r="2.5" fill="#38bdf8" opacity="0.8"/>
+
+    <!-- TrueTone Flash & Mic -->
+    <circle cx="182" cy="60" r="4.5" fill="#fef08a" stroke="#ca8a04" stroke-width="1"/>
+    <circle cx="162" cy="88" r="2" fill="#0f172a"/>
+
+    <!-- Apple Logo Silkscreen in subtle contrast -->
+    <path d="M 200 138 C 200 134, 203 131, 207 131 C 205 136, 202 138, 200 138 Z M 206 142 C 202 142, 199 140, 196 140 C 193 140, 190 142, 187 142 C 183 142, 178 147, 178 156 C 178 165, 184 176, 188 176 C 191 176, 193 174, 196 174 C 199 174, 201 176, 204 176 C 208 176, 213 167, 213 162 C 207 160, 205 152, 206 142 Z" fill="#93c5fd" opacity="0.45"/>
+
+    <!-- Distinguishing Detail: Cracked Case Corner (bottom right) -->
+    <path d="M 248 240 L 255 245 L 260 252 M 255 245 L 246 254" fill="none" stroke="#bfdbfe" stroke-width="1.8" stroke-linecap="round"/>
+    <circle cx="255" cy="245" r="1.5" fill="#ffffff"/>
+  </g>
+</svg>

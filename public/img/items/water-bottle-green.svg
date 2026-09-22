@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgBottle" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#f2f7f4"/>
+      <stop offset="100%" stop-color="#d4e2d8"/>
+    </radialGradient>
+    <linearGradient id="flaskGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2d6a4f"/>
+      <stop offset="35%" stop-color="#40916c"/>
+      <stop offset="70%" stop-color="#2d6a4f"/>
+      <stop offset="100%" stop-color="#1b4332"/>
+    </linearGradient>
+    <linearGradient id="metalCap" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="50%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <filter id="bottleShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="3" dy="12" stdDeviation="14" flood-color="#143425" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgBottle)"/>
+  
+  <!-- Floor shadow -->
+  <ellipse cx="200" cy="270" rx="60" ry="12" fill="#143425" opacity="0.22"/>
+
+  <!-- Bottle Group -->
+  <g filter="url(#bottleShadow)">
+    <!-- Carry Loop on Top -->
+    <path d="M 186 52 C 186 36, 214 36, 214 52 L 214 62 L 186 62 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <circle cx="200" cy="46" r="6" fill="#f2f7f4"/>
+
+    <!-- Stainless Steel Cap -->
+    <rect x="180" y="60" width="40" height="20" rx="3" fill="url(#metalCap)" stroke="#64748b" stroke-width="1.5"/>
+    <!-- Grip Ribs on Cap -->
+    <line x1="188" y1="62" x2="188" y2="78" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="196" y1="62" x2="196" y2="78" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="204" y1="62" x2="204" y2="78" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="212" y1="62" x2="212" y2="78" stroke="#cbd5e1" stroke-width="1.5"/>
+
+    <!-- Stainless Steel Neck Ring -->
+    <rect x="184" y="80" width="32" height="7" rx="1.5" fill="url(#metalCap)" stroke="#64748b" stroke-width="1"/>
+
+    <!-- Bottle Shoulders -->
+    <path d="M 184 87 C 172 90, 164 100, 164 114 L 164 246 C 164 255, 172 260, 182 260 L 218 260 C 228 260, 236 255, 236 246 L 236 114 C 236 100, 228 90, 216 87 Z" fill="url(#flaskGreen)" stroke="#1b4332" stroke-width="1.8"/>
+
+    <!-- Cylindrical Light Reflection Streak -->
+    <path d="M 174 110 L 174 252" stroke="#74c69d" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+
+    <!-- University Sticker / Crest Graphic on Front -->
+    <g transform="translate(200, 165)">
+      <!-- Oval Vinyl Decal Base -->
+      <ellipse cx="0" cy="0" rx="22" ry="26" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+      <ellipse cx="0" cy="0" rx="19" ry="23" fill="none" stroke="#2d6a4f" stroke-width="1.2"/>
+      <!-- University Icon inside Sticker -->
+      <polygon points="0,-12 12,0 8,10 -8,10 -12,0" fill="#2d6a4f"/>
+      <text x="0" y="3" font-family="-apple-system, sans-serif" font-size="6" font-weight="900" fill="#ffffff" text-anchor="middle">U</text>
+      <text x="0" y="18" font-family="-apple-system, sans-serif" font-size="4.5" font-weight="bold" fill="#1b4332" text-anchor="middle" letter-spacing="0.5">CAMPUS</text>
+    </g>
+
+    <!-- Base Grip Boot Rim -->
+    <path d="M 164 248 C 164 256, 172 260, 182 260 L 218 260 C 228 260, 236 256, 236 248 L 236 240 L 164 240 Z" fill="#1b4332" opacity="0.6"/>
+  </g>
+</svg>

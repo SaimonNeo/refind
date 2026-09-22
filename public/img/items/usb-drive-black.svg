@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgUsb" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </radialGradient>
+    <linearGradient id="usbCase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="40%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="metalUsb" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <filter id="usbShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="3" dy="12" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgUsb)"/>
+  
+  <!-- Floor shadow -->
+  <ellipse cx="204" cy="245" rx="100" ry="12" fill="#0f172a" opacity="0.2"/>
+
+  <!-- USB Flash Drive Group (diagonal presentation) -->
+  <g transform="translate(100, 150) rotate(-14 100 0)" filter="url(#usbShadow)">
+    <!-- USB Type-A Metal Connector Head -->
+    <rect x="25" y="-22" width="55" height="44" rx="3" fill="url(#metalUsb)" stroke="#64748b" stroke-width="1.5"/>
+
+    <!-- Dual Holes on USB Connector Face -->
+    <rect x="42" y="-14" width="16" height="8" rx="1.5" fill="#475569"/>
+    <rect x="42" y="6" width="16" height="8" rx="1.5" fill="#475569"/>
+    <!-- Blue/Gold USB 3.0 Connector Insulator Peek inside holes -->
+    <rect x="45" y="-12" width="10" height="4" fill="#0284c7"/>
+    <rect x="45" y="8" width="10" height="4" fill="#0284c7"/>
+
+    <!-- Main Drive Body (Black Textured Plastic) -->
+    <rect x="75" y="-26" width="125" height="52" rx="8" fill="url(#usbCase)" stroke="#020617" stroke-width="2"/>
+
+    <!-- Red Slider Accent Band (SanDisk Cruzer style) -->
+    <rect x="100" y="-12" width="30" height="24" rx="4" fill="#dc2626" stroke="#b91c1c" stroke-width="1.2"/>
+    <!-- Slider Grip Ribs -->
+    <line x1="108" y1="-7" x2="108" y2="7" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="115" y1="-7" x2="115" y2="7" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="122" y1="-7" x2="122" y2="7" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Capacity & Brand Typography -->
+    <text x="145" y="-3" font-family="-apple-system, sans-serif" font-size="9" font-weight="900" fill="#ffffff" letter-spacing="0.5">32 GB</text>
+    <text x="145" y="10" font-family="-apple-system, sans-serif" font-size="7" font-weight="700" fill="#ef4444" letter-spacing="0.5">SanDisk</text>
+
+    <!-- Activity Indicator LED Dot -->
+    <circle cx="184" cy="0" r="2.5" fill="#ef4444"/>
+    <circle cx="184" cy="0" r="5" fill="#f87171" opacity="0.3"/>
+
+    <!-- Lanyard Keyring Loop at Tail -->
+    <path d="M 200 -12 C 214 -12, 214 12, 200 12 Z" fill="#1e293b" stroke="#020617" stroke-width="1.8"/>
+    <ellipse cx="204" cy="0" rx="3.5" ry="6" fill="#f1f5f9"/>
+  </g>
+</svg>

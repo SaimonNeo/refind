@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgUmbrella" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#dbe3ea"/>
+    </radialGradient>
+    <linearGradient id="canopyBlack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="40%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="woodHandle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="50%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <filter id="umbrellaShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="3" dy="12" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgUmbrella)"/>
+  
+  <!-- Floor shadow -->
+  <ellipse cx="204" cy="265" rx="100" ry="12" fill="#0f172a" opacity="0.2"/>
+
+  <!-- Folded Umbrella Group tilted horizontally -->
+  <g transform="translate(60, 160) rotate(-22 140 0)" filter="url(#umbrellaShadow)">
+    <!-- Top Metal Ferrule Tip -->
+    <path d="M 28 0 L 45 -4 L 45 4 Z" fill="#94a3b8" stroke="#64748b" stroke-width="1"/>
+    <circle cx="28" cy="0" r="3" fill="#cbd5e1"/>
+
+    <!-- Folded Canopy Fabric Body -->
+    <path d="M 45 -14 C 70 -20, 200 -18, 220 -10 L 220 10 C 200 18, 70 20, 45 14 Z" fill="url(#canopyBlack)" stroke="#090d16" stroke-width="1.8"/>
+
+    <!-- Canopy Pleat Creases -->
+    <path d="M 45 0 Q 130 -6 220 0" stroke="#475569" stroke-width="2" fill="none"/>
+    <path d="M 45 -7 Q 130 -14 220 -5" stroke="#334155" stroke-width="1.5" fill="none"/>
+    <path d="M 45 7 Q 130 14 220 5" stroke="#1e293b" stroke-width="2" fill="none"/>
+
+    <!-- Fastening Strap with Velcro Snap -->
+    <rect x="135" y="-17" width="16" height="34" rx="3" fill="#0f172a" stroke="#475569" stroke-width="1.2"/>
+    <circle cx="143" cy="0" r="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+
+    <!-- Metal Center Shaft -->
+    <rect x="220" y="-3.5" width="45" height="7" rx="1" fill="#94a3b8" stroke="#475569" stroke-width="1"/>
+
+    <!-- Brass Collar Ring -->
+    <rect x="263" y="-6" width="6" height="12" rx="1" fill="#d97706" stroke="#b45309" stroke-width="1"/>
+
+    <!-- Curved Light-Wood Grain Handle (J-Hook Handle) -->
+    <path d="M 268 0 L 305 0 C 324 0, 324 35, 305 35 C 292 35, 292 25, 300 25" fill="none" stroke="url(#woodHandle)" stroke-width="13" stroke-linecap="round"/>
+
+    <!-- Subtle Wood Grain Highlights -->
+    <path d="M 272 -2 L 303 -2 C 318 -2, 318 28, 306 28" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+  </g>
+</svg>
