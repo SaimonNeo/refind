@@ -204,7 +204,7 @@ router.get('/recovered', (req, res) => {
 
 router.get('/users', (req, res) => {
   const users = all(
-    `SELECT id, name, email, role, phone, student_id, suspended, created_at,
+    `SELECT id, name, email, role, phone, student_id, batch, section, avatar, suspended, created_at,
       (SELECT COUNT(*) FROM items WHERE user_id = users.id) as item_count
      FROM users ORDER BY created_at DESC`
   );

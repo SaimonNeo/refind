@@ -35,10 +35,13 @@
     </div>
   </div>
 
-  <div class="flex-between flex-wrap gap-16 mb-24">
-    <div>
-      <h2 id="welcome">Welcome back</h2>
-      <p class="muted">Here's everything you've reported and matched.</p>
+  <div class="flex-between flex-wrap gap-16 mb-24" style="align-items:center;">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <a href="/profile.html" title="Edit Profile & DP" id="user-dp-mount" style="text-decoration:none;"></a>
+      <div>
+        <h2 id="welcome" style="margin-bottom:2px;">Welcome back</h2>
+        <div id="user-submeta" class="muted small flex gap-12 flex-wrap" style="align-items:center;"></div>
+      </div>
     </div>
     <div class="flex gap-12">
       <a href="/report-lost.html" class="btn btn-outline btn-sm">+ Report Lost</a>
@@ -66,6 +69,25 @@
   requireLogin();
   const user = getUser();
   document.getElementById('welcome').textContent = `Welcome back, ${user.name.split(' ')[0]}`;
+  const dpMount = document.getElementById('user-dp-mount');
+  if (dpMount) {
+    dpMount.innerHTML = renderUserAvatar(user, user.name, 'md');
+  }
+  const submeta = document.getElementById('user-submeta');
+  if (submeta) {
+    const metaParts = [];
+    if (user.student_id) metaParts.push(`<span>ID: <strong>${escapeHtml(user.student_id)}</strong></span>`);
+    if (user.batch) metaParts.push(`<span>Batch: <strong>${escapeHtml(user.batch)}</strong></span>`);
+    if (user.section) metaParts.push(`<span>Sec: <strong>${escapeHtml(user.section)}</strong></span>`);
+    if (user.phone) metaParts.push(`<span>WA: <strong>${escapeHtml(user.phone)}</strong></span>`);
+    submeta.innerHTML = metaParts.length ? metaParts.join(' &bull; ') : `<span><a href="/profile.html" style="text-decoration:underline;">Complete your student profile</a></span>`;
+  }
+  // Silently refresh current user in background
+  api.get('/auth/me').then(({ user: freshUser }) => {
+    setSession(getToken(), freshUser);
+    if (dpMount) dpMount.innerHTML = renderUserAvatar(freshUser, freshUser.name, 'md');
+  }).catch(() => {});
+
   document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
   document.getElementById('notif-area').innerHTML = notifBellHtml();
   initNotifBell();

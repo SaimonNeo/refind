@@ -146,7 +146,7 @@
     const area = document.getElementById('nav-auth-area');
     const user = getUser();
     if (user) {
-      area.innerHTML = `<a href="/dashboard.html">Dashboard</a>` +
+      area.innerHTML = `<a href="/dashboard.html" style="display:inline-flex; align-items:center; gap:6px;">${renderUserAvatar(user, user.name, 'xs')} Dashboard</a>` +
         (user.role === 'admin' ? ` <a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin</a>` : '') +
         notifBellHtml() +
         ` <a href="#" id="logout-link">Log out</a>`;

@@ -54,7 +54,7 @@
     const area = document.getElementById('nav-auth-area');
     const user = getUser();
     area.innerHTML = user
-      ? `<a href="/dashboard.html">Dashboard</a>${user.role === 'admin' ? ' <a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      ? `<a href="/dashboard.html" style="display:inline-flex; align-items:center; gap:6px;">${renderUserAvatar(user, user.name, 'xs')} Dashboard</a>${user.role === 'admin' ? ' <a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
       : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
     const l = document.getElementById('logout-link');
     if (l) l.addEventListener('click', (e) => { e.preventDefault(); logout(); });
@@ -139,7 +139,13 @@
           <div class="meta-row"><span class="k">Brand</span><span>${escapeHtml(item.brand || '—')}</span></div>
           <div class="meta-row"><span class="k">Location</span><span>${escapeHtml(item.location)}</span></div>
           <div class="meta-row"><span class="k">Reported</span><span>${timeAgo(item.created_at)}</span></div>
-          <div class="meta-row"><span class="k">Reporter</span><span>${escapeHtml(item.reporter_name || 'Anonymous')}</span></div>
+          <div class="meta-row">
+            <span class="k">Reporter</span>
+            <span style="display:inline-flex; align-items:center; gap:8px;">
+              ${item.reporter_avatar ? `<img src="${escapeHtml(item.reporter_avatar)}" alt="${escapeHtml(item.reporter_name || '')}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--line);">` : ''}
+              <span>${escapeHtml(item.reporter_name || 'Anonymous')}${item.reporter_batch ? ` <span class="muted small">(Batch: ${escapeHtml(item.reporter_batch)}${item.reporter_section ? `, Sec: ${escapeHtml(item.reporter_section)}` : ''})</span>` : ''}</span>
+            </span>
+          </div>
           ${item.reporter_phone ? `<div class="meta-row"><span class="k">WhatsApp</span><span><a href="${formatWhatsAppUrl(item.reporter_phone)}" target="_blank" rel="noopener noreferrer" style="color:#25D366; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#25D366;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ${escapeHtml(item.reporter_phone)}</a></span></div>` : ''}
           ${item.storage_location ? `<div class="meta-row"><span class="k">Being kept at</span><span>${escapeHtml(item.storage_location)}</span></div>` : ''}
         </div>

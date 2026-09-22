@@ -84,6 +84,17 @@ function whatsappButtonHtml(rawPhone, message = '', label = 'Chat on WhatsApp', 
   `;
 }
 
+function renderUserAvatar(userOrAvatar, name = '', size = 'sm') {
+  const avatar = typeof userOrAvatar === 'object' && userOrAvatar ? userOrAvatar.avatar : userOrAvatar;
+  const userName = (typeof userOrAvatar === 'object' && userOrAvatar ? userOrAvatar.name : name) || '';
+  const initial = userName.trim() ? userName.trim().charAt(0).toUpperCase() : '?';
+  const esc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  if (avatar) {
+    return `<div class="user-avatar user-avatar-${size}"><img src="${esc(avatar)}" alt="${esc(userName)}'s DP"></div>`;
+  }
+  return `<div class="user-avatar user-avatar-${size}"><span>${esc(initial)}</span></div>`;
+}
+
 // --- Theme Manager (Dark / Light Mode) ---
 function getStoredTheme() {
   const saved = localStorage.getItem('refind-theme');

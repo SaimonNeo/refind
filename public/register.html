@@ -26,6 +26,29 @@
   <div class="card auth-card">
     <div id="alert-area"></div>
     <form id="register-form">
+      <!-- Profile Picture (DP) Upload -->
+      <div class="dp-upload-wrap">
+        <label for="avatar" class="dp-preview-circle" id="dp-preview-btn" title="Click to choose profile picture">
+          <div class="dp-placeholder" id="dp-placeholder">
+            <svg class="ui-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span style="font-size:0.68rem; margin-top:2px; font-weight:600;">Add DP</span>
+          </div>
+          <img id="dp-preview-img" alt="Profile Preview">
+        </label>
+        <div class="dp-upload-meta">
+          <label for="avatar">Profile photo / DP <span class="small muted">(optional)</span></label>
+          <p>Personalize your student identity for campus reports and handover coordination.</p>
+          <input type="file" id="avatar" accept="image/*" style="display:none;">
+          <div class="flex gap-8">
+            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('avatar').click()">Choose Photo</button>
+            <button type="button" class="btn btn-ghost btn-xs" id="remove-dp-btn" style="display:none; color:var(--burgundy);">Remove</button>
+          </div>
+        </div>
+      </div>
+
       <div class="field">
         <label for="name">Full name</label>
         <input type="text" id="name" required placeholder="Jamie Rivera">
@@ -37,6 +60,16 @@
       <div class="field">
         <label for="student_id">Student ID (optional)</label>
         <input type="text" id="student_id" placeholder="e.g. U20231001">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="batch">Batch (optional)</label>
+          <input type="text" id="batch" placeholder="e.g. Batch 58 or 2023">
+        </div>
+        <div class="field">
+          <label for="section">Section (optional)</label>
+          <input type="text" id="section" placeholder="e.g. A, B, or 6A">
+        </div>
       </div>
       <div class="field">
         <label for="phone">WhatsApp / Phone number <span class="small muted">(recommended)</span></label>
@@ -59,18 +92,59 @@
   const alertArea = document.getElementById('alert-area');
   const submitBtn = document.getElementById('submit-btn');
 
+  const avatarInput = document.getElementById('avatar');
+  const previewImg = document.getElementById('dp-preview-img');
+  const placeholder = document.getElementById('dp-placeholder');
+  const removeBtn = document.getElementById('remove-dp-btn');
+
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      previewImg.src = ev.target.result;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      removeBtn.style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeBtn.addEventListener('click', () => {
+    avatarInput.value = '';
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+    removeBtn.style.display = 'none';
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     alertArea.innerHTML = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating account…';
     try {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const student_id = document.getElementById('student_id').value.trim();
+      const fd = new FormData();
+      fd.append('name', document.getElementById('name').value.trim());
+      fd.append('email', document.getElementById('email').value.trim());
+      fd.append('password', document.getElementById('password').value);
+      
+      const studentId = document.getElementById('student_id').value.trim();
+      if (studentId) fd.append('student_id', studentId);
+
+      const batch = document.getElementById('batch').value.trim();
+      if (batch) fd.append('batch', batch);
+
+      const section = document.getElementById('section').value.trim();
+      if (section) fd.append('section', section);
+
       const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('password').value;
-      const data = await api.post('/auth/register', { name, email, phone, student_id, password });
+      if (phone) fd.append('phone', phone);
+
+      const avatarFile = avatarInput.files[0];
+      if (avatarFile) fd.append('avatar', avatarFile);
+
+      const data = await api.post('/auth/register', fd, true);
       setSession(data.token, data.user);
       window.location.href = '/dashboard.html';
     } catch (err) {

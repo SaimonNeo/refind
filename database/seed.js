@@ -30,22 +30,22 @@ async function seedUsers() {
   const adminPw = await bcrypt.hash('admin123', 10);
 
   const students = [
-    { name: 'Amara Osei', email: 'student1@campus.edu', phone: '+1 555 010 1001', student_id: 'U20231001' },
-    { name: 'Liam Chen', email: 'student2@campus.edu', phone: '+1 555 010 1002', student_id: 'U20231002' },
-    { name: 'Priya Nair', email: 'student3@campus.edu', phone: '+1 555 010 1003', student_id: 'U20231003' },
+    { name: 'Amara Osei', email: 'student1@campus.edu', phone: '+1 555 010 1001', student_id: 'U20231001', batch: '2023', section: 'A' },
+    { name: 'Liam Chen', email: 'student2@campus.edu', phone: '+1 555 010 1002', student_id: 'U20231002', batch: '2023', section: 'B' },
+    { name: 'Priya Nair', email: 'student3@campus.edu', phone: '+1 555 010 1003', student_id: 'U20231003', batch: '2024', section: 'A' },
   ];
 
   const studentIds = [];
   for (const s of students) {
     const { lastInsertRowid } = run(
-      `INSERT INTO users (name, email, password, role, phone, student_id) VALUES (?, ?, ?, 'student', ?, ?)`,
-      [s.name, s.email, studentPw, s.phone, s.student_id]
+      `INSERT INTO users (name, email, password, role, phone, student_id, batch, section, avatar) VALUES (?, ?, ?, 'student', ?, ?, ?, ?, null)`,
+      [s.name, s.email, studentPw, s.phone, s.student_id, s.batch, s.section]
     );
     studentIds.push(lastInsertRowid);
   }
 
   const { lastInsertRowid: adminId } = run(
-    `INSERT INTO users (name, email, password, role, phone, student_id) VALUES (?, ?, ?, 'admin', ?, ?)`,
+    `INSERT INTO users (name, email, password, role, phone, student_id, batch, section, avatar) VALUES (?, ?, ?, 'admin', ?, ?, 'Staff', 'Security', null)`,
     ['Admin', 'admin@campus.edu', adminPw, '+1 555 010 9000', 'ADM-2024-01']
   );
 

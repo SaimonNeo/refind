@@ -113,7 +113,7 @@ router.get('/', (req, res) => {
     const orderBy = sort === 'oldest' ? 'i.created_at ASC' : 'i.created_at DESC';
     const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
     const rows = all(
-      `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone
+      `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone, u.avatar as reporter_avatar, u.batch as reporter_batch, u.section as reporter_section
        FROM items i
        JOIN users u ON u.id = i.user_id
        ${where} ORDER BY ${orderBy} LIMIT 200`,
@@ -178,7 +178,7 @@ router.get('/:id/qr.svg', async (req, res) => {
 // GET /api/items/:id
 router.get('/:id', (req, res) => {
   const item = get(
-    `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone
+    `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone, u.avatar as reporter_avatar, u.batch as reporter_batch, u.section as reporter_section
      FROM items i
      JOIN users u ON u.id = i.user_id
      WHERE i.id = ?`,

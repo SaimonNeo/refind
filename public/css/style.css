@@ -1246,3 +1246,107 @@ button, .btn, select, input, textarea, .dash-tab, .pill-btn, .bldg-chip, a {
   }
 }
 
+/* User Avatar & DP Component System */
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--card-warm);
+  color: var(--clay);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  position: relative;
+  user-select: none;
+  box-shadow: var(--shadow-tag);
+}
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.user-avatar-xs { width: 22px; height: 22px; font-size: 0.65rem; }
+.user-avatar-sm { width: 32px; height: 32px; font-size: 0.78rem; }
+.user-avatar-md { width: 46px; height: 46px; font-size: 1rem; }
+.user-avatar-lg { width: 72px; height: 72px; font-size: 1.5rem; }
+.user-avatar-xl { width: 92px; height: 92px; font-size: 2rem; }
+
+/* Interactive DP Upload Component */
+.dp-upload-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--card-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+.dp-preview-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff;
+  border: 2px dashed var(--clay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+.dp-preview-circle:hover {
+  border-color: var(--clay-deep);
+  transform: scale(1.03);
+}
+.dp-preview-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.dp-preview-circle .dp-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--clay);
+  text-align: center;
+}
+.dp-upload-meta {
+  flex: 1;
+}
+.dp-upload-meta label {
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.dp-upload-meta p {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+[data-theme="dark"] .user-avatar {
+  background: #2b2520;
+  color: #eedcc6;
+  border-color: #4a3e30;
+}
+[data-theme="dark"] .dp-upload-wrap {
+  background: rgba(255,255,255,0.03);
+  border-color: #4a3e30;
+}
+[data-theme="dark"] .dp-preview-circle {
+  background: #25201b;
+  border-color: var(--clay);
+}
+
+

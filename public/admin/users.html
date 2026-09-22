@@ -37,7 +37,7 @@
     <div id="loading">Loading…</div>
     <div class="table-wrap" id="table-wrap" style="display:none;">
       <table class="admin-table" id="users-table">
-        <thead><tr><th>Name</th><th>Email</th><th>Student / Staff ID</th><th>Role</th><th>Reports filed</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>User</th><th>Email</th><th>Student / Staff ID</th><th>Batch / Sec</th><th>Role</th><th>Reports filed</th><th>Status</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -61,10 +61,16 @@
       document.getElementById('table-wrap').style.display = 'block';
       table.querySelector('tbody').innerHTML = users.map(u => `
         <tr>
-          <td>${escapeHtml(u.name)}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${renderUserAvatar(u, u.name, 'sm')}
+              <span style="font-weight:600;">${escapeHtml(u.name)}</span>
+            </div>
+          </td>
           <td>${escapeHtml(u.email)}</td>
           <td>${escapeHtml(u.student_id || '—')}</td>
-          <td>${escapeHtml(u.role)}</td>
+          <td>${u.batch ? `${escapeHtml(u.batch)}${u.section ? ` (${escapeHtml(u.section)})` : ''}` : '—'}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'badge-lost' : ''}">${escapeHtml(u.role)}</span></td>
           <td>${u.item_count}</td>
           <td><span class="badge ${u.suspended ? 'badge-lost' : 'badge-found'}">${u.suspended ? 'suspended' : 'active'}</span></td>
           <td>${u.role === 'admin' ? '' : `

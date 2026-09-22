@@ -1,18 +1,51 @@
-// routes/auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
 const { get, run } = require('../database/database');
 const { signToken, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// --- Avatar image upload config ---
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '..', 'uploads'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `avatar-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
+  },
+});
+const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_EXT.has(ext)) return cb(new Error('Unsupported image type. Use JPG, PNG, WEBP, or GIF.'));
+    cb(null, true);
+  },
+});
+
 function publicUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, phone: u.phone, student_id: u.student_id, bio: u.bio, created_at: u.created_at };
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    phone: u.phone,
+    student_id: u.student_id,
+    batch: u.batch,
+    section: u.section,
+    avatar: u.avatar,
+    bio: u.bio,
+    created_at: u.created_at,
+  };
 }
 
-router.post('/register', async (req, res) => {
+router.post('/register', upload.single('avatar'), async (req, res) => {
   try {
-    const { name, email, password, phone, student_id } = req.body || {};
+    const { name, email, password, phone, student_id, batch, section } = req.body || {};
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'name, email and password are required.' });
     }
@@ -26,10 +59,20 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
+    const avatarUrl = req.file ? `/uploads/${req.file.filename}` : null;
     const hash = await bcrypt.hash(password, 10);
     const { lastInsertRowid } = run(
-      `INSERT INTO users (name, email, password, role, phone, student_id) VALUES (?, ?, ?, 'student', ?, ?)`,
-      [String(name).trim(), normalizedEmail, hash, phone || null, student_id || null]
+      `INSERT INTO users (name, email, password, role, phone, student_id, batch, section, avatar) VALUES (?, ?, ?, 'student', ?, ?, ?, ?, ?)`,
+      [
+        String(name).trim(),
+        normalizedEmail,
+        hash,
+        phone ? String(phone).trim() : null,
+        student_id ? String(student_id).trim() : null,
+        batch ? String(batch).trim() : null,
+        section ? String(section).trim() : null,
+        avatarUrl,
+      ]
     );
 
     const user = get('SELECT * FROM users WHERE id = ?', [lastInsertRowid]);
@@ -37,7 +80,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ token, user: publicUser(user) });
   } catch (err) {
     console.error('Register error:', err.message);
-    res.status(500).json({ error: 'Registration failed.' });
+    res.status(500).json({ error: err.message || 'Registration failed.' });
   }
 });
 
@@ -74,16 +117,23 @@ router.get('/me', requireAuth, (req, res) => {
 });
 
 // PATCH /api/auth/me - edit own profile
-router.patch('/me', requireAuth, (req, res) => {
+router.patch('/me', requireAuth, upload.single('avatar'), (req, res) => {
   try {
-    const fields = ['name', 'phone', 'student_id', 'bio'];
+    const fields = ['name', 'phone', 'student_id', 'batch', 'section', 'bio'];
     const updates = [];
     const params = [];
     for (const f of fields) {
-      if (req.body[f] !== undefined) {
+      if (req.body && req.body[f] !== undefined) {
         updates.push(`${f} = ?`);
-        params.push(req.body[f]);
+        params.push(req.body[f] ? String(req.body[f]).trim() : null);
       }
+    }
+    if (req.file) {
+      updates.push('avatar = ?');
+      params.push(`/uploads/${req.file.filename}`);
+    } else if (req.body && req.body.removeAvatar === 'true') {
+      updates.push('avatar = ?');
+      params.push(null);
     }
     if (!updates.length) return res.status(400).json({ error: 'No valid fields to update.' });
     params.push(req.user.id);
@@ -92,7 +142,7 @@ router.patch('/me', requireAuth, (req, res) => {
     res.json({ user: publicUser(user) });
   } catch (err) {
     console.error('Update profile error:', err.message);
-    res.status(500).json({ error: 'Failed to update profile.' });
+    res.status(500).json({ error: err.message || 'Failed to update profile.' });
   }
 });
 

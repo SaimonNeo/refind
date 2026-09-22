@@ -57,7 +57,11 @@ async function apiRequest(path, { method = 'GET', body, isForm = false, keepaliv
 const api = {
   get: (path, opts) => apiRequest(path, { method: 'GET', ...opts }),
   post: (path, body, isForm, opts) => apiRequest(path, { method: 'POST', body, isForm, ...opts }),
-  patch: (path, body, opts) => apiRequest(path, { method: 'PATCH', body, ...opts }),
+  patch: (path, body, isFormOrOpts, opts) => {
+    const isForm = typeof isFormOrOpts === 'boolean' ? isFormOrOpts : false;
+    const extra = typeof isFormOrOpts === 'object' ? isFormOrOpts : (opts || {});
+    return apiRequest(path, { method: 'PATCH', body, isForm, ...extra });
+  },
   del: (path, opts) => apiRequest(path, { method: 'DELETE', ...opts }),
 };
 

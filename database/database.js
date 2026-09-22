@@ -23,7 +23,25 @@ function initSchema() {
   db.exec(schema);
 }
 
+function migrateSchema() {
+  try {
+    const userColumns = db.prepare("PRAGMA table_info(users);").all().map(c => c.name);
+    if (!userColumns.includes('batch')) {
+      db.exec("ALTER TABLE users ADD COLUMN batch TEXT;");
+    }
+    if (!userColumns.includes('section')) {
+      db.exec("ALTER TABLE users ADD COLUMN section TEXT;");
+    }
+    if (!userColumns.includes('avatar')) {
+      db.exec("ALTER TABLE users ADD COLUMN avatar TEXT;");
+    }
+  } catch (err) {
+    console.error('Migration error:', err.message);
+  }
+}
+
 initSchema();
+migrateSchema();
 
 /**
  * Run a query that returns rows (SELECT).

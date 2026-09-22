@@ -39,6 +39,29 @@
   <div class="card profile-card mb-24">
     <div id="profile-alert"></div>
     <form id="profile-form">
+      <!-- Profile Picture (DP) Upload -->
+      <div class="dp-upload-wrap">
+        <label for="avatar" class="dp-preview-circle" id="dp-preview-btn" title="Click to change profile picture">
+          <div class="dp-placeholder" id="dp-placeholder">
+            <svg class="ui-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span style="font-size:0.68rem; margin-top:2px; font-weight:600;">Change DP</span>
+          </div>
+          <img id="dp-preview-img" alt="Profile Picture">
+        </label>
+        <div class="dp-upload-meta">
+          <label for="avatar">Display Picture (DP)</label>
+          <p>Visible to students and administrators across your reports and claims.</p>
+          <input type="file" id="avatar" accept="image/*" style="display:none;">
+          <div class="flex gap-8">
+            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('avatar').click()">Upload New DP</button>
+            <button type="button" class="btn btn-ghost btn-xs" id="remove-dp-btn" style="display:none; color:var(--burgundy);">Remove DP</button>
+          </div>
+        </div>
+      </div>
+
       <div class="field">
         <label for="name">Full name</label>
         <input type="text" id="name" required>
@@ -52,6 +75,16 @@
           <label for="phone">WhatsApp / Phone</label>
           <input type="tel" id="phone" placeholder="e.g. +1 555 123 4567">
           <p class="hint">Your official WhatsApp number used for printable flyers, item reports, and claim handovers.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="batch" id="batch-label">Batch</label>
+          <input type="text" id="batch" placeholder="e.g. Batch 58 or 2023">
+        </div>
+        <div class="field">
+          <label for="section" id="section-label">Section</label>
+          <input type="text" id="section" placeholder="e.g. A, B, or 6A">
         </div>
       </div>
       <div class="field">
@@ -92,13 +125,56 @@
   document.getElementById('notif-area').innerHTML = notifBellHtml();
   initNotifBell();
 
+  const avatarInput = document.getElementById('avatar');
+  const previewImg = document.getElementById('dp-preview-img');
+  const placeholder = document.getElementById('dp-placeholder');
+  const removeBtn = document.getElementById('remove-dp-btn');
+  let removeAvatarFlag = false;
+
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    removeAvatarFlag = false;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      previewImg.src = ev.target.result;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      removeBtn.style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeBtn.addEventListener('click', () => {
+    avatarInput.value = '';
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+    removeBtn.style.display = 'none';
+    removeAvatarFlag = true;
+  });
+
   async function loadProfile() {
     const { user } = await api.get('/auth/me');
     document.getElementById('name').value = user.name;
     document.getElementById('student_id').value = user.student_id || '';
+    document.getElementById('batch').value = user.batch || '';
+    document.getElementById('section').value = user.section || '';
     document.getElementById('phone').value = user.phone || '';
     document.getElementById('email').value = user.email;
     document.getElementById('bio').value = user.bio || '';
+
+    if (user.avatar) {
+      previewImg.src = user.avatar;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      removeBtn.style.display = 'inline-block';
+    } else {
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+      placeholder.style.display = 'flex';
+      removeBtn.style.display = 'none';
+    }
 
     const isAdmin = user.role === 'admin';
     const roleBadge = document.getElementById('role-badge');
@@ -142,15 +218,26 @@
     btn.disabled = true;
     btn.textContent = 'Saving…';
     try {
-      const { user } = await api.patch('/auth/me', {
-        name: document.getElementById('name').value.trim(),
-        student_id: document.getElementById('student_id').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        bio: document.getElementById('bio').value.trim(),
-      });
+      const fd = new FormData();
+      fd.append('name', document.getElementById('name').value.trim());
+      fd.append('student_id', document.getElementById('student_id').value.trim());
+      fd.append('batch', document.getElementById('batch').value.trim());
+      fd.append('section', document.getElementById('section').value.trim());
+      fd.append('phone', document.getElementById('phone').value.trim());
+      fd.append('bio', document.getElementById('bio').value.trim());
+
+      if (avatarInput.files[0]) {
+        fd.append('avatar', avatarInput.files[0]);
+      } else if (removeAvatarFlag) {
+        fd.append('removeAvatar', 'true');
+      }
+
+      const { user } = await api.patch('/auth/me', fd, true);
       const stored = getUser();
       setSession(getToken(), { ...stored, ...user });
       toast('Profile updated.');
+      removeAvatarFlag = false;
+      avatarInput.value = '';
     } catch (err) {
       document.getElementById('profile-alert').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
     } finally {

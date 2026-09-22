@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'admin')),
   phone TEXT,
   student_id TEXT,
+  batch TEXT,
+  section TEXT,
+  avatar TEXT,
   bio TEXT,
   suspended INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
