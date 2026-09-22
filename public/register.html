@@ -28,6 +28,7 @@
     <form id="register-form">
       <!-- Profile Picture (DP) Upload -->
       <div class="dp-upload-wrap">
+        <input type="file" id="avatar" name="avatar" accept="image/*" style="display:none;">
         <label for="avatar" class="dp-preview-circle" id="dp-preview-btn" title="Click to choose profile picture">
           <div class="dp-placeholder" id="dp-placeholder">
             <svg class="ui-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -42,7 +43,7 @@
           <label for="avatar">Profile photo / DP <span class="small muted">(optional)</span></label>
           <p>Personalize your student identity for campus reports and handover coordination.</p>
           <div class="flex gap-8 items-center flex-wrap" style="margin-top:6px;">
-            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('avatar').click()">Upload Photo</button>
+            <button type="button" class="btn btn-outline btn-xs" id="upload-photo-btn" onclick="document.getElementById('avatar').click()">Upload Photo</button>
             <button type="button" class="btn btn-ghost btn-xs" id="pick-male-btn" title="Use Male student DP" style="display:inline-flex; align-items:center; gap:5px; font-weight:500;">
               <img src="/img/avatars/male.svg" style="width:18px; height:18px; border-radius:50%;"> Male DP
             </button>
@@ -103,6 +104,23 @@
   const removeBtn = document.getElementById('remove-dp-btn');
 
   let selectedDefaultAvatar = null;
+
+  const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+  if (uploadPhotoBtn) {
+    uploadPhotoBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (avatarInput) avatarInput.click();
+    });
+  }
+
+  const dpPreviewBtn = document.getElementById('dp-preview-btn');
+  if (dpPreviewBtn) {
+    dpPreviewBtn.addEventListener('click', (e) => {
+      if (e.target !== avatarInput && avatarInput) {
+        avatarInput.click();
+      }
+    });
+  }
 
   document.getElementById('pick-male-btn').addEventListener('click', () => {
     avatarInput.value = '';
