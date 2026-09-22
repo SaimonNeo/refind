@@ -68,7 +68,15 @@
       table.querySelector('tbody').innerHTML = items.map(i => `
         <tr>
           <td><a href="/item.html?id=${i.id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(i.title)}</a></td>
-          <td>${escapeHtml(i.reporter_name)}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${renderUserAvatar(i.reporter_avatar, i.reporter_name, 'xs')}
+              <div>
+                <div style="font-weight:600; font-size:0.86rem;">${escapeHtml(i.reporter_name || '—')}</div>
+                <div class="muted small">${escapeHtml(i.reporter_batch ? `Batch ${i.reporter_batch}${i.reporter_section ? ` (${i.reporter_section})` : ''}` : '')}</div>
+              </div>
+            </div>
+          </td>
           <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
           <td>${timeAgo(i.created_at)}</td>
           <td>

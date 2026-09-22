@@ -35,6 +35,14 @@ function migrateSchema() {
     if (!userColumns.includes('avatar')) {
       db.exec("ALTER TABLE users ADD COLUMN avatar TEXT;");
     }
+
+    // Backfill standard demo users with default avatars, batch, and section if missing
+    db.exec(`
+      UPDATE users SET batch = '2023', section = 'A', avatar = '/img/avatars/amara.svg' WHERE email = 'student1@campus.edu' AND (avatar IS NULL OR batch IS NULL);
+      UPDATE users SET batch = '2023', section = 'B', avatar = '/img/avatars/liam.svg' WHERE email = 'student2@campus.edu' AND (avatar IS NULL OR batch IS NULL);
+      UPDATE users SET batch = '2024', section = 'A', avatar = '/img/avatars/priya.svg' WHERE email = 'student3@campus.edu' AND (avatar IS NULL OR batch IS NULL);
+      UPDATE users SET batch = 'Staff', section = 'Security', avatar = '/img/avatars/admin.svg' WHERE email = 'admin@campus.edu' AND (avatar IS NULL OR batch IS NULL);
+    `);
   } catch (err) {
     console.error('Migration error:', err.message);
   }

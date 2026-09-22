@@ -18,7 +18,12 @@ router.get('/dashboard', (req, res) => {
   const pendingClaims = get(`SELECT COUNT(*) as n FROM claims WHERE status IN ('pending', 'manual_review')`).n;
   const rejectedClaims = get(`SELECT COUNT(*) as n FROM claims WHERE status = 'rejected'`).n;
   const activeMatches = get(`SELECT COUNT(*) as n FROM matches WHERE score >= 60`).n;
-  const recentItems = all(`SELECT * FROM items ORDER BY created_at DESC LIMIT 8`);
+  const recentItems = all(
+    `SELECT i.*, u.name as reporter_name, u.avatar as reporter_avatar, u.batch as reporter_batch, u.section as reporter_section
+     FROM items i
+     JOIN users u ON u.id = i.user_id
+     ORDER BY i.created_at DESC LIMIT 8`
+  );
   const highPriority = all(
     `SELECT m.*,
             li.id as lost_id, li.title as lost_title, li.category as lost_category,
@@ -176,7 +181,12 @@ router.patch('/claims/:id', (req, res) => {
 // ---- Items ----
 
 router.get('/items', (req, res) => {
-  const items = all(`SELECT * FROM items ORDER BY created_at DESC LIMIT 500`);
+  const items = all(
+    `SELECT i.*, u.name as reporter_name, u.avatar as reporter_avatar, u.batch as reporter_batch, u.section as reporter_section
+     FROM items i
+     JOIN users u ON u.id = i.user_id
+     ORDER BY i.created_at DESC LIMIT 500`
+  );
   res.json({ items });
 });
 
@@ -192,7 +202,7 @@ router.delete('/items/:id', (req, res) => {
 // GET /api/admin/recovered - items marked resolved/claimed, for the recovery register
 router.get('/recovered', (req, res) => {
   const items = all(
-    `SELECT i.*, u.name as reporter_name FROM items i
+    `SELECT i.*, u.name as reporter_name, u.avatar as reporter_avatar, u.batch as reporter_batch, u.section as reporter_section FROM items i
      JOIN users u ON u.id = i.user_id
      WHERE i.status IN ('claimed', 'resolved')
      ORDER BY i.created_at DESC`

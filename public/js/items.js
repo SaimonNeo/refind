@@ -35,6 +35,21 @@ function itemCardHtml(item) {
   const img = item.image
     ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">`
     : `<span>No photo</span>`;
+  
+  const reporterAvatar = (typeof renderUserAvatar === 'function')
+    ? renderUserAvatar(item.reporter_avatar, item.reporter_name || 'Student', 'xs')
+    : `<span class="user-avatar user-avatar-xs user-avatar-initial">${escapeHtml((item.reporter_name || 'S').charAt(0).toUpperCase())}</span>`;
+
+  const reporterMeta = item.reporter_name ? `
+    <div class="item-card-reporter" style="display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--muted);">
+      ${reporterAvatar}
+      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; color:var(--text);">
+        ${escapeHtml(item.reporter_name)}
+        ${item.reporter_batch ? `<span style="font-size:0.75rem; font-weight:400; color:var(--muted); margin-left:4px;">(Batch ${escapeHtml(item.reporter_batch)}${item.reporter_section ? ` · Sec ${escapeHtml(item.reporter_section)}` : ''})</span>` : ''}
+      </span>
+    </div>
+  ` : '';
+
   return `
     <a href="/item.html?id=${item.id}" class="item-card">
       <div class="item-card-img">${img}</div>
@@ -46,10 +61,10 @@ function itemCardHtml(item) {
         <h3 class="item-card-title">${escapeHtml(item.title)}</h3>
         <div class="item-card-meta">
           <span>${escapeHtml(item.category)}</span>
-          
           <span>${escapeHtml(item.location)}</span>
         </div>
         <div class="item-card-meta"><span>${timeAgo(item.created_at)}</span></div>
+        ${reporterMeta}
       </div>
     </a>
   `;

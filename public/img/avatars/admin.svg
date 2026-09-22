@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-admin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="gold-admin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="60" fill="url(#bg-admin)"/>
+  <!-- Outer gold crest ring -->
+  <circle cx="60" cy="60" r="50" fill="none" stroke="url(#gold-admin)" stroke-width="2.5" stroke-dasharray="6 3"/>
+  <!-- Campus Security Shield -->
+  <path d="M60 25 L88 36 C 88 64, 76 86, 60 95 C 44 86, 32 64, 32 36 Z" fill="#334155" stroke="url(#gold-admin)" stroke-width="3"/>
+  <!-- Shield inner accent -->
+  <path d="M60 30 L83 40 C 83 63, 73 82, 60 89 C 47 82, 37 63, 37 40 Z" fill="#1E293B"/>
+  <!-- Campus Key / Star Insignia -->
+  <polygon points="60,42 63.5,52 74,52 65.5,58.5 69,69 60,62.5 51,69 54.5,58.5 46,52 56.5,52" fill="url(#gold-admin)"/>
+  <!-- Banner text / accent -->
+  <rect x="42" y="74" width="36" height="7" rx="3.5" fill="url(#gold-admin)"/>
+</svg>

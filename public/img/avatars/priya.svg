@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-priya" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+    <linearGradient id="skin-priya" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D99B6A"/>
+      <stop offset="100%" stop-color="#B87342"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="60" fill="url(#bg-priya)"/>
+  <!-- Long hair backdrop -->
+  <path d="M34 50 C 30 70, 32 95, 36 108 L 84 108 C 88 95, 90 70, 86 50 Z" fill="#1C1917"/>
+  <!-- Shoulders & Outfit -->
+  <path d="M22 110 C 24 88, 42 82, 60 82 C 78 82, 96 88, 98 110 Z" fill="#0D9488"/>
+  <!-- Neck -->
+  <rect x="52" y="68" width="16" height="18" rx="4" fill="url(#skin-priya)"/>
+  <path d="M50 82 C 55 90, 65 90, 70 82 Z" fill="#0F766E"/>
+  <!-- Face -->
+  <ellipse cx="60" cy="56" rx="20" ry="24" fill="url(#skin-priya)"/>
+  <!-- Front Hair Waves -->
+  <path d="M38 48 C 38 30, 48 24, 60 24 C 72 24, 82 30, 82 48 C 76 34, 66 32, 60 38 C 54 32, 44 34, 38 48 Z" fill="#1C1917"/>
+  <path d="M37 46 C 36 58, 41 68, 42 74 C 40 68, 39 58, 40 48 Z" fill="#1C1917"/>
+  <path d="M83 46 C 84 58, 79 68, 78 74 C 80 68, 81 58, 80 48 Z" fill="#1C1917"/>
+  <!-- Bindi -->
+  <circle cx="60" cy="46" r="1.5" fill="#EF4444"/>
+  <!-- Eyes -->
+  <ellipse cx="52" cy="54" rx="2.6" ry="3.2" fill="#1C1917"/>
+  <ellipse cx="68" cy="54" rx="2.6" ry="3.2" fill="#1C1917"/>
+  <circle cx="53" cy="53" r="0.9" fill="#FFF"/>
+  <circle cx="69" cy="53" r="0.9" fill="#FFF"/>
+  <!-- Eyebrows -->
+  <path d="M47 48 C 50 46, 55 46, 56 48" stroke="#1C1917" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M64 48 C 65 46, 70 46, 73 48" stroke="#1C1917" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <!-- Nose -->
+  <path d="M58 58 C 59 62, 61 62, 62 58" stroke="#8A4A20" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- Smile -->
+  <path d="M53 66 C 56 71, 64 71, 67 66" stroke="#FFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M52 66 C 56 72, 64 72, 68 66" stroke="#991B1B" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+  <!-- Earrings -->
+  <circle cx="37" cy="62" r="3.2" fill="#FBBF24" stroke="#D97706" stroke-width="0.8"/>
+  <circle cx="83" cy="62" r="3.2" fill="#FBBF24" stroke="#D97706" stroke-width="0.8"/>
+</svg>

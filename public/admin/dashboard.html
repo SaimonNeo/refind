@@ -59,7 +59,7 @@
       <div class="panel">
         <h3>Recent reports</h3>
         <table class="admin-table" id="recent-table">
-          <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th style="width:160px;">Action</th></tr></thead>
+          <thead><tr><th>Title</th><th>Type</th><th>Reporter</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th style="width:160px;">Action</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -150,6 +150,15 @@
         <tr>
           <td><a href="/item.html?id=${i.id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(i.title)}</a></td>
           <td><span class="badge ${i.type === 'lost' ? 'badge-lost' : 'badge-found'}">${i.type}</span></td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${renderUserAvatar(i.reporter_avatar, i.reporter_name, 'xs')}
+              <div>
+                <div style="font-weight:600; font-size:0.84rem;">${escapeHtml(i.reporter_name || '—')}</div>
+                <div class="muted small">${escapeHtml(i.reporter_batch ? `Batch ${i.reporter_batch}${i.reporter_section ? ` (${i.reporter_section})` : ''}` : '')}</div>
+              </div>
+            </div>
+          </td>
           <td>${escapeHtml(i.category)}</td>
           <td>${escapeHtml(i.location)}</td>
           <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
