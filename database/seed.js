@@ -302,6 +302,23 @@ async function seedClaims({ studentIds }) {
   console.log(`  Created ${claimCount} claims.`);
 }
 
+async function seedIfEmpty() {
+  try {
+    const userCount = get('SELECT COUNT(*) as n FROM users')?.n || 0;
+    if (userCount > 0) return false;
+    console.log('Database is empty. Automatically populating default demo accounts and items...');
+    const { studentIds, adminId } = await seedUsers();
+    const { lostIds, foundIds } = await seedItems({ studentIds });
+    await seedMatches();
+    await seedClaims({ studentIds });
+    console.log(`Auto-seeded ${studentIds.length} students, 1 admin, and ${lostIds.length + foundIds.length} items.`);
+    return true;
+  } catch (err) {
+    console.error('Auto-seed check failed:', err.message);
+    return false;
+  }
+}
+
 async function main() {
   console.log('Seeding ReFind demo data...');
   console.log('1/4 Clearing existing data...');
@@ -327,7 +344,11 @@ async function main() {
   process.exit(0);
 }
 
-main().catch((err) => {
-  console.error('Seed failed:', err);
-  process.exit(1);
-});
+module.exports = { seedIfEmpty, seedUsers, seedItems, seedMatches, seedClaims, main };
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Seed failed:', err);
+    process.exit(1);
+  });
+}

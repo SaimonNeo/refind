@@ -92,9 +92,16 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong on the server.' });
 });
 
-app.listen(PORT, () => {
+const { seedIfEmpty } = require('./database/seed');
+
+app.listen(PORT, async () => {
   console.log(`ReFind server running at http://localhost:${PORT}`);
   console.log(`AI provider: ${process.env.AI_PROVIDER || 'gemini'} (${process.env.GEMINI_API_KEY ? 'configured' : 'NOT configured — using deterministic fallback'})`);
+  try {
+    await seedIfEmpty();
+  } catch (err) {
+    console.error('Auto-seed check failed:', err.message);
+  }
 });
 
 module.exports = app;
