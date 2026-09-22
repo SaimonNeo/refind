@@ -7,14 +7,21 @@ function getToken() {
   return localStorage.getItem('refind_token');
 }
 
-function setSession(token, user) {
+function setSession(token, user, isLogin = false) {
+  const previousToken = localStorage.getItem('refind_token');
   localStorage.setItem('refind_token', token);
   localStorage.setItem('refind_user', JSON.stringify(user));
+  if (isLogin || (token && token !== previousToken)) {
+    sessionStorage.setItem('refind_just_logged_in', 'true');
+    sessionStorage.removeItem('refind_pre_notif_played');
+  }
 }
 
 function clearSession() {
   localStorage.removeItem('refind_token');
   localStorage.removeItem('refind_user');
+  sessionStorage.removeItem('refind_just_logged_in');
+  sessionStorage.removeItem('refind_pre_notif_played');
 }
 
 function getUser() {

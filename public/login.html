@@ -59,7 +59,7 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const data = await api.post('/auth/login', { email, password });
-      setSession(data.token, data.user);
+      setSession(data.token, data.user, true);
       window.location.href = data.user.role === 'admin' ? '/admin/dashboard.html' : '/dashboard.html';
     } catch (err) {
       alertArea.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
