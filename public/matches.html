@@ -101,8 +101,9 @@
           <p class="small mb-8">${escapeHtml(m.explanation || '')}</p>
           ${features ? `<ul class="small">${features}</ul>` : ''}
         </details>
-        <div class="mt-16">
+        <div class="mt-16 flex gap-8 flex-wrap">
           <a href="/item.html?id=${counterpartId}" class="btn btn-outline btn-sm">View item</a>
+          ${counterpartType === 'found' ? `<a href="/claim.html?itemId=${counterpartId}" class="btn btn-primary btn-sm">Claim this item →</a>` : ''}
         </div>
       </div>
     `;
