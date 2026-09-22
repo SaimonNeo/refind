@@ -582,6 +582,7 @@ function initNotifBell() {
     soundBtn.innerHTML = enabled ? NOTIF_SOUND_ON_SVG : NOTIF_SOUND_OFF_SVG;
     soundBtn.title = enabled ? 'Mute notification sound (Currently on)' : 'Unmute notification sound (Currently muted)';
     soundBtn.setAttribute('aria-label', enabled ? 'Mute notification sound' : 'Unmute notification sound');
+    soundBtn.classList.toggle('muted', !enabled);
   }
 
   updateSoundBtn();

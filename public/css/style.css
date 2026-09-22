@@ -137,8 +137,9 @@ img { max-width: 100%; display: block; }
   font-size: 0.88rem;
   line-height: 1;
   border-radius: 4px;
-  opacity: 0.8;
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  color: var(--ink);
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.12s ease, color 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -146,6 +147,10 @@ img { max-width: 100%; display: block; }
 .notif-sound-btn:hover {
   opacity: 1;
   transform: scale(1.15);
+  color: var(--clay);
+}
+.notif-sound-btn svg {
+  stroke: currentColor;
 }
 
 
@@ -784,6 +789,7 @@ button, .btn, select, input, textarea, .dash-tab, .pill-btn, .bldg-chip, a {
    earthy character without harsh blue light.
    ============================================================ */
 [data-theme="dark"] {
+  color-scheme: dark;
   --ink: #f0ebe1;
   --ink-soft: #a89f91;
   --paper: #161513;
@@ -818,6 +824,21 @@ button, .btn, select, input, textarea, .dash-tab, .pill-btn, .bldg-chip, a {
   background: #191715;
   color: var(--ink);
   border-color: var(--line);
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.2);
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  filter: invert(1) brightness(1.5);
 }
 
 [data-theme="dark"] input:focus,
@@ -902,6 +923,32 @@ button, .btn, select, input, textarea, .dash-tab, .pill-btn, .bldg-chip, a {
 }
 [data-theme="dark"] .notif-panel-head {
   background: #181614;
+}
+[data-theme="dark"] .notif-sound-btn {
+  color: #ffffff;
+  opacity: 0.9;
+}
+[data-theme="dark"] .notif-sound-btn:hover {
+  color: #ffffff;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+}
+[data-theme="dark"] .notif-sound-btn svg {
+  stroke: #ffffff;
+}
+[data-theme="dark"] .notif-sound-btn.muted {
+  color: #c9c2b5;
+  opacity: 0.75;
+}
+[data-theme="dark"] .notif-sound-btn.muted svg {
+  stroke: currentColor;
+}
+[data-theme="dark"] .notif-sound-btn.muted:hover {
+  color: #ffffff;
+  opacity: 1;
+}
+[data-theme="dark"] .notif-sound-btn.muted:hover svg {
+  stroke: #ffffff;
 }
 [data-theme="dark"] .notif-tabs {
   background: #151412;
