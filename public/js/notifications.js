@@ -2,6 +2,9 @@
 // Enhanced notification center: category badges, "All" vs "Unread" tabs,
 // inline delete/clear actions, audio chime, and real-time floating toast notifications.
 
+const NOTIF_SOUND_ON_SVG = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+const NOTIF_SOUND_OFF_SVG = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+
 function notifBellHtml() {
   return `
     <span class="notif-wrap">
@@ -16,7 +19,7 @@ function notifBellHtml() {
             Notifications
           </span>
           <div class="notif-panel-actions">
-            <button type="button" class="notif-sound-btn" id="notif-sound-btn" title="Mute alert sounds" aria-label="Toggle notification sound">🔊</button>
+            <button type="button" class="notif-sound-btn" id="notif-sound-btn" title="Toggle notification sound" aria-label="Toggle notification sound">${NOTIF_SOUND_ON_SVG}</button>
             <span style="color:var(--line); font-size: 0.72rem;">•</span>
             <a href="#" id="notif-mark-all" title="Mark all notifications as read">Mark read</a>
             <span style="color:var(--line); font-size: 0.72rem;">•</span>
@@ -28,7 +31,7 @@ function notifBellHtml() {
           <button class="notif-tab" data-tab="unread" id="notif-tab-unread">Unread <span class="notif-tab-badge" id="notif-count-unread">0</span></button>
         </div>
         <div class="notif-list-container">
-          <div id="notif-list"><div class="notif-empty"><div class="notif-empty-icon">⏳</div><div>Loading…</div></div></div>
+          <div id="notif-list"><div class="notif-empty"><div class="notif-empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div>Loading…</div></div></div>
         </div>
       </div>
     </span>
@@ -39,7 +42,7 @@ function getNotificationMeta(type) {
   switch (type) {
     case 'match':
       return {
-        icon: '🎯',
+        icon: `<svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
         iconClass: 'type-match',
         tagClass: 'tag-match',
         label: 'Match Found'
@@ -47,28 +50,28 @@ function getNotificationMeta(type) {
     case 'claim_status':
     case 'claim':
       return {
-        icon: '📋',
+        icon: `<svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
         iconClass: 'type-claim',
         tagClass: 'tag-claim',
         label: 'Claim Update'
       };
     case 'recovery':
       return {
-        icon: '🤝',
+        icon: `<svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
         iconClass: 'type-recovery',
         tagClass: 'tag-recovery',
         label: 'Recovered'
       };
     case 'admin_decision':
       return {
-        icon: '🛡️',
+        icon: `<svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
         iconClass: 'type-admin',
         tagClass: 'tag-admin',
         label: 'Admin Notice'
       };
     default:
       return {
-        icon: '🔔',
+        icon: `<svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
         iconClass: 'type-default',
         tagClass: 'tag-default',
         label: 'Notice'
@@ -267,14 +270,14 @@ function initNotifBell() {
       if (unreadOnly) {
         list.innerHTML = `
           <div class="notif-empty">
-            <div class="notif-empty-icon">🎉</div>
+            <div class="notif-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
             <div><strong>All caught up!</strong><br><span style="font-size:0.8rem;">No unread notifications right now.</span></div>
           </div>
         `;
       } else {
         list.innerHTML = `
           <div class="notif-empty">
-            <div class="notif-empty-icon">📭</div>
+            <div class="notif-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
             <div><strong>No notifications yet</strong><br><span style="font-size:0.8rem;">Updates on matches, claims, and handovers will appear here.</span></div>
           </div>
         `;
@@ -548,7 +551,7 @@ function initNotifBell() {
   function updateSoundBtn() {
     if (!soundBtn) return;
     const enabled = isNotificationSoundEnabled();
-    soundBtn.textContent = enabled ? '🔊' : '🔇';
+    soundBtn.innerHTML = enabled ? NOTIF_SOUND_ON_SVG : NOTIF_SOUND_OFF_SVG;
     soundBtn.title = enabled ? 'Mute notification sound (Currently on)' : 'Unmute notification sound (Currently muted)';
     soundBtn.setAttribute('aria-label', enabled ? 'Mute notification sound' : 'Unmute notification sound');
   }

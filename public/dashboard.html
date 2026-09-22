@@ -26,7 +26,7 @@
 <div class="container section-tight">
   <div class="admin-context-bar mb-20" id="admin-banner" style="display:none;">
     <div class="flex gap-8" style="align-items:center;">
-      <strong>🛡️ Administrator Access:</strong>
+      <strong><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Administrator Access:</strong>
       <span>You have staff privileges to oversee reports, approve claims, and review matches.</span>
     </div>
     <div class="flex gap-8">
@@ -72,7 +72,7 @@
 
   if (user && user.role === 'admin') {
     const adminNav = document.getElementById('admin-nav-item');
-    if (adminNav) adminNav.innerHTML = `<a href="/admin/dashboard.html" class="nav-admin-badge">🛡️ Admin Panel</a>`;
+    if (adminNav) adminNav.innerHTML = `<a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin Panel</a>`;
     const adminBanner = document.getElementById('admin-banner');
     if (adminBanner) adminBanner.style.display = 'flex';
   }
@@ -156,8 +156,8 @@
           <div class="item-card-meta"><span>${escapeHtml(item.category)}</span><span>${escapeHtml(item.location)}</span></div>
           <div class="flex gap-8 mt-8 flex-wrap">
             <a href="/item.html?id=${item.id}&from=dashboard&tab=${activeTab}" class="btn btn-ghost btn-sm">View</a>
-            <a href="/flyer.html?id=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-ghost btn-sm">🖨️ Flyer</a>
-            ${(item.status === 'claimed' || item.status === 'resolved') ? `<a href="/receipt.html?itemId=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-outline btn-sm">📄 Receipt</a>` : ''}
+            <a href="/flyer.html?id=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-ghost btn-sm"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Flyer</a>
+            ${(item.status === 'claimed' || item.status === 'resolved') ? `<a href="/receipt.html?itemId=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-outline btn-sm"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Receipt</a>` : ''}
             <a href="${matchLink}" class="btn btn-outline btn-sm">Matches</a>
             ${canManage ? `<a href="${editLink}" class="btn btn-ghost btn-sm">Edit</a>` : ''}
             ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="withdrawItem(${item.id})">Withdraw</button>` : ''}
@@ -205,7 +205,7 @@
         <div class="flex gap-8 flex-wrap" style="align-items:center;">
           <span class="badge ${statusClass}">${c.status.replace('_', ' ')}</span>
           ${waFinderBtn}
-          ${(c.status === 'approved' || c.claimant_confirmed) ? `<a href="/receipt.html?claimId=${c.id}&from=dashboard&tab=claims" target="_blank" class="btn btn-outline btn-sm">📄 Receipt</a>` : ''}
+          ${(c.status === 'approved' || c.claimant_confirmed) ? `<a href="/receipt.html?claimId=${c.id}&from=dashboard&tab=claims" target="_blank" class="btn btn-outline btn-sm"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Receipt</a>` : ''}
           ${showConfirm ? `<button class="btn btn-moss btn-sm" onclick="confirmReceipt(${c.id})">I got it</button>` : ''}
           ${c.claimant_confirmed ? `<span class="small muted">Confirmed received</span>` : ''}
         </div>

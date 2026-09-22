@@ -111,7 +111,7 @@
       <p class="muted" style="margin-bottom:0;">Explore where lost and found items are clustered across campus.</p>
     </div>
     <div class="flex gap-12 flex-wrap map-header-actions">
-      <a href="/browse.html" class="btn btn-outline btn-sm">📋 List View</a>
+      <a href="/browse.html" class="btn btn-outline btn-sm"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> List View</a>
       <a href="/report-lost.html" class="btn btn-outline btn-sm">+ Report Lost</a>
       <a href="/report-found.html" class="btn btn-clay btn-sm">+ Report Found</a>
     </div>
@@ -152,7 +152,7 @@
     const area = document.getElementById('nav-auth-area');
     const user = getUser();
     area.innerHTML = user
-      ? `<a href="/dashboard.html">Dashboard</a> ${user.role === 'admin' ? '<a href="/admin/dashboard.html">Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      ? `<a href="/dashboard.html">Dashboard</a> ${user.role === 'admin' ? '<a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
       : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
     const logoutLink = document.getElementById('logout-link');
     if (logoutLink) logoutLink.addEventListener('click', (e) => { e.preventDefault(); logout(); });
@@ -174,7 +174,7 @@
 
   function resetDrawer() {
     activeBuilding = null;
-    document.getElementById('drawer-bldg-name').textContent = '📍 Campus Overview';
+    document.getElementById('drawer-bldg-name').innerHTML = '<svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--clay);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Campus Overview';
     document.getElementById('drawer-bldg-desc').textContent = 'Select any building above on the map to see active reports logged at that location.';
     document.getElementById('drawer-actions').style.display = 'none';
     document.getElementById('drawer-loading').style.display = 'none';
@@ -184,7 +184,7 @@
 
   async function loadBuildingItems(bldgName) {
     activeBuilding = bldgName;
-    document.getElementById('drawer-bldg-name').textContent = `📍 ${bldgName}`;
+    document.getElementById('drawer-bldg-name').innerHTML = `<svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--clay);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${escapeHtml(bldgName)}`;
     document.getElementById('drawer-bldg-desc').textContent = `Showing active reports logged at ${bldgName}.`;
     
     const actions = document.getElementById('drawer-actions');
@@ -214,7 +214,7 @@
       grid.innerHTML = items.map(item => `
         <div class="item-card">
           <div class="item-card-img">
-            ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">` : `<span>📦 ${escapeHtml(item.category)}</span>`}
+            ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">` : `<span style="display:inline-flex; align-items:center; gap:6px;"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> ${escapeHtml(item.category)}</span>`}
           </div>
           <div class="item-card-body">
             <div class="item-card-top">
@@ -228,7 +228,7 @@
             </div>
             <div class="flex gap-8 mt-12">
               <a href="/item.html?id=${item.id}" class="btn btn-outline btn-sm">View</a>
-              <a href="/flyer.html?id=${item.id}&returnUrl=/map.html" target="_blank" class="btn btn-ghost btn-sm">🖨️ Flyer</a>
+              <a href="/flyer.html?id=${item.id}&returnUrl=/map.html" target="_blank" class="btn btn-ghost btn-sm"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Flyer</a>
             </div>
           </div>
         </div>

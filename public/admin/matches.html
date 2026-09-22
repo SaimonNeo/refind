@@ -123,12 +123,12 @@
         
         // Lost party contact
         const lostPhone = m.lost_user_phone;
-        const lostCallBtn = lostPhone ? `<a href="tel:${lostPhone}" class="btn-call">📞 Call (${lostPhone})</a>` : '';
+        const lostCallBtn = lostPhone ? `<a href="tel:${lostPhone}" class="btn-call"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Call (${lostPhone})</a>` : '';
         const lostWaBtn = lostPhone ? whatsappButtonHtml(lostPhone, `Hello ${m.lost_user_name}, this is the campus Lost & Found desk. A potential match (${score}%) was turned in for your lost item: "${m.lost_title}".`, 'WhatsApp', 'btn-xs') : '';
 
         // Found party contact
         const foundPhone = m.found_user_phone;
-        const foundCallBtn = foundPhone ? `<a href="tel:${foundPhone}" class="btn-call">📞 Call (${foundPhone})</a>` : '';
+        const foundCallBtn = foundPhone ? `<a href="tel:${foundPhone}" class="btn-call"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Call (${foundPhone})</a>` : '';
         const foundWaBtn = foundPhone ? whatsappButtonHtml(foundPhone, `Hello ${m.found_user_name}, this is the campus Lost & Found desk regarding the item you turned in ("${m.found_title}"). An owner has reported a matching item (${score}%).`, 'WhatsApp', 'btn-xs') : '';
 
         return `
@@ -169,7 +169,7 @@
 
             <td>
               <div class="flex flex-col gap-6">
-                <button class="btn btn-primary btn-xs" onclick="notifyBoth(${m.id})">🔔 Notify Both</button>
+                <button class="btn btn-primary btn-xs" onclick="notifyBoth(${m.id})"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notify Both</button>
                 <a href="/matches.html?lostItemId=${m.lost_item_id}&from=admin" target="_blank" class="btn btn-outline btn-xs">View Full Details</a>
                 <div class="flex gap-4 flex-wrap">
                   <a href="/flyer.html?id=${m.lost_item_id}&from=admin&returnUrl=/admin/matches.html" target="_blank" class="btn btn-ghost btn-xs" title="Print lost flyer">Lost Flyer</a>

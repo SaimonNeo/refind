@@ -539,6 +539,34 @@ button, .btn, select, input, textarea, .dash-tab, .pill-btn, .bldg-chip, a {
 }
 
 /* ============================================================
+   Polished UI Vector Icons
+   ============================================================ */
+.ui-icon {
+  display: inline-block;
+  vertical-align: -0.16em;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+.btn .ui-icon, .btn-xs .ui-icon, .btn-sm .ui-icon, .btn-call .ui-icon {
+  margin-right: 5px;
+  vertical-align: -0.18em;
+}
+.nav-admin-badge .ui-icon {
+  margin-right: 4px;
+  vertical-align: -0.15em;
+}
+.admin-context-bar .ui-icon {
+  margin-right: 5px;
+  vertical-align: -0.18em;
+}
+
+/* ============================================================
    Responsive Breakpoints
    ============================================================ */
 

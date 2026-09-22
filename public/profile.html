@@ -21,7 +21,7 @@
   <div class="nav-inner">
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
-      <span id="admin-panel-link" style="display:none;"><a href="/admin/dashboard.html">Admin panel</a></span>
+      <span id="admin-panel-link" style="display:none;"><a href="/admin/dashboard.html" class="nav-admin-badge"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin panel</a></span>
       <a href="/dashboard.html" id="dash-link">Dashboard</a>
       <span id="notif-area"></span>
       <a href="#" id="logout-link">Log out</a>
@@ -111,7 +111,7 @@
     const adminLink = document.getElementById('admin-panel-link');
 
     if (isAdmin) {
-      roleBadge.textContent = 'Administrator';
+      roleBadge.innerHTML = '<svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Administrator';
       roleBadge.className = 'badge badge-lost';
       roleBadge.style.display = 'inline-flex';
       idLabel.textContent = 'Staff / Admin ID';
@@ -122,7 +122,7 @@
       emailHint.textContent = 'System-assigned administrator email address.';
       if (adminLink) adminLink.style.display = 'inline';
     } else {
-      roleBadge.textContent = 'Student';
+      roleBadge.innerHTML = '<svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Student';
       roleBadge.className = 'badge badge-found';
       roleBadge.style.display = 'inline-flex';
       idLabel.textContent = 'Student ID';
