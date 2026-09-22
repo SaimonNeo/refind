@@ -2,12 +2,16 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { run } = require('../database/database');
 
 async function runTests() {
   console.log('=== Testing Signup, DP Avatar, Batch, and Section ===\n');
 
   const testEmail = `student_${Date.now()}@testcampus.edu`;
   const dummyAvatarPath = path.join(__dirname, 'dummy_avatar.png');
+  let createdUserId = null;
+  let createdItemId = null;
+  const createdAvatars = [];
   // Create a minimal 1x1 transparent PNG file
   const minimalPng = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000100000500010d0a2d040000000049454e44ae426082', 'hex');
   fs.writeFileSync(dummyAvatarPath, minimalPng);
@@ -33,6 +37,8 @@ async function runTests() {
     const regData = await regRes.json();
     assert.strictEqual(regRes.status, 201, `Expected status 201, got ${regRes.status}: ${JSON.stringify(regData)}`);
     assert.ok(regData.token, 'Expected token to be returned');
+    createdUserId = regData.user.id;
+    if (regData.user.avatar) createdAvatars.push(regData.user.avatar);
     assert.strictEqual(regData.user.name, 'Alex Mercer');
     assert.strictEqual(regData.user.student_id, 'STU-9901');
     assert.strictEqual(regData.user.batch, 'Batch 60');
@@ -81,6 +87,7 @@ async function runTests() {
     assert.strictEqual(patchData.user.batch, 'Batch 61');
     assert.strictEqual(patchData.user.section, 'D');
     assert.ok(patchData.user.avatar && patchData.user.avatar !== regData.user.avatar, 'Expected new avatar URL');
+    if (patchData.user.avatar) createdAvatars.push(patchData.user.avatar);
     console.log('   ✔ Profile PATCH updated batch, section, and avatar:', patchData.user.avatar);
 
     // 5. Test reporter details on newly created item
@@ -100,6 +107,7 @@ async function runTests() {
     const itemData = await itemRes.json();
     assert.strictEqual(itemRes.status, 201, `Failed creating item: ${JSON.stringify(itemData)}`);
     const itemId = itemData.item.id;
+    createdItemId = itemId;
 
     const fetchItemRes = await fetch(`http://localhost:3000/api/items/${itemId}`);
     const fetchItemData = await fetchItemRes.json();
@@ -133,6 +141,18 @@ async function runTests() {
     console.log('\n=== ALL TESTS PASSED SUCCESSFULLY! ===');
   } finally {
     if (fs.existsSync(dummyAvatarPath)) fs.unlinkSync(dummyAvatarPath);
+    for (const av of createdAvatars) {
+      const fullPath = path.join(__dirname, '..', 'public', av);
+      if (fs.existsSync(fullPath)) {
+        try { fs.unlinkSync(fullPath); } catch (e) {}
+      }
+    }
+    if (createdItemId) {
+      try { run('DELETE FROM items WHERE id = ?', [createdItemId]); } catch (e) {}
+    }
+    if (createdUserId) {
+      try { run('DELETE FROM users WHERE id = ?', [createdUserId]); } catch (e) {}
+    }
   }
 }
 
