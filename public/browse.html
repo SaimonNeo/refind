@@ -6,14 +6,153 @@
 <title>Browse Items — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
 <style>
   .filters {
-    display: flex; gap: 12px; flex-wrap: wrap; align-items: end;
-    padding: 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-    margin-bottom: 28px;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-tag);
   }
-  .filters .field { margin-bottom: 0; min-width: 160px; flex: 1; }
-  .filters input, .filters select { padding: 9px 11px; }
+  .filters-primary {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .field-search {
+    flex: 2 1 240px;
+    margin-bottom: 0;
+  }
+  .field-type {
+    flex: 1 1 130px;
+    margin-bottom: 0;
+  }
+  .filters-primary-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .filters-primary-actions .btn {
+    min-height: 42px;
+    padding: 9px 16px;
+    white-space: nowrap;
+  }
+  .filter-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .filter-toggle-btn.active {
+    border-color: var(--clay);
+    color: var(--clay-deep);
+  }
+  [data-theme="dark"] .filter-toggle-btn.active {
+    color: #f7b494;
+  }
+  .filter-count-badge {
+    background: var(--clay);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    line-height: 1;
+  }
+  .filters-secondary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .filters-secondary.open {
+    display: block !important;
+  }
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .filters-grid .field {
+    margin-bottom: 0;
+  }
+  .filters-secondary-foot {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .view-switch-wrap { display: flex; gap: 8px; }
+
+  @media (max-width: 768px) {
+    .filters {
+      padding: 14px 12px;
+      margin-bottom: 20px;
+    }
+    .filters-primary {
+      gap: 10px;
+    }
+    .field-search {
+      flex: 1 1 100%;
+      min-width: 100%;
+    }
+    .field-type {
+      flex: 1 1 calc(40% - 5px);
+      min-width: 0;
+    }
+    .filters-primary-actions {
+      flex: 1 1 calc(60% - 5px);
+      display: flex;
+      gap: 6px;
+    }
+    .filters-primary-actions .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+    }
+    .filters-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .filters-secondary-foot {
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+    .filters-secondary-foot .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 42px;
+    }
+    .view-switch-wrap {
+      width: 100%;
+      margin-top: 4px;
+    }
+    .view-switch-wrap button {
+      flex: 1;
+      justify-content: center;
+      font-size: 0.82rem;
+      padding: 8px 10px;
+      min-height: 40px;
+    }
+  }
+
+  @media (max-width: 440px) {
+    .field-type {
+      flex: 1 1 100%;
+    }
+    .filters-primary-actions {
+      flex: 1 1 100%;
+    }
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
@@ -22,6 +161,7 @@
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
       <a href="/browse.html" class="active">Browse</a>
+      <a href="/map.html">Campus Map</a>
       <a href="/report-lost.html">Report Lost</a>
       <a href="/report-found.html">Report Found</a>
       <span id="nav-auth-area"></span>
@@ -30,47 +170,74 @@
 </nav>
 
 <div class="container section-tight">
-  <h2>Browse reports</h2>
-  <p class="muted mb-24">Search everything the campus has lost and found.</p>
+  <div class="flex-between flex-wrap gap-16 mb-20">
+    <div>
+      <h2>Browse reports</h2>
+      <p class="muted" style="margin-bottom:0;">Search everything the campus has lost and found.</p>
+    </div>
+    <div class="flex gap-8 view-switch-wrap">
+      <button id="view-grid-btn" class="btn btn-outline btn-sm active" style="font-weight:600;">📋 Grid View</button>
+      <button id="view-map-btn" class="btn btn-outline btn-sm">🗺️ Campus Map View</button>
+    </div>
+  </div>
+
+  <div id="browse-map-container" class="mb-24" style="display:none;"></div>
 
   <div class="filters">
-    <div class="field">
-      <label for="q">Search</label>
-      <input type="text" id="q" placeholder="e.g. backpack, wallet, ID card">
+    <div class="filters-primary">
+      <div class="field field-search">
+        <label for="q">Search</label>
+        <input type="text" id="q" placeholder="e.g. backpack, wallet, ID card">
+      </div>
+      <div class="field field-type">
+        <label for="type">Type</label>
+        <select id="type"><option value="">All</option><option value="lost">Lost</option><option value="found">Found</option></select>
+      </div>
+      <div class="filters-primary-actions">
+        <button class="btn btn-primary" id="search-btn">Search</button>
+        <button type="button" class="btn btn-outline filter-toggle-btn" id="toggle-filters-btn" aria-expanded="false" title="More filter options">
+          <span>⚙️ Filters</span>
+          <span id="active-filter-badge" class="filter-count-badge" style="display:none;">0</span>
+        </button>
+      </div>
     </div>
-    <div class="field">
-      <label for="type">Type</label>
-      <select id="type"><option value="">All</option><option value="lost">Lost</option><option value="found">Found</option></select>
+
+    <div id="secondary-filters" class="filters-secondary" style="display:none;">
+      <div class="filters-grid">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category"><option value="">All categories</option></select>
+        </div>
+        <div class="field">
+          <label for="location">Location</label>
+          <select id="location"><option value="">All locations</option></select>
+        </div>
+        <div class="field">
+          <label for="color">Color</label>
+          <input type="text" id="color" placeholder="e.g. black">
+        </div>
+        <div class="field">
+          <label for="brand">Brand</label>
+          <input type="text" id="brand" placeholder="e.g. Lenovo">
+        </div>
+        <div class="field">
+          <label for="dateFrom">From</label>
+          <input type="date" id="dateFrom">
+        </div>
+        <div class="field">
+          <label for="dateTo">To</label>
+          <input type="date" id="dateTo">
+        </div>
+        <div class="field">
+          <label for="sort">Sort</label>
+          <select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
+        </div>
+      </div>
+      <div class="filters-secondary-foot">
+        <button type="button" class="btn btn-ghost btn-sm" id="reset-filters-btn">✕ Reset all filters</button>
+        <button type="button" class="btn btn-clay btn-sm" id="apply-filters-btn">Apply &amp; search</button>
+      </div>
     </div>
-    <div class="field">
-      <label for="category">Category</label>
-      <select id="category"><option value="">All categories</option></select>
-    </div>
-    <div class="field">
-      <label for="location">Location</label>
-      <select id="location"><option value="">All locations</option></select>
-    </div>
-    <div class="field">
-      <label for="color">Color</label>
-      <input type="text" id="color" placeholder="e.g. black">
-    </div>
-    <div class="field">
-      <label for="brand">Brand</label>
-      <input type="text" id="brand" placeholder="e.g. Lenovo">
-    </div>
-    <div class="field">
-      <label for="dateFrom">From</label>
-      <input type="date" id="dateFrom">
-    </div>
-    <div class="field">
-      <label for="dateTo">To</label>
-      <input type="date" id="dateTo">
-    </div>
-    <div class="field">
-      <label for="sort">Sort</label>
-      <select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
-    </div>
-    <button class="btn btn-primary" id="search-btn">Search</button>
   </div>
 
   <div id="results" class="item-grid"></div>
@@ -85,6 +252,7 @@
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
+<script src="/js/campus-map.js"></script>
 <script>
   function renderNav() {
     const area = document.getElementById('nav-auth-area');
@@ -139,9 +307,152 @@
     }
   }
 
-  document.getElementById('search-btn').addEventListener('click', search);
-  document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
-  ['type', 'category', 'location', 'sort'].forEach((id) => document.getElementById(id).addEventListener('change', search));
+  function updateFilterBadge() {
+    let count = 0;
+    if (document.getElementById('category').value) count++;
+    if (document.getElementById('location').value) count++;
+    if (document.getElementById('color').value.trim()) count++;
+    if (document.getElementById('brand').value.trim()) count++;
+    if (document.getElementById('dateFrom').value) count++;
+    if (document.getElementById('dateTo').value) count++;
+    if (document.getElementById('sort').value !== 'newest') count++;
+
+    const activeFilterBadge = document.getElementById('active-filter-badge');
+    const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+    if (activeFilterBadge && toggleFiltersBtn) {
+      if (count > 0) {
+        activeFilterBadge.textContent = count;
+        activeFilterBadge.style.display = 'inline-block';
+        toggleFiltersBtn.classList.add('active');
+      } else {
+        activeFilterBadge.style.display = 'none';
+        toggleFiltersBtn.classList.remove('active');
+      }
+    }
+  }
+
+  const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+  const secondaryFilters = document.getElementById('secondary-filters');
+  const resetFiltersBtn = document.getElementById('reset-filters-btn');
+  const applyFiltersBtn = document.getElementById('apply-filters-btn');
+
+  if (toggleFiltersBtn && secondaryFilters) {
+    toggleFiltersBtn.addEventListener('click', () => {
+      const isOpen = secondaryFilters.classList.toggle('open');
+      secondaryFilters.style.display = isOpen ? 'block' : 'none';
+      toggleFiltersBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+  }
+
+  if (resetFiltersBtn) {
+    resetFiltersBtn.addEventListener('click', () => {
+      document.getElementById('category').value = '';
+      document.getElementById('location').value = '';
+      document.getElementById('color').value = '';
+      document.getElementById('brand').value = '';
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      document.getElementById('sort').value = 'newest';
+      updateFilterBadge();
+      search();
+    });
+  }
+
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', () => {
+      updateFilterBadge();
+      search();
+      if (window.innerWidth <= 768 && secondaryFilters) {
+        secondaryFilters.classList.remove('open');
+        secondaryFilters.style.display = 'none';
+        if (toggleFiltersBtn) toggleFiltersBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  ['category', 'location', 'color', 'brand', 'dateFrom', 'dateTo', 'sort'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateFilterBadge);
+      el.addEventListener('change', updateFilterBadge);
+    }
+  });
+
+  document.getElementById('search-btn').addEventListener('click', () => {
+    updateFilterBadge();
+    search();
+  });
+  document.getElementById('q').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      updateFilterBadge();
+      search();
+    }
+  });
+  ['type', 'category', 'location', 'sort'].forEach((id) => document.getElementById(id).addEventListener('change', () => {
+    updateFilterBadge();
+    search();
+  }));
+
+  // Campus Map Toggle & Integration
+  let campusMapInstance = null;
+  const gridBtn = document.getElementById('view-grid-btn');
+  const mapBtn = document.getElementById('view-map-btn');
+  const mapContainer = document.getElementById('browse-map-container');
+
+  function initBrowseMap() {
+    if (!campusMapInstance) {
+      campusMapInstance = new CampusMap(mapContainer, {
+        mode: 'explorer',
+        initialLocation: document.getElementById('location').value,
+        onSelect: (bldgName) => {
+          document.getElementById('location').value = bldgName || '';
+          search();
+          // Automatically close map and switch back to grid view
+          gridBtn.click();
+          if (bldgName) {
+            toast(`Selected ${bldgName} — filtered reports`);
+          } else {
+            toast('Showing reports from all campus locations');
+          }
+        }
+      });
+    }
+  }
+
+  mapBtn.addEventListener('click', () => {
+    mapBtn.classList.add('active');
+    mapBtn.style.background = 'var(--clay)';
+    mapBtn.style.color = '#ffffff';
+    gridBtn.classList.remove('active');
+    gridBtn.style.background = '';
+    gridBtn.style.color = '';
+    mapContainer.style.display = 'block';
+    initBrowseMap();
+    const curLoc = document.getElementById('location').value;
+    if (campusMapInstance) {
+      if (curLoc) {
+        campusMapInstance.selectBuildingByName(curLoc, false);
+      } else {
+        campusMapInstance.clearSelection();
+      }
+    }
+  });
+
+  gridBtn.addEventListener('click', () => {
+    gridBtn.classList.add('active');
+    gridBtn.style.background = '';
+    gridBtn.style.color = '';
+    mapBtn.classList.remove('active');
+    mapBtn.style.background = '';
+    mapBtn.style.color = '';
+    mapContainer.style.display = 'none';
+  });
+
+  // Pre-fill location from query param if provided
+  const queryLoc = new URLSearchParams(window.location.search).get('location');
+  if (queryLoc) {
+    document.getElementById('location').value = queryLoc;
+  }
 
   search();
 </script>

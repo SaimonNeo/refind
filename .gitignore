@@ -1,6 +1,6 @@
 node_modules/
 .env
-database/refind.db
+database/refind.db*
 uploads/*
 !uploads/.gitkeep
 *.log

@@ -9,9 +9,14 @@ const { DatabaseSync } = require('node:sqlite');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'refind.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
-
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA foreign_keys = ON;');
+try {
+  db.exec('PRAGMA journal_mode = WAL;');
+  db.exec('PRAGMA busy_timeout = 5000;');
+} catch (e) {
+  // Ignore if unsupported in specific environments
+}
 
 function initSchema() {
   const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');

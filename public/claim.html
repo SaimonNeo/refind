@@ -6,11 +6,17 @@
 <title>Claim an item — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
 <style>
   .claim-wrap { max-width: 560px; margin: 0 auto; padding: 44px 24px 96px; }
   .claim-card { padding: 30px; }
   .result-box { text-align: center; padding: 30px; }
   .result-icon { font-size: 2.2rem; margin-bottom: 10px; }
+  @media (max-width: 480px) {
+    .claim-wrap { padding: 18px 12px 64px; }
+    .claim-card { padding: 18px 14px; }
+    .result-box { padding: 20px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -38,8 +44,9 @@
           <input type="text" id="answer" placeholder="Your answer">
         </div>
         <div class="field">
-          <label for="phone">Phone number</label>
-          <input type="tel" id="phone" placeholder="So the finder or an admin can reach you">
+          <label for="phone">WhatsApp / Phone number</label>
+          <input type="tel" id="phone" placeholder="e.g. +1 555 123 4567">
+          <p class="hint">Pre-filled from your profile so the finder can coordinate handover with you on WhatsApp.</p>
         </div>
         <div class="field">
           <label for="idProof">ID proof (optional)</label>
@@ -59,6 +66,11 @@
   requireLogin();
   document.getElementById('notif-area').innerHTML = notifBellHtml();
   initNotifBell();
+
+  const me = getUser();
+  if (me && me.phone) {
+    document.getElementById('phone').value = me.phone;
+  }
 
   const params = new URLSearchParams(window.location.search);
   const itemId = params.get('itemId');
@@ -81,8 +93,22 @@
       const form = document.getElementById('claim-form');
       const qArea = document.getElementById('question-area');
 
+      if (verifyInfo.locked) {
+        qArea.innerHTML = `
+          <div class="alert alert-error">
+            <strong>🔒 Verification Cooldown Active:</strong> Too many incorrect attempts. For security, claims on this item are temporarily locked for 15 minutes.
+            <p class="mt-8 mb-0" style="font-size:0.85rem;">If this item belongs to you, you may visit the campus Lost &amp; Found desk directly with your student ID to claim it in person.</p>
+          </div>
+        `;
+        form.style.display = 'none';
+        return;
+      }
+
       if (verifyInfo.hasVerification && verifyInfo.question) {
         document.getElementById('question-label').textContent = verifyInfo.question;
+        if (verifyInfo.remainingAttempts < 3) {
+          qArea.innerHTML = `<div class="alert alert-info" style="font-size:0.84rem; padding:8px 12px; margin-bottom:14px;">⚠️ Security note: <strong>${verifyInfo.remainingAttempts}</strong> verification attempt(s) remaining before a 15-minute lock.</div>`;
+        }
         form.style.display = 'block';
       } else {
         qArea.innerHTML = `<div class="alert alert-info">The finder didn't set a verification question for this item. Your claim will go to an admin for a manual check.</div>`;
@@ -109,6 +135,10 @@
           document.getElementById('alert-area').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
           btn.disabled = false;
           btn.textContent = 'Submit claim';
+          if (err.message && err.message.toLowerCase().includes('locked')) {
+            btn.disabled = true;
+            document.getElementById('answer').disabled = true;
+          }
         }
       });
     } catch (err) {

@@ -7,12 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
-    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
   </div>
 </nav>
 
@@ -35,10 +39,19 @@
       <div class="admin-stat-grid" id="stat-grid"></div>
 
       <div class="panel">
-        <h3>High-priority potential matches</h3>
-        <p class="small muted mb-16">Score ≥ 80 between two still-active reports — worth a human nudge.</p>
+        <div class="mb-16">
+          <h3 style="margin-bottom:4px;">High-Priority Potential Matches Desk</h3>
+          <p class="small muted" style="margin-bottom:0;">High confidence (≥70%) between active reports. Call or WhatsApp students to connect them.</p>
+        </div>
         <table class="admin-table" id="priority-table">
-          <thead><tr><th>Lost item</th><th>Found item</th><th>Score</th></tr></thead>
+          <thead>
+            <tr>
+              <th style="width:85px;">Match</th>
+              <th>Lost Item &amp; Owner</th>
+              <th>Found Item &amp; Finder</th>
+              <th style="width:110px;">Action</th>
+            </tr>
+          </thead>
           <tbody></tbody>
         </table>
       </div>
@@ -46,7 +59,7 @@
       <div class="panel">
         <h3>Recent reports</h3>
         <table class="admin-table" id="recent-table">
-          <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th></tr></thead>
+          <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th style="width:160px;">Action</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -84,18 +97,70 @@
 
       const priBody = document.querySelector('#priority-table tbody');
       priBody.innerHTML = data.highPriorityCases.length
-        ? data.highPriorityCases.map(m => `<tr><td>${escapeHtml(m.lost_title)}</td><td>${escapeHtml(m.found_title)}</td><td class="mono">${Math.round(m.score)}%</td></tr>`).join('')
-        : `<tr><td colspan="3" class="muted">No high-priority matches right now.</td></tr>`;
+        ? data.highPriorityCases.map(m => {
+            const score = Math.round(m.score);
+            const scoreClass = score >= 85 ? 'badge-claimed' : (score >= 70 ? 'badge-matched' : 'badge-active');
+
+            const lostPhone = m.lost_user_phone;
+            const lostCall = lostPhone ? `<a href="tel:${lostPhone}" class="btn btn-outline btn-xs">📞 ${lostPhone}</a>` : '';
+            const lostWa = lostPhone ? whatsappButtonHtml(lostPhone, `Hello ${m.lost_user_name}, ReFind admin here! We found a ${score}% match for your lost item "${m.lost_title}".`, 'WhatsApp', 'btn-xs') : '';
+
+            const foundPhone = m.found_user_phone;
+            const foundCall = foundPhone ? `<a href="tel:${foundPhone}" class="btn btn-outline btn-xs">📞 ${foundPhone}</a>` : '';
+            const foundWa = foundPhone ? whatsappButtonHtml(foundPhone, `Hello ${m.found_user_name}, ReFind admin here regarding "${m.found_title}". An owner reported a ${score}% matching item.`, 'WhatsApp', 'btn-xs') : '';
+
+            return `
+              <tr>
+                <td><span class="badge ${scoreClass}" style="font-weight:700; font-size:0.95rem;">${score}%</span></td>
+                <td>
+                  <a href="/item.html?id=${m.lost_id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(m.lost_title)}</a>
+                  <div class="small muted mt-4">
+                    <strong>${escapeHtml(m.lost_user_name)}</strong>
+                  </div>
+                  <div class="flex gap-4 mt-6 flex-wrap">
+                    ${lostCall}
+                    ${lostWa}
+                    ${!lostPhone ? '<span class="small muted">No phone</span>' : ''}
+                  </div>
+                </td>
+                <td>
+                  <a href="/item.html?id=${m.found_id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(m.found_title)}</a>
+                  <div class="small muted mt-4">
+                    <strong>${escapeHtml(m.found_user_name)}</strong>
+                  </div>
+                  <div class="flex gap-4 mt-6 flex-wrap">
+                    ${foundCall}
+                    ${foundWa}
+                    ${!foundPhone ? '<span class="small muted">No phone</span>' : ''}
+                  </div>
+                </td>
+                <td>
+                  <div class="flex gap-4 flex-wrap">
+                    <a href="/matches.html?lostItemId=${m.lost_id}&from=admin" target="_blank" class="btn btn-ghost btn-xs">Pair ↗</a>
+                    <a href="/flyer.html?id=${m.lost_id}&from=admin&returnUrl=/admin/dashboard.html" target="_blank" class="btn btn-ghost btn-xs" title="View Lost Flyer PDF">Lost Flyer</a>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')
+        : `<tr><td colspan="4" class="muted">No high-priority matches right now.</td></tr>`;
 
       const recentBody = document.querySelector('#recent-table tbody');
       recentBody.innerHTML = data.recentItems.map(i => `
         <tr>
-          <td><a href="/item.html?id=${i.id}">${escapeHtml(i.title)}</a></td>
+          <td><a href="/item.html?id=${i.id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(i.title)}</a></td>
           <td><span class="badge ${i.type === 'lost' ? 'badge-lost' : 'badge-found'}">${i.type}</span></td>
           <td>${escapeHtml(i.category)}</td>
           <td>${escapeHtml(i.location)}</td>
           <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
           <td>${timeAgo(i.created_at)}</td>
+          <td>
+            <div class="flex gap-4 flex-wrap">
+              <a href="/flyer.html?id=${i.id}&from=admin&returnUrl=/admin/dashboard.html" target="_blank" class="btn btn-ghost btn-xs" title="View / Print Flyer PDF">🖨️ Flyer</a>
+              ${(i.status === 'claimed' || i.status === 'resolved') ? `<a href="/receipt.html?itemId=${i.id}&from=admin&returnUrl=/admin/dashboard.html" target="_blank" class="btn btn-outline btn-xs" title="View Custody Receipt PDF">📄 Receipt</a>` : ''}
+              <a href="/item.html?id=${i.id}&from=admin" target="_blank" class="btn btn-ghost btn-xs" title="View item inspector">View ↗</a>
+            </div>
+          </td>
         </tr>
       `).join('');
     } catch (err) {

@@ -15,13 +15,28 @@ router.get('/', requireAuth, (req, res) => {
 // PATCH /api/notifications/:id/read
 router.patch('/:id/read', requireAuth, (req, res) => {
   notificationService.markRead(req.user.id, req.params.id);
-  res.json({ success: true });
+  const unread = notificationService.unreadCount(req.user.id);
+  res.json({ success: true, unread });
 });
 
 // PATCH /api/notifications/read-all
 router.patch('/read-all', requireAuth, (req, res) => {
   notificationService.markAllRead(req.user.id);
-  res.json({ success: true });
+  res.json({ success: true, unread: 0 });
+});
+
+// DELETE /api/notifications/clear-all
+router.delete('/clear-all', requireAuth, (req, res) => {
+  notificationService.clearAll(req.user.id);
+  res.json({ success: true, unread: 0 });
+});
+
+// DELETE /api/notifications/:id
+router.delete('/:id', requireAuth, (req, res) => {
+  notificationService.deleteNotification(req.user.id, req.params.id);
+  const unread = notificationService.unreadCount(req.user.id);
+  res.json({ success: true, unread });
 });
 
 module.exports = router;
+

@@ -7,12 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
-    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
   </div>
 </nav>
 
@@ -31,15 +35,16 @@
     <p class="muted mb-24">Every lost and found report on the platform, including resolved ones.</p>
 
     <div id="loading">Loading…</div>
-    <table class="admin-table" id="items-table" style="display:none;">
-      <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrap" id="table-wrap" style="display:none;">
+      <table class="admin-table" id="items-table">
+        <thead><tr><th>Title</th><th>Type</th><th>Category</th><th>Location</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
 <script src="/js/api.js"></script>
-<script src="/js/ui.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
 <script>
@@ -54,16 +59,19 @@
       document.getElementById('loading').style.display = 'none';
       const table = document.getElementById('items-table');
       table.style.display = 'table';
+      document.getElementById('table-wrap').style.display = 'block';
       table.querySelector('tbody').innerHTML = items.map(i => `
         <tr id="item-row-${i.id}">
-          <td>${escapeHtml(i.title)}</td>
+          <td><a href="/item.html?id=${i.id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(i.title)}</a></td>
           <td><span class="badge ${i.type === 'lost' ? 'badge-lost' : 'badge-found'}">${i.type}</span></td>
           <td>${escapeHtml(i.category)}</td>
           <td>${escapeHtml(i.location)}</td>
           <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
           <td>${timeAgo(i.created_at)}</td>
-          <td class="flex gap-8">
-            <a href="/item.html?id=${i.id}" class="btn btn-ghost btn-sm">View</a>
+          <td class="flex gap-8 flex-wrap">
+            <a href="/item.html?id=${i.id}&from=admin" target="_blank" class="btn btn-ghost btn-sm" title="View details">View ↗</a>
+            <a href="/flyer.html?id=${i.id}&from=admin&returnUrl=/admin/items.html" target="_blank" class="btn btn-ghost btn-sm" title="Print flyer PDF">🖨️ Flyer</a>
+            ${(i.status === 'claimed' || i.status === 'resolved') ? `<a href="/receipt.html?itemId=${i.id}&from=admin&returnUrl=/admin/items.html" target="_blank" class="btn btn-outline btn-sm" title="View custody receipt PDF">📄 Receipt</a>` : ''}
             <button class="btn btn-danger btn-sm" onclick="removeItem(${i.id})">Remove</button>
           </td>
         </tr>

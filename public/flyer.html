@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Printable Flyer — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
+<script>
+  // Ensure printable flyer always renders in crisp white mode
+  document.documentElement.setAttribute('data-theme', 'light');
+  try { localStorage.setItem('refind-theme', 'light'); } catch (e) {}
+</script>
+<style>
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --flyer-bg: #ffffff;
+    --flyer-border: #1d1b19;
+  }
+  .flyer-paper, .flyer-paper * {
+    color: #1d1b19;
+  }
+
+  body {
+    background: var(--paper);
+    margin: 0;
+    padding: 24px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flyer-toolbar {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .flyer-paper {
+    width: 100%;
+    max-width: 800px;
+    background: var(--flyer-bg);
+    border: 3px solid var(--flyer-border);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 36px 36px 0;
+    position: relative;
+  }
+
+  .flyer-header {
+    text-align: center;
+    border-bottom: 3px solid var(--flyer-border);
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+  }
+
+  .flyer-type-tag {
+    display: inline-block;
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    padding: 4px 20px;
+    line-height: 1;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .flyer-lost .flyer-type-tag {
+    background: var(--clay);
+    color: #ffffff;
+  }
+
+  .flyer-found .flyer-type-tag {
+    background: var(--moss);
+    color: #ffffff;
+  }
+
+  .flyer-subtitle {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #4a453e;
+    margin: 4px 0 0;
+    text-transform: uppercase;
+  }
+
+  .flyer-content {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
+  }
+
+  .flyer-photo-box {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border: 2px solid var(--flyer-border);
+    background: #fbf9f4;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .flyer-photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .flyer-no-photo {
+    font-size: 1.1rem;
+    color: #7a7065;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .flyer-title {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    color: #1d1b19;
+  }
+
+  .flyer-meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+
+  .flyer-meta-table td {
+    padding: 6px 0;
+    border-bottom: 1px dashed #cfc7b4;
+  }
+
+  .flyer-meta-table td.label {
+    font-weight: 600;
+    width: 32%;
+    color: #61574d;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+  }
+
+  .flyer-desc-box {
+    background: #fbf9f4;
+    border: 1px solid #d9d2c2;
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 0.93rem;
+    line-height: 1.45;
+    color: #2b2724;
+    margin-top: 10px;
+  }
+
+  .flyer-qr-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #f6efe2;
+    border: 2px solid var(--flyer-border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 30px;
+  }
+
+  .flyer-qr-code {
+    width: 110px;
+    height: 110px;
+    background: #ffffff;
+    border: 1px solid #c9c1b0;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
+  .flyer-qr-code svg, .flyer-qr-code img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .flyer-qr-text {
+    flex: 1;
+  }
+
+  .flyer-qr-text h4 {
+    margin: 0 0 4px;
+    font-size: 1.15rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  .flyer-qr-text p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #4a453e;
+    line-height: 1.4;
+  }
+
+  .flyer-url-badge {
+    display: inline-block;
+    margin-top: 6px;
+    background: #ffffff;
+    border: 1px solid #d1c8b7;
+    padding: 4px 10px;
+    font-family: var(--font-num);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1d1b19;
+    border-radius: 3px;
+  }
+
+  /* Tear-Off Bottom Strips */
+  .tear-off-container {
+    margin: 0 -36px;
+    border-top: 2px dashed var(--flyer-border);
+    position: relative;
+    padding-top: 10px;
+    background: #fffdf9;
+  }
+
+  .scissor-notice {
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: #fffdf9;
+    padding: 0 8px;
+    font-size: 0.78rem;
+    color: #6b6259;
+    font-family: var(--font-num);
+  }
+
+  .tear-off-strips {
+    display: flex;
+    width: 100%;
+    height: 140px;
+  }
+
+  .tear-strip {
+    flex: 1;
+    border-right: 1px dashed #b8ad96;
+    padding: 10px 4px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .tear-strip:last-child {
+    border-right: none;
+  }
+
+  .tear-strip .strip-title {
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.3px;
+    color: #1d1b19;
+    max-height: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tear-strip .strip-contact {
+    font-family: var(--font-num);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--clay-deep);
+  }
+
+  .tear-strip .strip-ref {
+    font-size: 0.68rem;
+    color: #756c60;
+  }
+
+  /* Responsive Media Rules */
+  @media (max-width: 768px) {
+    body {
+      padding: 12px 8px;
+    }
+    .flyer-toolbar {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      padding: 12px 14px;
+    }
+    .flyer-toolbar .flex {
+      justify-content: center;
+    }
+    .flyer-paper {
+      padding: 24px 18px 0;
+    }
+    .tear-off-container {
+      margin: 0 -18px;
+    }
+    .flyer-content {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .flyer-type-tag {
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      padding: 4px 14px;
+    }
+    .flyer-subtitle {
+      font-size: 0.95rem;
+    }
+    .flyer-title {
+      font-size: 1.5rem;
+    }
+    .tear-off-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tear-off-container::-webkit-scrollbar {
+      display: none;
+    }
+    .tear-off-strips {
+      min-width: 520px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .flyer-qr-banner {
+      flex-direction: column;
+      text-align: center;
+      gap: 12px;
+      padding: 14px;
+    }
+    .flyer-toolbar .small {
+      display: none;
+    }
+  }
+
+  /* Print Media Rules */
+  @media print {
+    body {
+      background: #ffffff !important;
+      padding: 0 !important;
+      color: #000000 !important;
+    }
+
+    .flyer-toolbar {
+      display: none !important;
+    }
+
+    .flyer-paper {
+      max-width: 100% !important;
+      width: 100% !important;
+      border: 2px solid #000000 !important;
+      box-shadow: none !important;
+      padding: 24px 28px 0 !important;
+      page-break-inside: avoid;
+    }
+
+    .flyer-photo-box {
+      border: 1px solid #000000 !important;
+    }
+
+    .tear-off-container {
+      border-top: 2px dashed #000000 !important;
+    }
+
+    .tear-strip {
+      border-right: 1px dashed #000000 !important;
+    }
+
+    .flyer-qr-banner {
+      border: 1px solid #000000 !important;
+      background: #fbfbfb !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="flyer-toolbar">
+  <div class="flex gap-8" style="align-items:center; flex-wrap:wrap;" id="flyer-back-container">
+    <a href="/dashboard.html" class="btn btn-outline btn-sm" id="flyer-back-btn">← Back</a>
+    <span class="small muted" id="toolbar-info">Ready to print for campus noticeboards &amp; kiosks</span>
+  </div>
+  <div class="flex gap-8" style="align-items:center;">
+    <button onclick="smartCloseOrBack()" class="btn btn-ghost btn-sm" id="flyer-close-btn" style="display:none;" title="Close this PDF tab">✕ Close Tab</button>
+    <button onclick="window.print()" class="btn btn-primary btn-sm">🖨️ Print / Save PDF</button>
+  </div>
+</div>
+
+<div id="loading" class="text-center" style="padding: 60px 0;">Loading flyer details…</div>
+
+<div id="flyer-paper" class="flyer-paper" style="display:none;">
+  <div class="flyer-header">
+    <div id="flyer-tag" class="flyer-type-tag">LOST ITEM</div>
+    <div id="flyer-subtitle" class="flyer-subtitle">HAVE YOU SEEN THIS? PLEASE HELP RETURN IT</div>
+  </div>
+
+  <div class="flyer-content">
+    <div>
+      <div class="flyer-photo-box" id="flyer-photo">
+        <div class="flyer-no-photo">No photo provided</div>
+      </div>
+      <div class="flyer-desc-box mt-16">
+        <strong>Description &amp; distinguishing features:</strong>
+        <p id="flyer-desc" style="margin: 6px 0 0;"></p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="flyer-title" id="flyer-title">Item Title</h2>
+      <table class="flyer-meta-table">
+        <tbody>
+          <tr>
+            <td class="label">Category</td>
+            <td id="flyer-cat" style="font-weight:600;">—</td>
+          </tr>
+          <tr>
+            <td class="label">Color</td>
+            <td id="flyer-color">—</td>
+          </tr>
+          <tr>
+            <td class="label">Brand</td>
+            <td id="flyer-brand">—</td>
+          </tr>
+          <tr>
+            <td class="label">Location</td>
+            <td id="flyer-loc" style="font-weight:600;">—</td>
+          </tr>
+          <tr>
+            <td class="label">Date/Time</td>
+            <td id="flyer-date">—</td>
+          </tr>
+          <tr>
+            <td class="label">WhatsApp</td>
+            <td id="flyer-wp" style="font-weight:600; color:var(--clay-deep);">—</td>
+          </tr>
+          <tr id="storage-row" style="display:none;">
+            <td class="label">Storage</td>
+            <td id="flyer-storage">—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="flyer-qr-banner">
+        <div class="flyer-qr-code" id="qr-box">
+          <!-- QR SVG loaded here -->
+        </div>
+        <div class="flyer-qr-text">
+          <h4>Scan to report or claim</h4>
+          <p id="flyer-qr-subtext">Scan with your phone camera to view full details, submit ownership claim, or match reports on ReFind.</p>
+          <div class="flyer-url-badge" id="flyer-short-url">campus.refind</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tear-off-container">
+    <div class="scissor-notice">✂ TEAR-OFF STRIPS FOR CONTACT</div>
+    <div class="tear-off-strips" id="tear-strips">
+      <!-- Generated strips -->
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const itemId = params.get('id');
+
+  function setupFlyerNavigation(item) {
+    const fromParam = params.get('from');
+    const tabParam = params.get('tab');
+    const returnUrlParam = params.get('returnUrl');
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('refind_user')); } catch (e) {}
+    const isAdmin = user && user.role === 'admin';
+
+    const storedAdminPage = sessionStorage.getItem('refind_admin_last_page');
+    const storedDashTab = sessionStorage.getItem('refind_dash_tab');
+    const lastEditTab = sessionStorage.getItem('refind_last_edit_tab');
+
+    // Tab calculation: default to item type if available ('lost' or 'found')
+    const itemTypeTab = item && item.type === 'found' ? 'found' : 'lost';
+    const effectiveTab = tabParam || lastEditTab || storedDashTab || itemTypeTab;
+    const tabLabels = { lost: 'Lost Items', found: 'Found Items', claims: 'Claims' };
+    const tabName = tabLabels[effectiveTab] || 'Dashboard';
+
+    const backBtn = document.getElementById('flyer-back-btn');
+    const backContainer = document.getElementById('flyer-back-container');
+    const closeBtn = document.getElementById('flyer-close-btn');
+
+    let targetUrl = '';
+    let targetLabel = '';
+    let secondaryUrl = '';
+    let secondaryLabel = '';
+
+    const cameFromAdmin = fromParam === 'admin' || (isAdmin && (returnUrlParam?.startsWith('/admin/') || storedAdminPage));
+
+    if (returnUrlParam) {
+      targetUrl = returnUrlParam;
+      if (targetUrl.includes('/admin/')) {
+        if (targetUrl.includes('dashboard.html')) targetLabel = '← Back to Admin Dashboard';
+        else if (targetUrl.includes('items.html')) targetLabel = '← Back to Admin Items';
+        else if (targetUrl.includes('claims.html')) targetLabel = '← Back to Claims Desk';
+        else if (targetUrl.includes('recovered.html')) targetLabel = '← Back to Recovered Items';
+        else targetLabel = '← Back to Admin Panel';
+      } else if (targetUrl.includes('dashboard.html')) {
+        targetLabel = `← Back to Dashboard (${tabName})`;
+      } else if (targetUrl.includes('item.html')) {
+        targetLabel = '← Back to Item Details';
+      } else if (targetUrl.includes('map.html')) {
+        targetLabel = '← Back to Campus Map';
+      } else {
+        targetLabel = '← Back';
+      }
+    } else if (cameFromAdmin) {
+      targetUrl = storedAdminPage || '/admin/items.html';
+      if (targetUrl.includes('dashboard.html')) targetLabel = '← Back to Admin Dashboard';
+      else if (targetUrl.includes('items.html')) targetLabel = '← Back to Admin Items';
+      else if (targetUrl.includes('claims.html')) targetLabel = '← Back to Claims Desk';
+      else if (targetUrl.includes('recovered.html')) targetLabel = '← Back to Recovered Items';
+      else targetLabel = '← Back to Admin Panel';
+    } else {
+      targetUrl = `/dashboard.html?tab=${effectiveTab}`;
+      targetLabel = `← Back to Dashboard (${tabName})`;
+    }
+
+    if (isAdmin && !targetUrl.includes('/admin/')) {
+      secondaryUrl = storedAdminPage || '/admin/dashboard.html';
+      secondaryLabel = '🛡️ Admin Panel';
+    }
+
+    if (backBtn) {
+      backBtn.href = targetUrl;
+      backBtn.innerHTML = targetLabel;
+    }
+
+    if (secondaryUrl && backContainer && !document.getElementById('flyer-secondary-btn')) {
+      const sec = document.createElement('a');
+      sec.id = 'flyer-secondary-btn';
+      sec.href = secondaryUrl;
+      sec.className = 'btn btn-ghost btn-sm';
+      sec.innerHTML = secondaryLabel;
+      const infoSpan = document.getElementById('toolbar-info');
+      backContainer.insertBefore(sec, infoSpan);
+    }
+
+    if (closeBtn && (window.opener || window.history.length <= 1)) {
+      closeBtn.style.display = 'inline-block';
+    }
+
+    window._flyerTargetUrl = targetUrl;
+    window._flyerAdminTarget = cameFromAdmin ? targetUrl : (storedAdminPage || '/admin/dashboard.html');
+    window._flyerDashTarget = `/dashboard.html?tab=${effectiveTab}`;
+    window._flyerTabName = tabName;
+  }
+
+  function smartCloseOrBack() {
+    try {
+      window.close();
+    } catch (e) {}
+    setTimeout(() => {
+      if (window._flyerTargetUrl) {
+        window.location.href = window._flyerTargetUrl;
+      }
+    }, 120);
+  }
+
+  async function loadFlyer() {
+    setupFlyerNavigation();
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('refind_user')); } catch (e) {}
+    const isAdmin = user && user.role === 'admin';
+
+    if (!itemId) {
+      document.getElementById('loading').innerHTML = `
+        <div class="alert alert-error" style="max-width:500px; margin:0 auto;">
+          No item ID specified in URL.
+          <br><br>
+          <div class="flex gap-12" style="justify-content:center; flex-wrap:wrap;">
+            ${isAdmin ? `<a href="${window._flyerAdminTarget || '/admin/items.html'}" class="btn btn-primary btn-sm">Return to Admin Panel</a>` : ''}
+            <a href="${window._flyerDashTarget || '/dashboard.html'}" class="btn btn-outline btn-sm">Return to Dashboard (${window._flyerTabName || 'Dashboard'})</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const { item } = await api.get(`/items/${itemId}`);
+      setupFlyerNavigation(item);
+      renderFlyer(item);
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `
+        <div class="alert alert-error" style="max-width:500px; margin:0 auto;">
+          ${escapeHtml(err.message)}
+          <br><br>
+          <div class="flex gap-12" style="justify-content:center; flex-wrap:wrap;">
+            ${isAdmin ? `<a href="${window._flyerAdminTarget || '/admin/items.html'}" class="btn btn-primary btn-sm">Return to Admin Panel</a>` : ''}
+            <a href="${window._flyerDashTarget || '/dashboard.html'}" class="btn btn-outline btn-sm">Return to Dashboard (${window._flyerTabName || 'Dashboard'})</a>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function renderFlyer(item) {
+    document.title = `Print Flyer — ${item.title} — ReFind`;
+    document.getElementById('loading').style.display = 'none';
+    const paper = document.getElementById('flyer-paper');
+    paper.style.display = 'flex';
+
+    const isLost = item.type === 'lost';
+    paper.className = `flyer-paper ${isLost ? 'flyer-lost' : 'flyer-found'}`;
+
+    const tag = document.getElementById('flyer-tag');
+    const subtitle = document.getElementById('flyer-subtitle');
+    if (isLost) {
+      tag.textContent = 'LOST ITEM';
+      subtitle.textContent = 'HAVE YOU SEEN THIS? PLEASE HELP RETURN IT';
+    } else {
+      tag.textContent = 'FOUND ITEM';
+      subtitle.textContent = 'FOUND ON CAMPUS — IS THIS YOUR ITEM?';
+    }
+
+    document.getElementById('flyer-title').textContent = item.title;
+    document.getElementById('flyer-cat').textContent = item.category ? item.category.toUpperCase() : '—';
+    document.getElementById('flyer-color').textContent = item.color || '—';
+    document.getElementById('flyer-brand').textContent = item.brand || '—';
+    document.getElementById('flyer-loc').textContent = item.location;
+    document.getElementById('flyer-date').textContent = item.event_date ? new Date(item.event_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date(item.created_at).toLocaleDateString();
+
+    const wpNumber = item.reporter_phone;
+    document.getElementById('flyer-wp').textContent = wpNumber ? `${wpNumber}` : 'Contact via ReFind';
+
+    if (item.storage_location) {
+      document.getElementById('storage-row').style.display = 'table-row';
+      document.getElementById('flyer-storage').textContent = item.storage_location;
+    }
+
+    document.getElementById('flyer-desc').textContent = item.description || 'No additional details provided. If you recognize this item, please scan the QR code to connect.';
+
+    if (wpNumber) {
+      document.getElementById('flyer-qr-subtext').textContent = `Scan with camera to view report, or WhatsApp reporter at ${wpNumber}.`;
+    }
+
+    const photoBox = document.getElementById('flyer-photo');
+    if (item.image) {
+      photoBox.innerHTML = `<img src="${item.image}" alt="${item.title}">`;
+    } else {
+      photoBox.innerHTML = `<div class="flyer-no-photo"><span>📦 ${item.category || 'Item'}</span><br><small class="muted">No photo provided</small></div>`;
+    }
+
+    // QR Code
+    const qrBox = document.getElementById('qr-box');
+    qrBox.innerHTML = `<img src="/api/items/${item.id}/qr.svg" alt="QR Code" style="width:100%; height:100%;">`;
+
+    const itemUrl = `${window.location.origin}/item.html?id=${item.id}`;
+    document.getElementById('flyer-short-url').textContent = `${window.location.host}/item.html?id=${item.id}`;
+
+    // Render 9 tear-off tabs with profile WhatsApp number
+    const stripsContainer = document.getElementById('tear-strips');
+    const stripContact = wpNumber ? `WA: ${wpNumber}` : `ReFind #${item.id}`;
+    const stripRef = wpNumber ? `ReFind #${item.id}` : `Scan QR Code`;
+    const stripHtml = Array.from({ length: 9 }).map(() => `
+      <div class="tear-strip">
+        <span class="strip-title">${item.type.toUpperCase()}: ${item.title.slice(0, 24)}</span>
+        <span class="strip-contact">${stripContact}</span>
+        <span class="strip-ref">${stripRef}</span>
+      </div>
+    `).join('');
+    stripsContainer.innerHTML = stripHtml;
+  }
+
+  loadFlyer();
+</script>
+</body>
+</html>

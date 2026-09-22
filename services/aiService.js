@@ -9,7 +9,7 @@
 // and never sent to the browser.
 
 const MAX_DESCRIPTION_LENGTH = 800;
-const REQUEST_TIMEOUT_MS = 18000;
+const REQUEST_TIMEOUT_MS = 24000;
 
 const AI_PROVIDER = () => (process.env.AI_PROVIDER || 'gemini').trim().replace(/^["']|["']$/g, '');
 const AI_MODEL = () => {

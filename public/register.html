@@ -6,6 +6,7 @@
 <title>Sign up — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
 <style>
   .auth-wrap { max-width: 440px; margin: 0 auto; padding: 64px 24px 96px; }
   .auth-card { padding: 32px; }
@@ -38,8 +39,9 @@
         <input type="text" id="student_id" placeholder="e.g. U20231001">
       </div>
       <div class="field">
-        <label for="phone">Phone (optional)</label>
-        <input type="tel" id="phone" placeholder="+1 555 123 4567">
+        <label for="phone">WhatsApp / Phone number <span class="small muted">(recommended)</span></label>
+        <input type="tel" id="phone" placeholder="e.g. +1 555 123 4567">
+        <p class="hint" style="margin-top:4px;">Include your country code (e.g. +1 or +880) so claimants/finders can coordinate handover on WhatsApp.</p>
       </div>
       <div class="field">
         <label for="password">Password</label>

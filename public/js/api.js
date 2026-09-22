@@ -25,7 +25,7 @@ function getUser() {
   }
 }
 
-async function apiRequest(path, { method = 'GET', body, isForm = false } = {}) {
+async function apiRequest(path, { method = 'GET', body, isForm = false, keepalive = false } = {}) {
   const headers = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -35,6 +35,7 @@ async function apiRequest(path, { method = 'GET', body, isForm = false } = {}) {
     method,
     headers,
     body: isForm ? body : body ? JSON.stringify(body) : undefined,
+    keepalive,
   });
 
   let data = null;
@@ -54,10 +55,10 @@ async function apiRequest(path, { method = 'GET', body, isForm = false } = {}) {
 }
 
 const api = {
-  get: (path) => apiRequest(path),
-  post: (path, body, isForm) => apiRequest(path, { method: 'POST', body, isForm }),
-  patch: (path, body) => apiRequest(path, { method: 'PATCH', body }),
-  del: (path) => apiRequest(path, { method: 'DELETE' }),
+  get: (path, opts) => apiRequest(path, { method: 'GET', ...opts }),
+  post: (path, body, isForm, opts) => apiRequest(path, { method: 'POST', body, isForm, ...opts }),
+  patch: (path, body, opts) => apiRequest(path, { method: 'PATCH', body, ...opts }),
+  del: (path, opts) => apiRequest(path, { method: 'DELETE', ...opts }),
 };
 
 function requireLogin(redirectTo = '/login.html') {
@@ -100,3 +101,17 @@ function timeAgo(dateStr) {
   if (days < 30) return `${days}d ago`;
   return date.toLocaleDateString();
 }
+
+// Ensure global availability on window
+window.api = api;
+window.getToken = getToken;
+window.setSession = setSession;
+window.clearSession = clearSession;
+window.getUser = getUser;
+window.apiRequest = apiRequest;
+window.requireLogin = requireLogin;
+window.requireAdmin = requireAdmin;
+window.logout = logout;
+window.escapeHtml = escapeHtml;
+window.timeAgo = timeAgo;
+

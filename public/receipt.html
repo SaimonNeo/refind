@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custody Release Receipt — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
+<script>
+  // Receipt is an official printable document: force white/light mode so text is 100% visible and clean
+  document.documentElement.setAttribute('data-theme', 'light');
+  try { localStorage.setItem('refind-theme', 'light'); } catch (e) {}
+</script>
+<style>
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --receipt-bg: #ffffff;
+    --receipt-border: #221f1d;
+    --receipt-ink: #1d1b19;
+    --receipt-ink-soft: #5c5349;
+    --receipt-panel-bg: #fbf9f4;
+    --receipt-line: #dcd4c3;
+  }
+
+  body {
+    background: #f4efe4 !important;
+    margin: 0;
+    padding: 20px 12px;
+    font-family: var(--font-body);
+    color: #1d1b19 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .receipt-toolbar {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fffdf7;
+    border: 1px solid #d9cfb8;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-sizing: border-box;
+  }
+
+  /* Main Printable Sheet - Compact single-page geometry */
+  .receipt-sheet {
+    width: 100%;
+    max-width: 800px;
+    background: #ffffff !important;
+    color: #1d1b19 !important;
+    border: 2px solid #221f1d;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    padding: 24px 28px;
+    position: relative;
+  }
+
+  /* Shield all sheet text from dark-mode inversions */
+  .receipt-sheet,
+  .receipt-sheet * {
+    color: #1d1b19;
+  }
+
+  /* Header */
+  .receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #221f1d;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .institution-block h1 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 2px;
+    color: #1d1b19 !important;
+    letter-spacing: -0.4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .institution-block p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #5c5349 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+
+  .receipt-number-badge {
+    text-align: right;
+  }
+
+  .receipt-num {
+    font-family: var(--font-num);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--clay-deep) !important;
+    margin: 0 0 3px;
+  }
+
+  .status-stamp {
+    display: inline-block;
+    padding: 3px 8px;
+    font-family: var(--font-num);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1.5px solid currentColor;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+  }
+
+  .stamp-resolved { color: #1e6938 !important; border-color: #1e6938 !important; background: #eaf6ee !important; }
+  .stamp-approved { color: #8e5414 !important; border-color: #8e5414 !important; background: #fdf6ec !important; }
+
+  /* Item Details Box */
+  .item-box {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 14px;
+    background: #fbf9f4 !important;
+    border: 1px solid #dcd4c3 !important;
+    border-radius: 5px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  .item-photo-wrap {
+    width: 88px;
+    height: 72px;
+    background: #f3ede2 !important;
+    border: 1px solid #cfc5b4 !important;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .item-photo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .item-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+
+  .item-info-table td {
+    padding: 2px 5px;
+  }
+
+  .item-info-table td.lbl {
+    width: 20%;
+    color: #5c5349 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+  }
+
+  /* Parties Grid */
+  .parties-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: #fbf9f4 !important;
+    border: 1px solid #dcd4c3 !important;
+    border-radius: 5px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
+
+  .party-column h3 {
+    margin: 0 0 6px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #5c5349 !important;
+    border-bottom: 1px dashed #cfc5b2 !important;
+    padding-bottom: 4px;
+  }
+
+  .party-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    font-size: 0.83rem;
+  }
+
+  .party-label {
+    color: #5c5349 !important;
+    font-weight: 500;
+  }
+
+  .party-val {
+    font-weight: 600;
+    color: #1d1b19 !important;
+    text-align: right;
+  }
+
+  /* Handover Location & Schedule */
+  .handover-details {
+    background: #fbf9f4 !important;
+    border: 1px solid #dcd4c3 !important;
+    border-left: 3.5px solid var(--clay) !important;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .handover-details strong {
+    color: #1d1b19 !important;
+  }
+
+  /* Legal Declaration */
+  .legal-statement {
+    border-top: 1px solid #dcd4c3 !important;
+    padding-top: 8px;
+    margin-bottom: 14px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #554e44 !important;
+    text-align: justify;
+  }
+
+  /* Signatures Block - Physical Ink Signature Lines */
+  .signatures-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 110px;
+    gap: 16px;
+    align-items: flex-end;
+    padding-top: 10px;
+    border-top: 1.5px dashed #cfc5b2 !important;
+  }
+
+  .signature-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .sig-line {
+    border-bottom: 1.5px solid #221f1d !important;
+    height: 38px;
+    margin-bottom: 4px;
+    position: relative;
+    background: transparent;
+  }
+
+  .sig-line::after {
+    content: "✕";
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    font-size: 0.82rem;
+    color: #999083 !important;
+    font-family: var(--font-body);
+  }
+
+  .sig-title {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #5c5349 !important;
+    font-weight: 700;
+    margin-bottom: 1px;
+  }
+
+  .sig-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1d1b19 !important;
+    margin-bottom: 1px;
+  }
+
+  .sig-date {
+    font-size: 0.75rem;
+    color: #5c5349 !important;
+    font-family: var(--font-num);
+  }
+
+  .receipt-qr-box {
+    text-align: center;
+  }
+
+  .receipt-qr-box img {
+    width: 72px;
+    height: 72px;
+    display: block;
+    margin: 0 auto 3px;
+    border: 1px solid #cfc5b4 !important;
+    padding: 2px;
+    background: #ffffff !important;
+  }
+
+  .receipt-qr-box span {
+    font-size: 0.65rem;
+    color: #5c5349 !important;
+    font-family: var(--font-num);
+    display: block;
+  }
+
+  /* Responsive Media Rules for screens <= 768px */
+  @media (max-width: 768px) {
+    body {
+      padding: 10px 8px;
+    }
+    .receipt-toolbar {
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      padding: 10px 12px;
+    }
+    .receipt-toolbar .flex {
+      justify-content: center;
+    }
+    .receipt-sheet {
+      padding: 18px 14px;
+    }
+    .receipt-header {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .receipt-number-badge {
+      text-align: left;
+    }
+    .institution-block h1 {
+      font-size: 1.35rem;
+    }
+    .parties-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+    }
+    .signatures-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .legal-statement {
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .item-box {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+    .item-info-table td.lbl {
+      width: 35%;
+      text-align: left;
+    }
+    .item-info-table td:not(.lbl) {
+      text-align: left;
+    }
+    .receipt-toolbar .small {
+      display: none;
+    }
+  }
+
+  /* Strict 1-Page Physical & PDF Print Specification */
+  @page {
+    size: portrait;
+    margin: 8mm 10mm;
+  }
+
+  @media print {
+    html, body {
+      background: #ffffff !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      color: #000000 !important;
+      width: 100% !important;
+      height: 100% !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .receipt-toolbar, .nav, .floating-admin-dock {
+      display: none !important;
+    }
+
+    .receipt-sheet {
+      border: 1.5px solid #000000 !important;
+      box-shadow: none !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      padding: 12px 16px !important;
+      margin: 0 auto !important;
+      page-break-inside: avoid !important;
+      page-break-after: avoid !important;
+      page-break-before: avoid !important;
+    }
+
+    .receipt-sheet, .receipt-sheet * {
+      color: #000000 !important;
+    }
+
+    .receipt-header {
+      padding-bottom: 6px !important;
+      margin-bottom: 8px !important;
+      border-bottom: 1.5px solid #000000 !important;
+    }
+
+    .institution-block h1 {
+      font-size: 1.35rem !important;
+      margin-bottom: 1px !important;
+    }
+
+    .institution-block p {
+      font-size: 0.72rem !important;
+    }
+
+    .receipt-num {
+      font-size: 1.05rem !important;
+    }
+
+    .status-stamp {
+      font-size: 0.68rem !important;
+      padding: 2px 6px !important;
+    }
+
+    .item-box {
+      padding: 6px 10px !important;
+      margin-bottom: 8px !important;
+      gap: 12px !important;
+      border: 1px solid #666666 !important;
+      background: #fdfdfd !important;
+    }
+
+    .item-photo-wrap {
+      width: 75px !important;
+      height: 60px !important;
+      border: 1px solid #888888 !important;
+    }
+
+    .item-info-table {
+      font-size: 0.78rem !important;
+    }
+
+    .item-info-table td {
+      padding: 1px 4px !important;
+    }
+
+    .parties-grid {
+      padding: 6px 12px !important;
+      margin-bottom: 8px !important;
+      gap: 12px !important;
+      border: 1px solid #666666 !important;
+      background: #fdfdfd !important;
+    }
+
+    .party-column h3 {
+      margin: 0 0 3px !important;
+      font-size: 0.72rem !important;
+      border-bottom: 1px dashed #888888 !important;
+      padding-bottom: 2px !important;
+    }
+
+    .party-row {
+      margin-bottom: 1px !important;
+      font-size: 0.78rem !important;
+    }
+
+    .handover-details {
+      padding: 5px 8px !important;
+      margin-bottom: 8px !important;
+      font-size: 0.78rem !important;
+      line-height: 1.35 !important;
+      border: 1px solid #666666 !important;
+      border-left: 3px solid #000000 !important;
+      background: #fdfdfd !important;
+    }
+
+    .legal-statement {
+      padding-top: 5px !important;
+      margin-bottom: 8px !important;
+      font-size: 0.68rem !important;
+      line-height: 1.3 !important;
+      border-top: 1px solid #888888 !important;
+    }
+
+    .signatures-grid {
+      padding-top: 6px !important;
+      gap: 14px !important;
+      border-top: 1.5px dashed #666666 !important;
+    }
+
+    .sig-line {
+      height: 32px !important;
+      margin-bottom: 3px !important;
+      border-bottom: 1.5px solid #000000 !important;
+    }
+
+    .sig-line::after {
+      color: #777777 !important;
+    }
+
+    .sig-title {
+      font-size: 0.68rem !important;
+    }
+
+    .sig-name {
+      font-size: 0.75rem !important;
+    }
+
+    .sig-date {
+      font-size: 0.7rem !important;
+    }
+
+    .receipt-qr-box img {
+      width: 60px !important;
+      height: 60px !important;
+      border: 1px solid #000000 !important;
+    }
+
+    .receipt-qr-box span {
+      font-size: 0.58rem !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="receipt-toolbar">
+  <div class="flex gap-8" style="align-items:center; flex-wrap:wrap;" id="receipt-back-container">
+    <a href="/dashboard.html" class="btn btn-outline btn-sm" id="receipt-back-btn">← Back to Dashboard</a>
+    <span class="small muted" id="toolbar-info">Official Custody Transfer Record (1 Page)</span>
+  </div>
+  <div class="flex gap-8" style="align-items:center;">
+    <button onclick="smartCloseOrBack()" class="btn btn-ghost btn-sm" id="receipt-close-btn" style="display:none;" title="Close this PDF tab">✕ Close Tab</button>
+    <button onclick="window.print()" class="btn btn-primary btn-sm">🖨️ Print / Save PDF</button>
+  </div>
+</div>
+
+<div id="loading" class="text-center" style="margin-top:40px;">
+  <p>Generating verified custody release receipt…</p>
+</div>
+
+<div class="receipt-sheet" id="receipt-sheet" style="display:none;">
+  <!-- Header -->
+  <div class="receipt-header">
+    <div class="institution-block">
+      <h1><span class="mark"></span> ReFind Campus Lost &amp; Found</h1>
+      <p>Custody Release &amp; Property Handover Certificate</p>
+    </div>
+    <div class="receipt-number-badge">
+      <div class="receipt-num" id="r-num">REC-00000</div>
+      <div id="r-stamp" class="status-stamp stamp-approved">VERIFIED HANDOVER</div>
+    </div>
+  </div>
+
+  <!-- Item Specification Block -->
+  <div class="item-box">
+    <div class="item-photo-wrap" id="r-photo">
+      <span>📦</span>
+    </div>
+    <div>
+      <h3 style="margin:0 0 4px; font-family:var(--font-display); font-size:1.15rem; color:#1d1b19;" id="r-item-title">—</h3>
+      <table class="item-info-table">
+        <tr>
+          <td class="lbl">Item ID</td>
+          <td id="r-item-id" style="font-family:var(--font-num); font-weight:600;">—</td>
+          <td class="lbl">Category</td>
+          <td id="r-item-cat">—</td>
+        </tr>
+        <tr>
+          <td class="lbl">Color</td>
+          <td id="r-item-color">—</td>
+          <td class="lbl">Brand</td>
+          <td id="r-item-brand">—</td>
+        </tr>
+        <tr>
+          <td class="lbl">Found At</td>
+          <td id="r-item-loc" colspan="3">—</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Parties Grid -->
+  <div class="parties-grid">
+    <div class="party-column">
+      <h3>Released By (Finder / Custodian)</h3>
+      <div class="party-row"><span class="party-label">Name</span><span class="party-val" id="r-finder-name">—</span></div>
+      <div class="party-row"><span class="party-label">Student ID</span><span class="party-val" id="r-finder-id">—</span></div>
+      <div class="party-row"><span class="party-label">WhatsApp</span><span class="party-val" id="r-finder-phone">—</span></div>
+      <div class="party-row"><span class="party-label">Email</span><span class="party-val" id="r-finder-email">—</span></div>
+    </div>
+    <div class="party-column">
+      <h3>Received By (Claimant / Legal Owner)</h3>
+      <div class="party-row"><span class="party-label">Name</span><span class="party-val" id="r-claimant-name">—</span></div>
+      <div class="party-row"><span class="party-label">Student ID</span><span class="party-val" id="r-claimant-id">—</span></div>
+      <div class="party-row"><span class="party-label">WhatsApp</span><span class="party-val" id="r-claimant-phone">—</span></div>
+      <div class="party-row"><span class="party-label">Email</span><span class="party-val" id="r-claimant-email">—</span></div>
+    </div>
+  </div>
+
+  <!-- Handover Logistics -->
+  <div class="handover-details">
+    <div><strong>Designated Handover Station:</strong> <span id="r-handover-loc">Campus Lost &amp; Found Office</span></div>
+    <div style="margin-top:2px;"><strong>Handover Date &amp; Time:</strong> <span id="r-handover-time">—</span></div>
+    <div style="margin-top:2px; font-size:0.78rem; color:#5c5349;"><strong>Verification Protocol:</strong> Ownership verified via private security verification question &amp; ReFind custody release record.</div>
+  </div>
+
+  <!-- Formal Declaration -->
+  <div class="legal-statement">
+    <strong>OFFICIAL PROPERTY RELEASE:</strong> This document certifies the formal handover and release of the personal property described above in accordance with Campus Property Management Policies. The claimant confirms receipt of the article in satisfactory condition, and both parties affirm the accuracy of their identity records. Upon signing, all custody obligations of the institution and the finder are formally discharged.
+  </div>
+
+  <!-- Signatures Block: Blank for Real Ink Hand-Signing -->
+  <div class="signatures-grid">
+    <div class="signature-box">
+      <div class="sig-line" id="r-claimant-sig"></div>
+      <div class="sig-title">Claimant / Owner Signature (Sign in Ink)</div>
+      <div class="sig-name" id="r-claimant-name-label">Printed Name: —</div>
+      <div class="sig-date" id="r-claimant-date">Date: ____________________</div>
+    </div>
+    <div class="signature-box">
+      <div class="sig-line" id="r-finder-sig"></div>
+      <div class="sig-title">Finder / Custodian Signature (Sign in Ink)</div>
+      <div class="sig-name" id="r-finder-name-label">Printed Name: —</div>
+      <div class="sig-date" id="r-finder-date">Date: ____________________</div>
+    </div>
+    <div class="receipt-qr-box">
+      <img id="r-qr" src="" alt="Verification QR">
+      <span>SECURE AUDIT QR</span>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  requireLogin();
+
+  // Enforce white mode when viewing this receipt
+  if (typeof applyTheme === 'function') {
+    applyTheme('light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    try { localStorage.setItem('refind-theme', 'light'); } catch (e) {}
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const claimId = urlParams.get('claimId');
+  const itemId = urlParams.get('itemId');
+
+  function setupReceiptNavigation() {
+    const fromParam = urlParams.get('from');
+    const tabParam = urlParams.get('tab');
+    const returnUrlParam = urlParams.get('returnUrl');
+
+    let user = null;
+    try { user = getUser(); } catch (e) {}
+    const isAdmin = user && user.role === 'admin';
+
+    const storedAdminPage = sessionStorage.getItem('refind_admin_last_page');
+    const storedDashTab = sessionStorage.getItem('refind_dash_tab');
+    const lastEditTab = sessionStorage.getItem('refind_last_edit_tab');
+
+    // Effective dashboard tab
+    const effectiveTab = tabParam || lastEditTab || storedDashTab || 'claims';
+    const tabLabels = { lost: 'Lost Items', found: 'Found Items', claims: 'Claims' };
+    const tabName = tabLabels[effectiveTab] || 'Dashboard';
+
+    const backBtn = document.getElementById('receipt-back-btn');
+    const backContainer = document.getElementById('receipt-back-container');
+    const closeBtn = document.getElementById('receipt-close-btn');
+
+    let targetUrl = '';
+    let targetLabel = '';
+    let secondaryUrl = '';
+    let secondaryLabel = '';
+
+    const cameFromAdmin = fromParam === 'admin' || (isAdmin && (returnUrlParam?.startsWith('/admin/') || storedAdminPage));
+
+    if (returnUrlParam) {
+      targetUrl = returnUrlParam;
+      if (targetUrl.includes('/admin/')) {
+        if (targetUrl.includes('dashboard.html')) targetLabel = '← Back to Admin Dashboard';
+        else if (targetUrl.includes('claims.html')) targetLabel = '← Back to Claims Desk';
+        else if (targetUrl.includes('recovered.html')) targetLabel = '← Back to Recovered Items';
+        else if (targetUrl.includes('items.html')) targetLabel = '← Back to Admin Items';
+        else targetLabel = '← Back to Admin Panel';
+      } else if (targetUrl.includes('dashboard.html')) {
+        targetLabel = `← Back to Dashboard (${tabName})`;
+      } else {
+        targetLabel = '← Back';
+      }
+    } else if (cameFromAdmin) {
+      targetUrl = storedAdminPage || '/admin/claims.html';
+      if (targetUrl.includes('dashboard.html')) targetLabel = '← Back to Admin Dashboard';
+      else if (targetUrl.includes('claims.html')) targetLabel = '← Back to Claims Desk';
+      else if (targetUrl.includes('recovered.html')) targetLabel = '← Back to Recovered Items';
+      else if (targetUrl.includes('items.html')) targetLabel = '← Back to Admin Items';
+      else targetLabel = '← Back to Admin Panel';
+    } else {
+      targetUrl = `/dashboard.html?tab=${effectiveTab}`;
+      targetLabel = `← Back to Dashboard (${tabName})`;
+    }
+
+    if (isAdmin && !targetUrl.includes('/admin/')) {
+      secondaryUrl = storedAdminPage || '/admin/dashboard.html';
+      secondaryLabel = '🛡️ Admin Panel';
+    }
+
+    if (backBtn) {
+      backBtn.href = targetUrl;
+      backBtn.innerHTML = targetLabel;
+    }
+
+    if (secondaryUrl && backContainer && !document.getElementById('receipt-secondary-btn')) {
+      const sec = document.createElement('a');
+      sec.id = 'receipt-secondary-btn';
+      sec.href = secondaryUrl;
+      sec.className = 'btn btn-ghost btn-sm';
+      sec.innerHTML = secondaryLabel;
+      const infoSpan = document.getElementById('toolbar-info');
+      backContainer.insertBefore(sec, infoSpan);
+    }
+
+    if (closeBtn && (window.opener || window.history.length <= 1)) {
+      closeBtn.style.display = 'inline-block';
+    }
+
+    window._receiptTargetUrl = targetUrl;
+    window._receiptAdminTarget = cameFromAdmin ? targetUrl : (storedAdminPage || '/admin/dashboard.html');
+    window._receiptDashTarget = `/dashboard.html?tab=${effectiveTab}`;
+    window._receiptTabName = tabName;
+  }
+
+  function smartCloseOrBack() {
+    try {
+      window.close();
+    } catch (e) {}
+    setTimeout(() => {
+      if (window._receiptTargetUrl) {
+        window.location.href = window._receiptTargetUrl;
+      }
+    }, 120);
+  }
+
+  async function loadReceipt() {
+    setupReceiptNavigation();
+
+    let user = null;
+    try { user = getUser(); } catch (e) {}
+    const isAdmin = user && user.role === 'admin';
+
+    try {
+      let endpoint = '';
+      if (claimId) {
+        endpoint = `/claims/${claimId}/receipt`;
+      } else if (itemId) {
+        endpoint = `/claims/receipt-by-item/${itemId}`;
+      } else {
+        throw new Error('No claimId or itemId specified in URL.');
+      }
+
+      const { receipt } = await api.get(endpoint);
+      renderReceipt(receipt);
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `
+        <div class="alert alert-error" style="max-width:500px; margin:0 auto;">
+          <strong>Error generating receipt:</strong> ${escapeHtml(err.message)}
+          <br><br>
+          <div class="flex gap-12" style="justify-content:center; flex-wrap:wrap;">
+            ${isAdmin ? `<a href="${window._receiptAdminTarget || '/admin/claims.html'}" class="btn btn-primary btn-sm">Return to Admin Panel</a>` : ''}
+            <a href="${window._receiptDashTarget || '/dashboard.html'}" class="btn btn-outline btn-sm">Return to Dashboard (${window._receiptTabName || 'Tab'})</a>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function renderReceipt(r) {
+    document.title = `Receipt ${r.receiptNumber} — ReFind`;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('receipt-sheet').style.display = 'block';
+
+    document.getElementById('r-num').textContent = r.receiptNumber;
+
+    const stamp = document.getElementById('r-stamp');
+    if (r.claimantConfirmed) {
+      stamp.className = 'status-stamp stamp-resolved';
+      stamp.textContent = '✓ CONFIRMED RETURNED';
+    } else {
+      stamp.className = 'status-stamp stamp-approved';
+      stamp.textContent = '✓ APPROVED HANDOVER';
+    }
+
+    // Item details
+    document.getElementById('r-item-title').textContent = r.item.title;
+    document.getElementById('r-item-id').textContent = `#${r.item.id}`;
+    document.getElementById('r-item-cat').textContent = (r.item.category || '—').toUpperCase();
+    document.getElementById('r-item-color').textContent = r.item.color || '—';
+    document.getElementById('r-item-brand').textContent = r.item.brand || '—';
+    document.getElementById('r-item-loc').textContent = r.item.location;
+
+    if (r.item.image) {
+      document.getElementById('r-photo').innerHTML = `<img src="${r.item.image}" alt="${escapeHtml(r.item.title)}">`;
+    }
+
+    // Parties
+    document.getElementById('r-finder-name').textContent = r.finder.name;
+    document.getElementById('r-finder-id').textContent = r.finder.studentId || '—';
+    document.getElementById('r-finder-phone').textContent = r.finder.phone || '—';
+    document.getElementById('r-finder-email').textContent = r.finder.email;
+
+    document.getElementById('r-claimant-name').textContent = r.claimant.name;
+    document.getElementById('r-claimant-id').textContent = r.claimant.studentId || '—';
+    document.getElementById('r-claimant-phone').textContent = r.claimant.phone || '—';
+    document.getElementById('r-claimant-email').textContent = r.claimant.email;
+
+    // Logistics
+    document.getElementById('r-handover-loc').textContent = r.handoverLocation || 'Campus Lost & Found Office';
+    const dt = r.handoverDatetime ? new Date(r.handoverDatetime).toLocaleString(undefined, {
+      dateStyle: 'medium', timeStyle: 'short'
+    }) : new Date().toLocaleDateString();
+    document.getElementById('r-handover-time').textContent = dt;
+
+    // Signatures: Keep blank for physical hand-signing with pen after printing!
+    document.getElementById('r-claimant-sig').innerHTML = '';
+    document.getElementById('r-finder-sig').innerHTML = '';
+    document.getElementById('r-claimant-name-label').textContent = `Printed Name: ${r.claimant.name}`;
+    document.getElementById('r-finder-name-label').textContent = `Printed Name: ${r.finder.name}`;
+
+    const dateStr = new Date(r.issuedAt).toLocaleDateString();
+    document.getElementById('r-claimant-date').textContent = `Date: ${dateStr}`;
+    document.getElementById('r-finder-date').textContent = `Date: ${dateStr}`;
+
+    // Dynamic QR stamp
+    document.getElementById('r-qr').src = `/api/items/${r.item.id}/qr.svg`;
+  }
+
+  loadReceipt();
+</script>
+</body>
+</html>

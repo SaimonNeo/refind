@@ -7,12 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
-    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
   </div>
 </nav>
 
@@ -31,10 +35,12 @@
     <p class="muted mb-24">Everything that's been claimed or fully returned to its owner.</p>
 
     <div id="loading">Loading…</div>
-    <table class="admin-table" id="recovered-table" style="display:none;">
-      <thead><tr><th>Item</th><th>Reported by</th><th>Status</th><th>Reported</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrap" id="table-wrap" style="display:none;">
+      <table class="admin-table" id="recovered-table">
+        <thead><tr><th>Item</th><th>Reported by</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <div id="empty" class="empty-state" style="display:none;"><h3>Nothing recovered yet</h3><p>Approved claims and confirmed handovers will show up here.</p></div>
   </main>
 </div>
@@ -58,13 +64,17 @@
       }
       const table = document.getElementById('recovered-table');
       table.style.display = 'table';
+      document.getElementById('table-wrap').style.display = 'block';
       table.querySelector('tbody').innerHTML = items.map(i => `
         <tr>
-          <td>${escapeHtml(i.title)}</td>
+          <td><a href="/item.html?id=${i.id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(i.title)}</a></td>
           <td>${escapeHtml(i.reporter_name)}</td>
           <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
           <td>${timeAgo(i.created_at)}</td>
-          <td><a href="/item.html?id=${i.id}" class="btn btn-ghost btn-sm">View</a></td>
+          <td>
+            <a href="/item.html?id=${i.id}&from=admin" target="_blank" class="btn btn-ghost btn-sm" title="View in new tab">View ↗</a>
+            <a href="/receipt.html?itemId=${i.id}&from=admin&returnUrl=/admin/recovered.html" target="_blank" class="btn btn-outline btn-sm">📄 Receipt</a>
+          </td>
         </tr>
       `).join('');
     } catch (err) {

@@ -7,12 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
-    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
   </div>
 </nav>
 
@@ -31,10 +35,12 @@
     <p class="muted mb-24">Claims flagged for manual review need a human decision. Auto-approved and auto-rejected claims are shown for audit.</p>
 
     <div id="loading">Loading…</div>
-    <table class="admin-table" id="claims-table" style="display:none;">
-      <thead><tr><th>Item</th><th>Claimant</th><th>Match</th><th>Confidence</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrap" id="table-wrap" style="display:none;">
+      <table class="admin-table" id="claims-table">
+        <thead><tr><th>Item</th><th>Claimant</th><th>Match</th><th>Confidence</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
@@ -62,7 +68,6 @@
 </div>
 
 <script src="/js/api.js"></script>
-<script src="/js/ui.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
 <script>
@@ -107,10 +112,16 @@
       document.getElementById('loading').style.display = 'none';
       const table = document.getElementById('claims-table');
       table.style.display = 'table';
+      document.getElementById('table-wrap').style.display = 'block';
       table.querySelector('tbody').innerHTML = claims.map(c => `
         <tr id="claim-row-${c.id}">
-          <td>${escapeHtml(c.item_title)}</td>
-          <td>${escapeHtml(c.claimant_name)}<br><span class="small muted">${escapeHtml(c.claimant_email)}</span>${c.claimant_phone ? `<br><span class="small muted">${escapeHtml(c.claimant_phone)}</span>` : ''}${c.id_proof_image ? `<br><a href="${escapeHtml(c.id_proof_image)}" target="_blank" class="small">ID proof</a>` : ''}</td>
+          <td><a href="/item.html?id=${c.item_id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(c.item_title)}</a></td>
+          <td>
+            ${escapeHtml(c.claimant_name)}<br>
+            <span class="small muted">${escapeHtml(c.claimant_email)}</span>
+            ${c.claimant_phone ? `<br><span class="small muted">${escapeHtml(c.claimant_phone)}</span> <div class="mt-4">${whatsappButtonHtml(c.claimant_phone, `Hello ${c.claimant_name}, this is the ReFind campus admin reviewing your claim for "${c.item_title}".`, 'WhatsApp')}</div>` : ''}
+            ${c.id_proof_image ? `<br><a href="${escapeHtml(c.id_proof_image)}" target="_blank" class="small">ID proof</a>` : ''}
+          </td>
           <td>${matchLabel(c)}</td>
           <td>${confidenceLabel(c.confidence_score)}</td>
           <td>${timeAgo(c.created_at)}</td>
@@ -120,7 +131,7 @@
               <button class="btn btn-primary btn-sm" onclick="openApprove(${c.id})">Approve</button>
               <button class="btn btn-danger btn-sm" onclick="reject(${c.id})">Reject</button>
             </div>
-          ` : ''}</td>
+          ` : (c.status === 'approved' ? `<a href="/receipt.html?claimId=${c.id}&from=admin&returnUrl=/admin/claims.html" target="_blank" class="btn btn-outline btn-xs">📄 Receipt</a>` : '')}</td>
         </tr>
       `).join('');
     } catch (err) {

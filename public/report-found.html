@@ -6,10 +6,16 @@
 <title>Report a found item — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
 <style>
   .form-wrap { max-width: 640px; margin: 0 auto; padding: 44px 24px 96px; }
   .form-card { padding: 30px; }
   .verify-box { background: var(--paper-dim); border: 1px dashed var(--line); border-radius: var(--radius); padding: 18px; }
+  @media (max-width: 480px) {
+    .form-wrap { padding: 18px 12px 64px; }
+    .form-card { padding: 18px 14px; }
+    .verify-box { padding: 14px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -18,6 +24,7 @@
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
       <a href="/browse.html">Browse</a>
+      <a href="/map.html">Campus Map</a>
       <a href="/dashboard.html">Dashboard</a>
       <span id="notif-area"></span>
     </div>
@@ -54,12 +61,16 @@
           <input type="text" id="brand" placeholder="e.g. Lenovo">
         </div>
         <div class="field">
-          <label for="location">Where you found it</label>
+          <div class="flex-between" style="align-items:center;">
+            <label for="location" style="margin-bottom:0;">Where you found it</label>
+            <button type="button" id="toggle-map-btn" class="btn btn-ghost btn-xs" style="padding:2px 8px; font-size:0.78rem;">🗺️ Pick on Map</button>
+          </div>
           <select id="location" required>
             <option value="">Select location</option>
           </select>
         </div>
       </div>
+      <div id="location-map-picker" class="mb-16" style="display:none;"></div>
       <div class="field">
         <label for="event_date">Date/time found</label>
         <input type="datetime-local" id="event_date">
@@ -91,6 +102,10 @@
         </div>
       </div>
 
+      <div id="contact-info-note" class="mb-16 small" style="background:#f6efe2; border:1px solid #dfd5c2; border-radius:var(--radius); padding:10px 14px; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:1.1rem;">💬</span>
+        <span id="contact-info-text">Handover contact: Your profile WhatsApp number will be linked so approved claimants can reach you.</span>
+      </div>
       <button type="submit" class="btn btn-clay btn-block" id="submit-btn">Submit found report</button>
     </form>
   </div>
@@ -99,18 +114,87 @@
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
+<script src="/js/campus-map.js"></script>
+<script src="/js/color-extractor.js"></script>
 <script>
   requireLogin();
   document.getElementById('notif-area').innerHTML = notifBellHtml();
   initNotifBell();
   populateSelect('category', ITEM_CATEGORIES);
   populateSelect('location', CAMPUS_LOCATIONS);
+  initColorExtractor({ fileInputId: 'image', previewContainerId: 'image-preview', colorInputId: 'color' });
+
+  const meUser = getUser();
+  if (meUser) {
+    const contactText = document.getElementById('contact-info-text');
+    if (meUser.phone) {
+      contactText.innerHTML = `<strong>Handover WhatsApp:</strong> Approved claimants will contact you at <strong>${escapeHtml(meUser.phone)}</strong> (from your profile).`;
+    } else {
+      contactText.innerHTML = `<strong>WhatsApp Contact:</strong> No phone on file. <a href="/profile.html" style="text-decoration:underline; font-weight:600;">Add WhatsApp number to your profile</a> for 1-click coordination.`;
+    }
+  }
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get('edit');
+  const fromParam = params.get('from');
+  const tabParam = params.get('tab') || 'found';
+  if (editId) {
+    sessionStorage.setItem('refind_last_edit_tab', tabParam);
+    sessionStorage.setItem('refind_dash_tab', tabParam);
+  }
+  const initialLoc = params.get('location');
+  if (initialLoc) {
+    document.getElementById('location').value = initialLoc;
+  }
   const form = document.getElementById('found-form');
   const alertArea = document.getElementById('alert-area');
   const submitBtn = document.getElementById('submit-btn');
+
+  // Campus Map Picker Integration
+  let pickerMapInstance = null;
+  const toggleMapBtn = document.getElementById('toggle-map-btn');
+  const mapPickerContainer = document.getElementById('location-map-picker');
+
+  toggleMapBtn.addEventListener('click', () => {
+    const isHidden = mapPickerContainer.style.display === 'none';
+    mapPickerContainer.style.display = isHidden ? 'block' : 'none';
+    const hasLoc = Boolean(document.getElementById('location').value);
+    toggleMapBtn.textContent = isHidden ? '✕ Close Map' : (hasLoc ? '🗺️ Change (Map)' : '🗺️ Pick on Map');
+
+    if (isHidden) {
+      if (!pickerMapInstance) {
+        pickerMapInstance = new CampusMap(mapPickerContainer, {
+          mode: 'picker',
+          initialLocation: document.getElementById('location').value,
+          onSelect: (bldgName) => {
+            document.getElementById('location').value = bldgName;
+            mapPickerContainer.style.display = 'none';
+            toggleMapBtn.textContent = '🗺️ Change (Map)';
+            toast(`Selected location: ${bldgName}`);
+          }
+        });
+      } else {
+        const currentLoc = document.getElementById('location').value;
+        if (currentLoc) {
+          pickerMapInstance.selectBuildingByName(currentLoc, false);
+        } else {
+          pickerMapInstance.clearSelection();
+        }
+      }
+    }
+  });
+
+  document.getElementById('location').addEventListener('change', (e) => {
+    if (pickerMapInstance) {
+      if (e.target.value) {
+        pickerMapInstance.selectBuildingByName(e.target.value, false);
+        toggleMapBtn.textContent = '🗺️ Change (Map)';
+      } else {
+        pickerMapInstance.clearSelection();
+        toggleMapBtn.textContent = '🗺️ Pick on Map';
+      }
+    }
+  });
 
   document.getElementById('image').addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -128,6 +212,20 @@
     if (!editId) return;
     document.getElementById('page-heading').textContent = 'Edit your found report';
     submitBtn.textContent = 'Save changes';
+
+    const cancelUrl = fromParam === 'admin' ? '/admin/items.html' : `/dashboard.html?tab=${tabParam}`;
+    const cancelText = fromParam === 'admin' ? 'Cancel (Back to Admin Items)' : `Cancel (Back to ${tabParam === 'found' ? 'Found Items' : tabParam})`;
+    if (!document.getElementById('cancel-edit-btn')) {
+      const cancelBtn = document.createElement('a');
+      cancelBtn.id = 'cancel-edit-btn';
+      cancelBtn.href = cancelUrl;
+      cancelBtn.className = 'btn btn-outline mt-8';
+      cancelBtn.style.display = 'block';
+      cancelBtn.style.textAlign = 'center';
+      cancelBtn.textContent = cancelText;
+      submitBtn.insertAdjacentElement('afterend', cancelBtn);
+    }
+
     try {
       const { item } = await api.get(`/items/${editId}`);
       document.getElementById('title').value = item.title;
@@ -179,7 +277,13 @@
 
       if (editId) {
         await apiRequest(`/items/${editId}`, { method: 'PATCH', body: fd, isForm: true });
-        window.location.href = '/dashboard.html';
+        const fromParam = params.get('from');
+        const tabParam = params.get('tab') || 'found';
+        if (fromParam === 'admin') {
+          window.location.href = '/admin/items.html';
+        } else {
+          window.location.href = `/dashboard.html?tab=${tabParam}`;
+        }
       } else {
         const data = await api.post('/items', fd, true);
         window.location.href = `/item.html?id=${data.item.id}`;

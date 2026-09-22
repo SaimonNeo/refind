@@ -6,14 +6,24 @@
 <title>Item Details — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
 <style>
   .item-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px 0 80px; }
   .item-photo { aspect-ratio: 4/3; background: var(--paper-dim); border: 1px solid var(--line); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--ink-soft); overflow: hidden; }
   .item-photo img { width: 100%; height: 100%; object-fit: cover; }
   .meta-list { display: grid; gap: 10px; margin: 20px 0; }
-  .meta-row { display: flex; justify-content: space-between; font-size: 0.92rem; padding: 8px 0; border-bottom: 1px solid var(--line); }
-  .meta-row .k { color: var(--ink-soft); }
-  @media (max-width: 800px) { .item-detail { grid-template-columns: 1fr; } }
+  .meta-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; font-size: 0.92rem; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .meta-row .k { color: var(--ink-soft); flex-shrink: 0; }
+  .meta-row > *:last-child { text-align: right; word-break: break-word; }
+  @media (max-width: 800px) {
+    .item-detail { grid-template-columns: 1fr; gap: 28px; padding: 24px 0 48px; }
+  }
+  @media (max-width: 480px) {
+    .item-detail { gap: 20px; padding: 16px 0 36px; }
+    #actions { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+    #actions .btn { width: 100%; justify-content: center; min-height: 44px; }
+    .meta-row { font-size: 0.85rem; padding: 6px 0; gap: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -22,12 +32,14 @@
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
       <a href="/browse.html">Browse</a>
+      <a href="/map.html">Campus Map</a>
       <span id="nav-auth-area"></span>
     </div>
   </div>
 </nav>
 
 <div class="container">
+  <div id="admin-bar-area"></div>
   <div id="loading" class="text-center" style="padding:80px 0;">Loading item…</div>
   <div id="error-area"></div>
   <div id="item-detail" class="item-detail" style="display:none;"></div>
@@ -36,7 +48,6 @@
 <footer class="footer"><div class="container">ReFind — campus lost &amp; found.</div></footer>
 
 <script src="/js/api.js"></script>
-<script src="/js/ui.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
 <script>
@@ -44,7 +55,7 @@
     const area = document.getElementById('nav-auth-area');
     const user = getUser();
     area.innerHTML = user
-      ? `<a href="/dashboard.html">Dashboard</a>${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      ? `<a href="/dashboard.html">Dashboard</a>${user.role === 'admin' ? ' <a href="/admin/dashboard.html" class="nav-admin-badge">🛡️ Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
       : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
     const l = document.getElementById('logout-link');
     if (l) l.addEventListener('click', (e) => { e.preventDefault(); logout(); });
@@ -74,6 +85,38 @@
   function render(item) {
     document.title = `${item.title} — ReFind`;
     document.getElementById('loading').style.display = 'none';
+
+    const fromParamInit = params.get('from');
+    const tabParamInit = params.get('tab') || sessionStorage.getItem('refind_dash_tab') || (item.type === 'found' ? 'found' : 'lost');
+    const storedAdminPage = sessionStorage.getItem('refind_admin_last_page');
+    let adminReturnUrl = storedAdminPage || '/admin/items.html';
+    let adminReturnLabel = '← Back to Admin Items';
+    if (adminReturnUrl.includes('dashboard.html')) adminReturnLabel = '← Back to Admin Dashboard';
+    else if (adminReturnUrl.includes('claims.html')) adminReturnLabel = '← Back to Claims Desk';
+    else if (adminReturnUrl.includes('recovered.html')) adminReturnLabel = '← Back to Recovered Items';
+    else if (adminReturnUrl.includes('matches.html')) adminReturnLabel = '← Back to Matches';
+
+    if (user && user.role === 'admin') {
+      document.getElementById('admin-bar-area').innerHTML = `
+        <div class="admin-context-bar" style="margin-top:20px;">
+          <div class="flex gap-8" style="align-items:center;">
+            <strong>🛡️ Admin Inspector:</strong>
+            <span>Report #${item.id} (${item.type.toUpperCase()}) &bull; Status: <span class="badge ${statusBadgeClass(item.status)}">${item.status}</span></span>
+          </div>
+          <div class="flex gap-8 flex-wrap">
+            <a href="${adminReturnUrl}" class="btn btn-outline btn-xs">${adminReturnLabel}</a>
+            <a href="/admin/dashboard.html" class="btn btn-primary btn-xs">Admin Overview</a>
+          </div>
+        </div>
+      `;
+    } else if (fromParamInit === 'dashboard') {
+      document.getElementById('admin-bar-area').innerHTML = `
+        <div style="margin-top:16px;">
+          <a href="/dashboard.html?tab=${tabParamInit}" class="btn btn-outline btn-xs">← Back to Dashboard (${tabParamInit === 'found' ? 'Found Items' : (tabParamInit === 'claims' ? 'Claims' : 'Lost Items')})</a>
+        </div>
+      `;
+    }
+
     const wrap = document.getElementById('item-detail');
     wrap.style.display = 'grid';
 
@@ -97,27 +140,69 @@
           <div class="meta-row"><span class="k">Brand</span><span>${escapeHtml(item.brand || '—')}</span></div>
           <div class="meta-row"><span class="k">Location</span><span>${escapeHtml(item.location)}</span></div>
           <div class="meta-row"><span class="k">Reported</span><span>${timeAgo(item.created_at)}</span></div>
+          <div class="meta-row"><span class="k">Reporter</span><span>${escapeHtml(item.reporter_name || 'Anonymous')}</span></div>
+          ${item.reporter_phone ? `<div class="meta-row"><span class="k">WhatsApp</span><span><a href="${formatWhatsAppUrl(item.reporter_phone)}" target="_blank" rel="noopener noreferrer" style="color:#25D366; font-weight:600; text-decoration:none;">💬 ${escapeHtml(item.reporter_phone)}</a></span></div>` : ''}
           ${item.storage_location ? `<div class="meta-row"><span class="k">Being kept at</span><span>${escapeHtml(item.storage_location)}</span></div>` : ''}
         </div>
         <div class="flex gap-12 flex-wrap" id="actions"></div>
       </div>
     `;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    const tabParam = urlParams.get('tab') || sessionStorage.getItem('refind_dash_tab') || (item.type === 'found' ? 'found' : 'lost');
+    const isAdminViewer = fromParam === 'admin' || (user && user.role === 'admin');
+
+    const flyerUrl = isAdminViewer
+      ? `/flyer.html?id=${item.id}&from=admin&returnUrl=${encodeURIComponent(window.location.href)}`
+      : `/flyer.html?id=${item.id}&from=dashboard&tab=${tabParam}`;
+
+    const receiptUrl = isAdminViewer
+      ? `/receipt.html?itemId=${item.id}&from=admin&returnUrl=${encodeURIComponent(window.location.href)}`
+      : `/receipt.html?itemId=${item.id}&from=dashboard&tab=${tabParam}`;
+
     const actions = document.getElementById('actions');
+    const flyerBtn = `<a href="${flyerUrl}" target="_blank" class="btn btn-outline">🖨️ Print Flyer</a>`;
+    const receiptBtn = (item.status === 'claimed' || item.status === 'resolved')
+      ? `<a href="${receiptUrl}" target="_blank" class="btn btn-moss">📄 Custody Receipt</a>`
+      : '';
+    const waContactBtn = (!isOwner && item.reporter_phone && item.status === 'active')
+      ? whatsappButtonHtml(item.reporter_phone, `Hi, I am contacting you regarding your ${item.type} report for "${item.title}" on ReFind.`, 'Contact via WhatsApp', '')
+      : '';
+
     if (canClaim) {
-      actions.innerHTML = `<a href="/claim.html?itemId=${item.id}" class="btn btn-clay">Claim this item</a>`;
+      actions.innerHTML = `
+        <a href="/claim.html?itemId=${item.id}" class="btn btn-clay">Claim this item</a>
+        ${waContactBtn}
+        ${flyerBtn}
+        ${receiptBtn}
+      `;
     } else if (isOwner && item.status !== 'withdrawn') {
-      const editLink = item.type === 'lost' ? `/report-lost.html?edit=${item.id}` : `/report-found.html?edit=${item.id}`;
+      const editLink = item.type === 'lost'
+        ? `/report-lost.html?edit=${item.id}&from=${isAdminViewer ? 'admin' : 'dashboard'}&tab=${tabParam}`
+        : `/report-found.html?edit=${item.id}&from=${isAdminViewer ? 'admin' : 'dashboard'}&tab=${tabParam}`;
       const matchLink = item.type === 'lost' ? `/matches.html?lostItemId=${item.id}` : `/matches.html?foundItemId=${item.id}`;
       actions.innerHTML = `
         <a href="${matchLink}" class="btn btn-primary">View potential matches</a>
         <a href="${editLink}" class="btn btn-outline">Edit</a>
+        ${flyerBtn}
+        ${receiptBtn}
         ${item.status === 'active' || item.status === 'matched' ? `<button class="btn btn-ghost" id="withdraw-btn">Withdraw</button>` : ''}
       `;
       const withdrawBtn = document.getElementById('withdraw-btn');
       if (withdrawBtn) withdrawBtn.addEventListener('click', () => withdrawThisItem(item.id));
     } else if (!user) {
-      actions.innerHTML = `<a href="/login.html" class="btn btn-outline">Log in to claim or view matches</a>`;
+      actions.innerHTML = `
+        <a href="/login.html" class="btn btn-outline">Log in to claim or view matches</a>
+        ${flyerBtn}
+        ${receiptBtn}
+      `;
+    } else {
+      actions.innerHTML = `
+        ${waContactBtn}
+        ${flyerBtn}
+        ${receiptBtn}
+      `;
     }
   }
 

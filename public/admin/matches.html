@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matches &amp; Contact Desk — ReFind Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
+<style>
+  .contact-col { min-width: 220px; }
+  .contact-name { font-weight: 600; color: var(--ink); }
+  .contact-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .btn-call {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f4ede0; border: 1px solid #d3c7b2; color: #2e2a27;
+    font-size: 0.78rem; font-weight: 600; padding: 4px 8px; border-radius: var(--radius);
+    text-decoration: none;
+  }
+  .btn-call:hover { background: #e7dcce; text-decoration: none; }
+  .score-badge-large {
+    font-family: var(--font-num);
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <a href="/admin/dashboard.html">Overview</a>
+    <a href="/admin/matches.html" class="active">Matches &amp; Contact</a>
+    <a href="/admin/items.html">Items</a>
+    <a href="/admin/claims.html">Claims</a>
+    <a href="/admin/analytics.html">Analytics</a>
+    <a href="/admin/recovered.html">Recovered</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/audit-log.html">Audit log</a>
+  </aside>
+
+  <main class="admin-main">
+    <h2>Potential Matches &amp; Contact Desk</h2>
+    <p class="muted mb-20">Browse match percentages between lost and found items. Call or WhatsApp reporters directly to coordinate handovers.</p>
+
+    <div class="filter-pills">
+      <button class="pill-btn" data-min="50">All Matches (≥50%)</button>
+      <button class="pill-btn active" data-min="70">High Priority (≥70%)</button>
+      <button class="pill-btn" data-min="85">Very High (≥85%)</button>
+    </div>
+
+    <div id="loading" class="muted">Loading match candidates…</div>
+
+    <div class="panel" id="matches-panel" style="display:none;">
+      <table class="admin-table" id="matches-table">
+        <thead>
+          <tr>
+            <th style="width:110px;">Match Score</th>
+            <th>Lost Item &amp; Owner</th>
+            <th>Found Item &amp; Finder</th>
+            <th style="width:130px;">Admin Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script>
+  requireAdmin();
+  document.getElementById('logout-link').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+  document.getElementById('notif-area').innerHTML = notifBellHtml();
+  initNotifBell();
+
+  let currentMinScore = 70;
+
+  document.querySelectorAll('.pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMinScore = Number(btn.getAttribute('data-min'));
+      loadMatches();
+    });
+  });
+
+  async function loadMatches() {
+    const loading = document.getElementById('loading');
+    const panel = document.getElementById('matches-panel');
+    loading.style.display = 'block';
+    panel.style.display = 'none';
+
+    try {
+      const { matches } = await api.get(`/admin/matches?minScore=${currentMinScore}`);
+      loading.style.display = 'none';
+      panel.style.display = 'block';
+
+      const tbody = document.querySelector('#matches-table tbody');
+      if (!matches || matches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="muted text-center" style="padding:32px 0;">No active matches found with score ≥ ${currentMinScore}%.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = matches.map(m => {
+        const score = Math.round(m.score);
+        const scoreClass = score >= 85 ? 'badge-claimed' : (score >= 70 ? 'badge-matched' : 'badge-active');
+        
+        // Lost party contact
+        const lostPhone = m.lost_user_phone;
+        const lostCallBtn = lostPhone ? `<a href="tel:${lostPhone}" class="btn-call">📞 Call (${lostPhone})</a>` : '';
+        const lostWaBtn = lostPhone ? whatsappButtonHtml(lostPhone, `Hello ${m.lost_user_name}, this is the campus Lost & Found desk. A potential match (${score}%) was turned in for your lost item: "${m.lost_title}".`, 'WhatsApp', 'btn-xs') : '';
+
+        // Found party contact
+        const foundPhone = m.found_user_phone;
+        const foundCallBtn = foundPhone ? `<a href="tel:${foundPhone}" class="btn-call">📞 Call (${foundPhone})</a>` : '';
+        const foundWaBtn = foundPhone ? whatsappButtonHtml(foundPhone, `Hello ${m.found_user_name}, this is the campus Lost & Found desk regarding the item you turned in ("${m.found_title}"). An owner has reported a matching item (${score}%).`, 'WhatsApp', 'btn-xs') : '';
+
+        return `
+          <tr id="match-row-${m.id}">
+            <td>
+              <span class="score-badge-large badge ${scoreClass}">${score}%</span>
+              <div class="small muted mt-4" style="font-family:var(--font-num);">
+                AI: ${m.ai_score ? Math.round(m.ai_score) : 0}/25<br>
+                Cat: ${m.category_score ? Math.round(m.category_score) : 0}/25
+              </div>
+            </td>
+
+            <td class="contact-col">
+              <a href="/item.html?id=${m.lost_item_id}&from=admin" target="_blank" style="font-weight:600; font-size:0.95rem;">${escapeHtml(m.lost_title)}</a>
+              <div class="small muted mt-4">
+                <strong>Owner:</strong> ${escapeHtml(m.lost_user_name)}<br>
+                <span>${escapeHtml(m.lost_user_email)}</span>
+              </div>
+              <div class="contact-actions">
+                ${lostCallBtn}
+                ${lostWaBtn}
+                ${!lostPhone ? '<span class="small muted" style="font-style:italic;">No phone on file</span>' : ''}
+              </div>
+            </td>
+
+            <td class="contact-col">
+              <a href="/item.html?id=${m.found_item_id}&from=admin" target="_blank" style="font-weight:600; font-size:0.95rem;">${escapeHtml(m.found_title)}</a>
+              <div class="small muted mt-4">
+                <strong>Finder:</strong> ${escapeHtml(m.found_user_name)}<br>
+                <span>${escapeHtml(m.found_user_email)}</span>
+              </div>
+              <div class="contact-actions">
+                ${foundCallBtn}
+                ${foundWaBtn}
+                ${!foundPhone ? '<span class="small muted" style="font-style:italic;">No phone on file</span>' : ''}
+              </div>
+            </td>
+
+            <td>
+              <div class="flex flex-col gap-6">
+                <button class="btn btn-primary btn-xs" onclick="notifyBoth(${m.id})">🔔 Notify Both</button>
+                <a href="/matches.html?lostItemId=${m.lost_item_id}&from=admin" target="_blank" class="btn btn-outline btn-xs">View Full Details</a>
+                <div class="flex gap-4 flex-wrap">
+                  <a href="/flyer.html?id=${m.lost_item_id}&from=admin&returnUrl=/admin/matches.html" target="_blank" class="btn btn-ghost btn-xs" title="Print lost flyer">Lost Flyer</a>
+                  <a href="/flyer.html?id=${m.found_item_id}&from=admin&returnUrl=/admin/matches.html" target="_blank" class="btn btn-ghost btn-xs" title="Print found flyer">Found Flyer</a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      loading.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function notifyBoth(matchId) {
+    try {
+      const res = await api.post(`/admin/matches/${matchId}/notify`, {});
+      toast('In-app notifications sent to both owner and finder!');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  loadMatches();
+</script>
+</body>
+</html>

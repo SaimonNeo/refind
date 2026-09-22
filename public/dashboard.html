@@ -7,13 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/dashboard.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
+      <span id="admin-nav-item"></span>
       <a href="/browse.html">Browse</a>
+      <a href="/map.html">Campus map</a>
       <a href="/report-lost.html">Report lost</a>
       <a href="/report-found.html">Report found</a>
       <a href="/profile.html">Profile</a>
@@ -24,6 +27,17 @@
 </nav>
 
 <div class="container section-tight">
+  <div class="admin-context-bar mb-20" id="admin-banner" style="display:none;">
+    <div class="flex gap-8" style="align-items:center;">
+      <strong>🛡️ Administrator Access:</strong>
+      <span>You have staff privileges to oversee reports, approve claims, and review matches.</span>
+    </div>
+    <div class="flex gap-8">
+      <a href="/admin/dashboard.html" class="btn btn-primary btn-xs">Open Admin Panel →</a>
+      <a href="/admin/claims.html" class="btn btn-outline btn-xs">Claims Desk</a>
+    </div>
+  </div>
+
   <div class="flex-between flex-wrap gap-16 mb-24">
     <div>
       <h2 id="welcome">Welcome back</h2>
@@ -49,7 +63,6 @@
 </div>
 
 <script src="/js/api.js"></script>
-<script src="/js/ui.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/items.js"></script>
 <script>
@@ -60,8 +73,37 @@
   document.getElementById('notif-area').innerHTML = notifBellHtml();
   initNotifBell();
 
+  if (user && user.role === 'admin') {
+    const adminNav = document.getElementById('admin-nav-item');
+    if (adminNav) adminNav.innerHTML = `<a href="/admin/dashboard.html" class="nav-admin-badge">🛡️ Admin Panel</a>`;
+    const adminBanner = document.getElementById('admin-banner');
+    if (adminBanner) adminBanner.style.display = 'flex';
+  }
+
   let myLost = [], myFound = [], myClaims = [];
-  let activeTab = 'lost';
+  const urlTab = new URLSearchParams(window.location.search).get('tab');
+  const storedTab = sessionStorage.getItem('refind_dash_tab');
+  let activeTab = urlTab || storedTab || 'lost';
+  if (!['lost', 'found', 'claims'].includes(activeTab)) activeTab = 'lost';
+
+  // Reflect initial tab selection in markup
+  document.querySelectorAll('.dash-tab').forEach((b) => {
+    b.classList.toggle('active', b.dataset.tab === activeTab);
+  });
+
+  function setActiveTab(tabKey) {
+    if (!['lost', 'found', 'claims'].includes(tabKey)) tabKey = 'lost';
+    activeTab = tabKey;
+    sessionStorage.setItem('refind_dash_tab', tabKey);
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabKey);
+    window.history.replaceState(null, '', url.toString());
+
+    document.querySelectorAll('.dash-tab').forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === tabKey);
+    });
+    renderTab();
+  }
 
   function statCard(num, label) {
     return `<div class="stat-card"><div class="stat-card-num">${num}</div><div class="stat-card-label">${label}</div></div>`;
@@ -88,11 +130,11 @@
     } else if (activeTab === 'found') {
       content.innerHTML = myFound.length
         ? `<div class="item-grid">${myFound.map(dashItemCard).join('')}</div>`
-        : emptyBlock('No found items reported', 'Handed something in? Report it so the owner can find it.', '/report-found.html', 'Report a found item');
+        : emptyBlock('No found items reported', 'When you report an item you found, it shows up here.', '/report-found.html', 'Report a found item');
     } else {
       content.innerHTML = myClaims.length
-        ? `<div class="claims-list">${myClaims.map(claimRow).join('')}</div>`
-        : emptyBlock('No claims yet', 'Claims you submit on found items will appear here.', '/browse.html', 'Browse found items');
+        ? myClaims.map(claimRow).join('')
+        : emptyBlock('No claims yet', 'When you submit a claim on a found item, you can track its review and approval status here.', '/browse.html', 'Browse found items');
     }
   }
 
@@ -104,7 +146,7 @@
     const matchLink = item.type === 'lost'
       ? `/matches.html?lostItemId=${item.id}`
       : `/matches.html?foundItemId=${item.id}`;
-    const editLink = item.type === 'lost' ? `/report-lost.html?edit=${item.id}` : `/report-found.html?edit=${item.id}`;
+    const editLink = item.type === 'lost' ? `/report-lost.html?edit=${item.id}&tab=${activeTab}` : `/report-found.html?edit=${item.id}&tab=${activeTab}`;
     const canManage = item.status === 'active' || item.status === 'matched';
     return `
       <div class="item-card">
@@ -116,7 +158,9 @@
           <h3 class="item-card-title">${escapeHtml(item.title)}</h3>
           <div class="item-card-meta"><span>${escapeHtml(item.category)}</span><span>${escapeHtml(item.location)}</span></div>
           <div class="flex gap-8 mt-8 flex-wrap">
-            <a href="/item.html?id=${item.id}" class="btn btn-ghost btn-sm">View</a>
+            <a href="/item.html?id=${item.id}&from=dashboard&tab=${activeTab}" class="btn btn-ghost btn-sm">View</a>
+            <a href="/flyer.html?id=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-ghost btn-sm">🖨️ Flyer</a>
+            ${(item.status === 'claimed' || item.status === 'resolved') ? `<a href="/receipt.html?itemId=${item.id}&from=dashboard&tab=${activeTab}" target="_blank" class="btn btn-outline btn-sm">📄 Receipt</a>` : ''}
             <a href="${matchLink}" class="btn btn-outline btn-sm">Matches</a>
             ${canManage ? `<a href="${editLink}" class="btn btn-ghost btn-sm">Edit</a>` : ''}
             ${canManage ? `<button class="btn btn-ghost btn-sm" onclick="withdrawItem(${item.id})">Withdraw</button>` : ''}
@@ -146,6 +190,10 @@
     const statusClass = { approved: 'badge-claimed', pending: 'badge-active', manual_review: 'badge-matched', rejected: 'badge-lost' }[c.status] || 'badge-active';
     const showConfirm = c.status === 'approved' && !c.claimant_confirmed;
     const handover = c.handover_location || c.handover_datetime || c.collection_instructions;
+    const waFinderBtn = (c.finder_phone && (c.status === 'approved' || c.status === 'pending' || c.status === 'manual_review'))
+      ? whatsappButtonHtml(c.finder_phone, `Hi ${c.finder_name || ''}! Regarding my claim for "${c.item_title}" on ReFind: where and when can we meet for handover?`, 'WhatsApp Finder')
+      : '';
+
     return `
       <div class="claim-row card">
         <div>
@@ -157,8 +205,10 @@
             ${c.collection_instructions ? escapeHtml(c.collection_instructions) : ''}
           </div>` : ''}
         </div>
-        <div class="flex gap-8" style="align-items:center;">
+        <div class="flex gap-8 flex-wrap" style="align-items:center;">
           <span class="badge ${statusClass}">${c.status.replace('_', ' ')}</span>
+          ${waFinderBtn}
+          ${(c.status === 'approved' || c.claimant_confirmed) ? `<a href="/receipt.html?claimId=${c.id}&from=dashboard&tab=claims" target="_blank" class="btn btn-outline btn-sm">📄 Receipt</a>` : ''}
           ${showConfirm ? `<button class="btn btn-moss btn-sm" onclick="confirmReceipt(${c.id})">I got it</button>` : ''}
           ${c.claimant_confirmed ? `<span class="small muted">Confirmed received</span>` : ''}
         </div>
@@ -185,10 +235,7 @@
 
   document.querySelectorAll('.dash-tab').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeTab = btn.dataset.tab;
-      renderTab();
+      setActiveTab(btn.dataset.tab);
     });
   });
 

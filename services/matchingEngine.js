@@ -65,6 +65,197 @@ const LOCATION_PROXIMITY = {
   'student center': ['cafeteria', 'main gate', 'auditorium'],
 };
 
+// Common campus aliases mapping informal place names to primary buildings
+const LOCATION_ALIASES = {
+  'library': 'central library',
+  'lib': 'central library',
+  'main library': 'central library',
+  'cs building': 'computer science building',
+  'cs': 'computer science building',
+  'cse building': 'computer science building',
+  'cse': 'computer science building',
+  'canteen': 'cafeteria',
+  'food court': 'cafeteria',
+  'dining hall': 'cafeteria',
+  'cafe': 'cafeteria',
+  'coffee shop': 'cafeteria',
+  'gate': 'main gate',
+  'entrance': 'main gate',
+  'front gate': 'main gate',
+  'lab': 'laboratory',
+  'labs': 'laboratory',
+  'science lab': 'laboratory',
+  'audi': 'auditorium',
+  'theater': 'auditorium',
+  'theatre': 'auditorium',
+  'student union': 'student center',
+  'union': 'student center',
+  'rec center': 'student center',
+  'gym': 'student center',
+};
+
+// Campus Synonyms & Term Clusters (100% Zero-Cost Local Matching)
+const SYNONYM_CLUSTERS = [
+  // Laptops / Computers
+  ['laptop', 'notebook', 'macbook', 'mac', 'chromebook', 'thinkpad', 'computer', 'pc', 'surface'],
+  // Phones / Mobile
+  ['phone', 'iphone', 'smartphone', 'android', 'cellphone', 'mobile', 'galaxy', 'pixel'],
+  // Audio
+  ['earbuds', 'airpods', 'earphones', 'headphones', 'headset', 'buds', 'earpiece', 'audio', 'airpod', 'earbud'],
+  // Bags
+  ['backpack', 'bag', 'rucksack', 'knapsack', 'bookbag', 'schoolbag', 'pack', 'daypack'],
+  ['purse', 'handbag', 'tote', 'crossbody', 'satchel', 'clutch', 'pouch'],
+  ['wallet', 'billfold', 'cardholder', 'card holder', 'money clip', 'pouch'],
+  // Cards & IDs
+  ['id card', 'student id', 'campus card', 'hall ticket', 'badge', 'smartcard', 'keycard', 'matric card', 'identity card', 'id'],
+  // Bottles & Drinkware
+  ['bottle', 'water bottle', 'hydroflask', 'flask', 'tumbler', 'sipper', 'thermos', 'mug', 'cup'],
+  // Eyewear
+  ['glasses', 'spectacles', 'sunglasses', 'shades', 'eyewear', 'specs', 'frames', 'lens'],
+  // Chargers & Cables
+  ['charger', 'adapter', 'charging cable', 'cable', 'cord', 'lightning cable', 'type-c', 'usbc', 'usb-c', 'magsafe', 'power cord', 'power brick', 'powerbank', 'battery pack'],
+  // Stationary & Books
+  ['notebook', 'binder', 'journal', 'diary', 'notepad', 'textbook', 'book', 'folder', 'notes', 'spiral'],
+  ['pen', 'pencil', 'pencil case', 'marker', 'highlighter', 'stylus', 'apple pencil'],
+  ['calculator', 'casio', 'ti-84', 'scientific calculator'],
+  // Keys
+  ['keys', 'keychain', 'key fob', 'key ring', 'room key', 'dorm key', 'car key', 'bike key'],
+  // Clothing
+  ['jacket', 'hoodie', 'sweater', 'coat', 'cardigan', 'sweatshirt', 'windbreaker', 'fleece', 'pullover'],
+  ['cap', 'hat', 'beanie', 'visor', 'beret'],
+  // Jewelry
+  ['ring', 'necklace', 'bracelet', 'earring', 'chain', 'jewellery', 'jewelry', 'pendant', 'bangle'],
+  ['watch', 'smartwatch', 'apple watch', 'fitbit', 'wrist watch', 'timepiece', 'chronograph'],
+  // Umbrellas
+  ['umbrella', 'parasol', 'brolly'],
+  // Documents
+  ['passport', 'license', 'driving license', 'permit', 'certificate', 'file', 'papers'],
+];
+
+const CANONICAL_SYNONYMS = new Map();
+const MULTI_WORD_SYNONYMS = [];
+
+for (const cluster of SYNONYM_CLUSTERS) {
+  const root = cluster[0];
+  for (const term of cluster) {
+    const cleanTerm = term.toLowerCase().trim();
+    CANONICAL_SYNONYMS.set(cleanTerm, root);
+    if (cleanTerm.includes(' ')) {
+      MULTI_WORD_SYNONYMS.push({ term: cleanTerm, root });
+    }
+  }
+}
+MULTI_WORD_SYNONYMS.sort((a, b) => b.term.length - a.term.length);
+
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'of', 'for', 'with', 'to', 'from', 'by',
+  'my', 'i', 'me', 'it', 'this', 'that', 'is', 'was', 'are', 'were', 'has', 'have', 'had',
+  'lost', 'found', 'left', 'dropped', 'misplaced', 'near', 'around', 'about', 'some', 'any',
+  'please', 'help', 'return', 'contact', 'reward', 'urgent', 'inside', 'outside', 'floor',
+  'someone', 'something', 'color', 'brand', 'item',
+]);
+
+const KNOWN_BRANDS = [
+  'apple', 'lenovo', 'dell', 'hp', 'samsung', 'sony', 'bose', 'asus', 'acer', 'anker',
+  'casio', 'nike', 'adidas', 'puma', 'herschel', 'jansport', 'hydro flask', 'hydroflask',
+  'stanley', 'yeti', 'logitech', 'jbl', 'beats', 'fitbit', 'fossil', 'rolex', 'seiko',
+  'ray-ban', 'rayban', 'oakley', 'north face', 'patagonia', 'under armour', 'champion',
+];
+
+function extractCanonicalTokens(title, description, brand, color) {
+  let combined = `${title || ''} ${description || ''} ${brand || ''} ${color || ''}`.toLowerCase();
+  
+  const tokens = [];
+  const rawTerms = new Map();
+
+  // 1. Multi-word synonyms
+  for (const { term, root } of MULTI_WORD_SYNONYMS) {
+    if (combined.includes(term)) {
+      tokens.push(root);
+      if (!rawTerms.has(root)) rawTerms.set(root, term);
+      combined = combined.split(term).join(' ');
+    }
+  }
+
+  // 2. Individual word tokens
+  const words = combined.replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+  for (const w of words) {
+    if (STOP_WORDS.has(w) || w.length < 2) continue;
+    const singular = (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) ? w.slice(0, -1) : w;
+    const root = CANONICAL_SYNONYMS.get(w) || CANONICAL_SYNONYMS.get(singular) || singular;
+    tokens.push(root);
+    if (!rawTerms.has(root)) rawTerms.set(root, w);
+  }
+
+  return { tokens: [...new Set(tokens)], rawTerms };
+}
+
+function computeSynonymSemanticMatch(lostItem, foundItem) {
+  const lost = extractCanonicalTokens(lostItem.title, lostItem.description, lostItem.brand, lostItem.color);
+  const found = extractCanonicalTokens(foundItem.title, foundItem.description, foundItem.brand, foundItem.color);
+
+  const sharedRoots = lost.tokens.filter((t) => found.tokens.includes(t));
+  const matchingFeatures = [];
+
+  // Check shared brands
+  const lostBrand = (lostItem.brand || '').toLowerCase().trim();
+  const foundBrand = (foundItem.brand || '').toLowerCase().trim();
+  if (lostBrand && foundBrand && (lostBrand === foundBrand || lostBrand.includes(foundBrand) || foundBrand.includes(lostBrand))) {
+    matchingFeatures.push(`Matching brand: ${lostItem.brand}`);
+  } else {
+    for (const b of KNOWN_BRANDS) {
+      if (lost.tokens.includes(b) && found.tokens.includes(b)) {
+        matchingFeatures.push(`Shared brand: ${b.toUpperCase()}`);
+        break;
+      }
+    }
+  }
+
+  // Check synonym matches vs exact word matches
+  for (const root of sharedRoots) {
+    const termA = lost.rawTerms.get(root) || root;
+    const termB = found.rawTerms.get(root) || root;
+    if (termA !== termB) {
+      matchingFeatures.push(`Synonym match: "${termA}" ↔ "${termB}"`);
+    } else if (!STOP_WORDS.has(termA) && termA.length > 2 && matchingFeatures.length < 5) {
+      matchingFeatures.push(`Shared detail: "${termA}"`);
+    }
+  }
+
+  // Calculate score (Jaccard similarity on non-trivial tokens)
+  const union = new Set([...lost.tokens, ...found.tokens]);
+  const jaccard = union.size > 0 ? sharedRoots.length / union.size : 0;
+
+  // Title similarity bonus
+  const lostTitleTokens = extractCanonicalTokens(lostItem.title, '', lostItem.brand, '').tokens;
+  const foundTitleTokens = extractCanonicalTokens(foundItem.title, '', foundItem.brand, '').tokens;
+  const titleShared = lostTitleTokens.filter((t) => foundTitleTokens.includes(t));
+  const titleScore =
+    lostTitleTokens.length > 0 && foundTitleTokens.length > 0
+      ? titleShared.length / Math.min(lostTitleTokens.length, foundTitleTokens.length)
+      : 0;
+
+  let similarity = Math.round((titleScore * 0.65 + jaccard * 0.35) * 100);
+
+  // Bonus if brand matched
+  if (matchingFeatures.some((f) => f.startsWith('Matching brand') || f.startsWith('Shared brand'))) {
+    similarity = Math.min(100, similarity + 20);
+  }
+
+  similarity = Math.max(0, Math.min(100, similarity));
+
+  let confidence = 'low';
+  if (similarity >= 70) confidence = 'high';
+  else if (similarity >= 40) confidence = 'medium';
+
+  return {
+    similarity,
+    confidence,
+    matchingFeatures: matchingFeatures.slice(0, 6),
+    reason: matchingFeatures.length ? `Detected terms: ${matchingFeatures.join('; ')}` : 'No significant keyword overlap',
+  };
+}
+
 function normalize(str) {
   return (str || '').toString().trim().toLowerCase();
 }
@@ -96,9 +287,14 @@ function scoreColor(lostColor, foundColor) {
 }
 
 function scoreLocation(lostLocation, foundLocation) {
-  const a = normalize(lostLocation);
-  const b = normalize(foundLocation);
+  let a = normalize(lostLocation);
+  let b = normalize(foundLocation);
   if (!a || !b) return { score: 0, detail: 'location not specified' };
+
+  // Resolve location aliases
+  a = LOCATION_ALIASES[a] || a;
+  b = LOCATION_ALIASES[b] || b;
+
   if (a === b) return { score: WEIGHTS.location, detail: `same location ("${a}")` };
   const nearby = LOCATION_PROXIMITY[a] || [];
   if (nearby.includes(b)) {
@@ -171,29 +367,37 @@ async function computeMatch(lostItem, foundItem) {
     (lostItem.category === 'cards' && foundItem.category === 'documents') ||
     (lostItem.category === 'documents' && foundItem.category === 'cards');
 
-  let ai;
+  // Compute zero-cost local semantic synonym & keyword match first
+  const synonymMatch = computeSynonymSemanticMatch(lostItem, foundItem);
+
+  let finalSimilarity = synonymMatch.similarity;
+  let finalFeatures = [...synonymMatch.matchingFeatures];
+  let finalConfidence = synonymMatch.confidence;
+  let usedFallback = false;
+
   if (!isCompatible) {
-    ai = {
-      similarity: 0,
-      confidence: 'low',
-      matchingFeatures: [],
-      reason: 'Incompatible categories; AI comparison skipped.',
-      usedFallback: false,
-    };
+    finalSimilarity = 0;
+    finalFeatures = [];
   } else {
     try {
-      ai = await aiService.compareItems(
+      const ai = await aiService.compareItems(
         { title: lostItem.title, description: lostItem.description },
         { title: foundItem.title, description: foundItem.description }
       );
+      if (!ai.usedFallback && ai.similarity > 0) {
+        // Hybrid: take the best semantic confidence between AI and synonym engine
+        finalSimilarity = Math.max(ai.similarity, synonymMatch.similarity);
+        finalFeatures = [...new Set([...(ai.matchingFeatures || []), ...synonymMatch.matchingFeatures])].slice(0, 8);
+        finalConfidence = ai.confidence || synonymMatch.confidence;
+      } else {
+        usedFallback = true;
+      }
     } catch (err) {
-      // Defensive: aiService already catches internally, but never let a
-      // matching run fail because AI is down.
-      ai = { similarity: 0, confidence: 'low', matchingFeatures: [], reason: 'AI unavailable', usedFallback: true };
+      usedFallback = true;
     }
   }
 
-  const aiPoints = aiScoreFromSimilarity(ai.similarity);
+  const aiPoints = aiScoreFromSimilarity(finalSimilarity);
   const total = category.score + color.score + location.score + time.score + aiPoints;
 
   const explanation = buildExplanation({
@@ -201,7 +405,7 @@ async function computeMatch(lostItem, foundItem) {
     colorDetail: color.detail,
     locationDetail: location.detail,
     timeDetail: time.detail,
-    aiFeatures: ai.matchingFeatures,
+    aiFeatures: finalFeatures,
     total,
   });
 
@@ -213,9 +417,9 @@ async function computeMatch(lostItem, foundItem) {
     timeScore: time.score,
     aiScore: aiPoints,
     explanation,
-    matchingFeatures: ai.matchingFeatures || [],
-    aiConfidence: ai.confidence || 'low',
-    aiUsedFallback: !!ai.usedFallback,
+    matchingFeatures: finalFeatures,
+    aiConfidence: finalConfidence,
+    aiUsedFallback: usedFallback,
   };
 }
 

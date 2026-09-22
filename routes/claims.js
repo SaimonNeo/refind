@@ -37,13 +37,26 @@ function confidenceFromVerify(verifyResult, hasVerification) {
 }
 
 // GET /api/claims/verification-question/:itemId
-// Returns only the QUESTION (never the answer).
+// Returns only the QUESTION (never the answer) + anti-brute-force rate limit status.
 router.get('/verification-question/:itemId', requireAuth, (req, res) => {
   const item = get('SELECT id, type, verification_question, verification_answer_hash FROM items WHERE id = ?', [req.params.itemId]);
   if (!item || item.type !== 'found') return res.status(404).json({ error: 'Found item not found.' });
+
+  const attempts = get(
+    `SELECT COUNT(*) as count, MAX(attempted_at) as last_attempt
+     FROM verification_attempts
+     WHERE item_id = ? AND user_id = ? AND passed = 0 AND attempted_at >= datetime('now', '-15 minutes')`,
+    [item.id, req.user.id]
+  );
+  const failedCount = attempts?.count || 0;
+  const isLocked = failedCount >= 3;
+
   res.json({
     hasVerification: !!item.verification_answer_hash,
     question: item.verification_question || null,
+    locked: isLocked,
+    remainingAttempts: Math.max(0, 3 - failedCount),
+    cooldownMinutes: 15,
   });
 });
 
@@ -71,20 +84,40 @@ router.post('/', requireAuth, upload.single('idProof'), (req, res) => {
       return res.status(409).json({ error: 'You already have an active claim on this item.' });
     }
 
+    // Anti-brute-force verification check: max 3 failed attempts in 15 mins
+    const attempts = get(
+      `SELECT COUNT(*) as count
+       FROM verification_attempts
+       WHERE item_id = ? AND user_id = ? AND passed = 0 AND attempted_at >= datetime('now', '-15 minutes')`,
+      [item.id, req.user.id]
+    );
+    if ((attempts?.count || 0) >= 3) {
+      return res.status(429).json({
+        error: 'Too many incorrect verification attempts. For security, claims on this item are temporarily locked for 15 minutes. Please try again later or verify in person at the campus Lost & Found desk.',
+        locked: true,
+      });
+    }
+
     const hasVerification = !!item.verification_answer_hash;
     let verifyResult = { passed: false, exact: false };
     if (hasVerification && answer) {
       verifyResult = verificationService.verifyAnswer(answer, item.verification_answer_hash, null);
+      run(
+        `INSERT INTO verification_attempts (item_id, user_id, passed) VALUES (?, ?, ?)`,
+        [item.id, req.user.id, verifyResult.passed ? 1 : 0]
+      );
     }
 
     const status = verificationService.decideClaimStatus(verifyResult, hasVerification);
     const confidence = confidenceFromVerify(verifyResult, hasVerification);
     const idProofPath = req.file ? `/uploads/${req.file.filename}` : null;
 
+    const claimantPhone = (phone && String(phone).trim()) || req.user.phone || null;
+
     const { lastInsertRowid } = run(
       `INSERT INTO claims (item_id, claimant_id, claimant_phone, id_proof_image, verification_answer_submitted, confidence_score, status)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [item.id, req.user.id, phone || null, idProofPath, answer ? '[submitted]' : null, confidence, status]
+      [item.id, req.user.id, claimantPhone, idProofPath, answer ? '[submitted]' : null, confidence, status]
     );
 
     if (status === 'approved') {
@@ -117,8 +150,11 @@ router.post('/', requireAuth, upload.single('idProof'), (req, res) => {
 // GET /api/claims/mine - claims the current user has submitted
 router.get('/mine', requireAuth, (req, res) => {
   const claims = all(
-    `SELECT c.*, i.title as item_title, i.category as item_category, i.image as item_image
-     FROM claims c JOIN items i ON i.id = c.item_id
+    `SELECT c.*, i.title as item_title, i.category as item_category, i.image as item_image,
+            u.name as finder_name, u.phone as finder_phone
+     FROM claims c
+     JOIN items i ON i.id = c.item_id
+     JOIN users u ON u.id = i.user_id
      WHERE c.claimant_id = ? ORDER BY c.created_at DESC`,
     [req.user.id]
   );
@@ -158,6 +194,112 @@ router.post('/:id/confirm', requireAuth, (req, res) => {
   }
 
   res.json({ success: true });
+});
+
+function getReceiptData(claimId, currentUser) {
+  const row = get(
+    `SELECT c.*,
+            i.id as item_id, i.title as item_title, i.category as item_category, i.color as item_color,
+            i.brand as item_brand, i.location as item_location, i.image as item_image,
+            i.storage_location as item_storage_location, i.created_at as item_reported_at,
+            i.event_date as item_event_date, i.status as item_status, i.type as item_type,
+            cu.id as claimant_user_id, cu.name as claimant_name, cu.email as claimant_email,
+            cu.phone as claimant_user_phone, cu.student_id as claimant_student_id,
+            fu.id as finder_user_id, fu.name as finder_name, fu.email as finder_email,
+            fu.phone as finder_phone, fu.student_id as finder_student_id
+     FROM claims c
+     JOIN items i ON i.id = c.item_id
+     LEFT JOIN users cu ON cu.id = c.claimant_id
+     LEFT JOIN users fu ON fu.id = i.user_id
+     WHERE c.id = ?`,
+    [claimId]
+  );
+
+  if (!row) return { error: 'Claim not found.', status: 404 };
+
+  const isClaimant = row.claimant_id === currentUser.id;
+  const isFinder = row.finder_user_id === currentUser.id;
+  const isAdmin = currentUser.role === 'admin';
+
+  if (!isClaimant && !isFinder && !isAdmin) {
+    return { error: 'You are not authorized to view this receipt.', status: 403 };
+  }
+
+  const receipt = {
+    receiptNumber: `REC-${String(row.id).padStart(5, '0')}`,
+    claimId: row.id,
+    claimStatus: row.status,
+    claimantConfirmed: !!row.claimant_confirmed,
+    confidenceScore: row.confidence_score,
+    handoverLocation: row.handover_location || row.item_storage_location || 'Campus Lost & Found Desk',
+    handoverDatetime: row.handover_datetime || row.reviewed_at || row.created_at,
+    collectionInstructions: row.collection_instructions || 'Present student ID upon custody release.',
+    issuedAt: new Date().toISOString(),
+    item: {
+      id: row.item_id,
+      title: row.item_title,
+      category: row.item_category,
+      color: row.item_color,
+      brand: row.item_brand,
+      location: row.item_location,
+      image: row.item_image,
+      reportedAt: row.item_reported_at,
+      status: row.item_status,
+      type: row.item_type,
+    },
+    claimant: {
+      id: row.claimant_user_id,
+      name: row.claimant_name || 'Claimant',
+      studentId: row.claimant_student_id || 'Not on file',
+      email: row.claimant_email || 'Not on file',
+      phone: row.claimant_phone || row.claimant_user_phone || 'Not on file',
+    },
+    finder: {
+      id: row.finder_user_id,
+      name: row.finder_name || 'Campus Finder / Custodian',
+      studentId: row.finder_student_id || 'Not on file',
+      email: row.finder_email || 'Not on file',
+      phone: row.finder_phone || 'Not on file',
+    },
+  };
+
+  return { receipt, status: 200 };
+}
+
+// GET /api/claims/:id/receipt - generates official custody release & handover receipt data
+router.get('/:id/receipt', requireAuth, (req, res) => {
+  const result = getReceiptData(req.params.id, req.user);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
+  }
+  res.json({ receipt: result.receipt });
+});
+
+// GET /api/claims/receipt-by-item/:itemId - fetch receipt for the item's approved claim
+router.get('/receipt-by-item/:itemId', requireAuth, (req, res) => {
+  let claim = get(
+    `SELECT id FROM claims WHERE item_id = ? AND (status = 'approved' OR claimant_confirmed = 1) ORDER BY id DESC LIMIT 1`,
+    [req.params.itemId]
+  );
+  if (!claim) {
+    // If itemId was a lost item, check if there was an approved claim on its matching found item
+    claim = get(
+      `SELECT c.id FROM claims c
+       JOIN matches m ON m.found_item_id = c.item_id
+       WHERE m.lost_item_id = ? AND (c.status = 'approved' OR c.claimant_confirmed = 1)
+       ORDER BY c.id DESC LIMIT 1`,
+      [req.params.itemId]
+    );
+  }
+  if (!claim) {
+    return res.status(404).json({ error: 'No approved or resolved claim exists for this item yet.' });
+  }
+
+  const result = getReceiptData(claim.id, req.user);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
+  }
+  res.json({ receipt: result.receipt });
 });
 
 module.exports = router;

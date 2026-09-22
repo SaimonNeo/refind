@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Map — ReFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script src="/js/ui.js"></script>
+<style>
+  .map-page-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 60px;
+  }
+  .building-drawer {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .drawer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .drawer-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .bldg-chip {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    font-size: 0.86rem;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .bldg-chip:hover, .bldg-chip.active {
+    background: var(--clay);
+    color: #ffffff;
+    border-color: var(--clay-deep);
+  }
+  @media (max-width: 600px) {
+    .map-header-actions {
+      width: 100%;
+      gap: 8px;
+    }
+    .map-header-actions .btn {
+      flex: 1 1 calc(50% - 4px);
+      text-align: center;
+      justify-content: center;
+      padding: 8px 10px;
+      min-height: 40px;
+    }
+    .map-header-actions .btn:first-child {
+      flex: 1 1 100%;
+    }
+    .drawer-head {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    #drawer-actions {
+      flex-direction: column;
+      width: 100%;
+      gap: 8px;
+    }
+    #drawer-actions .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 42px;
+    }
+  }
+  @media (max-width: 480px) {
+    .drawer-items-grid { grid-template-columns: 1fr; gap: 12px; }
+    .building-drawer { padding: 16px 12px; }
+  }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
+    <div class="nav-links">
+      <a href="/browse.html">Browse</a>
+      <a href="/map.html" class="active">Campus Map</a>
+      <a href="/report-lost.html">Report Lost</a>
+      <a href="/report-found.html">Report Found</a>
+      <span id="nav-auth-area"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="container section-tight">
+  <div class="flex-between flex-wrap gap-16 mb-20">
+    <div>
+      <h2>Interactive Campus Map</h2>
+      <p class="muted" style="margin-bottom:0;">Explore where lost and found items are clustered across campus.</p>
+    </div>
+    <div class="flex gap-12 flex-wrap map-header-actions">
+      <a href="/browse.html" class="btn btn-outline btn-sm">📋 List View</a>
+      <a href="/report-lost.html" class="btn btn-outline btn-sm">+ Report Lost</a>
+      <a href="/report-found.html" class="btn btn-clay btn-sm">+ Report Found</a>
+    </div>
+  </div>
+
+  <div class="map-page-layout">
+    <div id="campus-map-mount"></div>
+
+    <div class="building-drawer" id="building-drawer">
+      <div class="drawer-head">
+        <div>
+          <h3 id="drawer-bldg-name" style="margin:0 0 4px;">Select a building on the map</h3>
+          <p id="drawer-bldg-desc" class="muted small" style="margin:0;">Click any building above to see all active reports in that area.</p>
+        </div>
+        <div class="flex gap-8" id="drawer-actions" style="display:none;">
+          <a href="#" id="drawer-report-lost" class="btn btn-outline btn-sm">+ Report Lost Here</a>
+          <a href="#" id="drawer-report-found" class="btn btn-clay btn-sm">+ Report Found Here</a>
+        </div>
+      </div>
+
+      <div id="drawer-loading" class="text-center muted small" style="padding:24px 0; display:none;">Loading items…</div>
+      <div id="drawer-empty" class="text-center muted" style="padding:32px 0;">
+        <p>No building currently selected. Click a building on the map above.</p>
+      </div>
+      <div class="drawer-items-grid" id="drawer-items-grid" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer"><div class="container">ReFind — campus lost &amp; found.</div></footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/items.js"></script>
+<script src="/js/campus-map.js"></script>
+<script>
+  function renderNav() {
+    const area = document.getElementById('nav-auth-area');
+    const user = getUser();
+    area.innerHTML = user
+      ? `<a href="/dashboard.html">Dashboard</a> ${user.role === 'admin' ? '<a href="/admin/dashboard.html">Admin</a>' : ''}${notifBellHtml()} <a href="#" id="logout-link">Log out</a>`
+      : `<a href="/login.html">Log in</a> <a href="/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) logoutLink.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    if (user) initNotifBell();
+  }
+  renderNav();
+
+  let activeBuilding = null;
+  const map = new CampusMap('campus-map-mount', {
+    mode: 'explorer',
+    onSelect: (bldgName) => {
+      if (bldgName) {
+        loadBuildingItems(bldgName);
+      } else {
+        resetDrawer();
+      }
+    }
+  });
+
+  function resetDrawer() {
+    activeBuilding = null;
+    document.getElementById('drawer-bldg-name').textContent = '📍 Campus Overview';
+    document.getElementById('drawer-bldg-desc').textContent = 'Select any building above on the map to see active reports logged at that location.';
+    document.getElementById('drawer-actions').style.display = 'none';
+    document.getElementById('drawer-loading').style.display = 'none';
+    document.getElementById('drawer-empty').style.display = 'none';
+    document.getElementById('drawer-items-grid').style.display = 'none';
+  }
+
+  async function loadBuildingItems(bldgName) {
+    activeBuilding = bldgName;
+    document.getElementById('drawer-bldg-name').textContent = `📍 ${bldgName}`;
+    document.getElementById('drawer-bldg-desc').textContent = `Showing active reports logged at ${bldgName}.`;
+    
+    const actions = document.getElementById('drawer-actions');
+    actions.style.display = 'flex';
+    document.getElementById('drawer-report-lost').href = `/report-lost.html?location=${encodeURIComponent(bldgName)}`;
+    document.getElementById('drawer-report-found').href = `/report-found.html?location=${encodeURIComponent(bldgName)}`;
+
+    const loading = document.getElementById('drawer-loading');
+    const empty = document.getElementById('drawer-empty');
+    const grid = document.getElementById('drawer-items-grid');
+
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+    grid.style.display = 'none';
+
+    try {
+      const { items } = await api.get(`/items?location=${encodeURIComponent(bldgName)}`);
+      loading.style.display = 'none';
+
+      if (!items || items.length === 0) {
+        empty.innerHTML = `<p>No active reports currently logged at <strong>${escapeHtml(bldgName)}</strong>.</p>`;
+        empty.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      grid.innerHTML = items.map(item => `
+        <div class="item-card">
+          <div class="item-card-img">
+            ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">` : `<span>📦 ${escapeHtml(item.category)}</span>`}
+          </div>
+          <div class="item-card-body">
+            <div class="item-card-top">
+              <span class="badge ${item.type === 'lost' ? 'badge-lost' : 'badge-found'}">${item.type.toUpperCase()}</span>
+              <span class="badge ${statusBadgeClass(item.status)}">${item.status}</span>
+            </div>
+            <h4 class="item-card-title">${escapeHtml(item.title)}</h4>
+            <div class="item-card-meta">
+              <span>${escapeHtml(item.category)}</span>
+              <span>${timeAgo(item.created_at)}</span>
+            </div>
+            <div class="flex gap-8 mt-12">
+              <a href="/item.html?id=${item.id}" class="btn btn-outline btn-sm">View</a>
+              <a href="/flyer.html?id=${item.id}&returnUrl=/map.html" target="_blank" class="btn btn-ghost btn-sm">🖨️ Flyer</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      loading.style.display = 'none';
+      empty.innerHTML = `<p class="alert alert-error">${escapeHtml(err.message)}</p>`;
+      empty.style.display = 'block';
+    }
+  }
+
+  // Check URL params e.g. ?location=Central+Library
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialLoc = urlParams.get('location');
+  if (initialLoc) {
+    setTimeout(() => {
+      map.selectBuildingByName(initialLoc, false);
+      loadBuildingItems(initialLoc);
+    }, 300);
+  }
+</script>
+</body>
+</html>

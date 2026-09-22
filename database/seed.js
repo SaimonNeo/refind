@@ -227,9 +227,17 @@ async function seedItems({ studentIds }) {
 
 async function seedMatches() {
   const lostRows = all(`SELECT * FROM items WHERE type = 'lost'`);
-  console.log(`  Generating matches for ${lostRows.length} lost items (this calls the matching engine; AI will fall back gracefully if no GEMINI_API_KEY is set)...`);
-  for (const lost of lostRows) {
-    await matchingEngine.generateMatchesForItem(lost);
+  console.log(`  Generating matches for ${lostRows.length} lost items (fast semantic & deterministic engine)...`);
+  const savedKey = process.env.GEMINI_API_KEY;
+  if (!process.env.SEED_WITH_AI) {
+    process.env.GEMINI_API_KEY = '';
+  }
+  try {
+    for (const lost of lostRows) {
+      await matchingEngine.generateMatchesForItem(lost);
+    }
+  } finally {
+    process.env.GEMINI_API_KEY = savedKey;
   }
   const matchCount = get('SELECT COUNT(*) as n FROM matches').n;
   console.log(`  Stored ${matchCount} matches.`);

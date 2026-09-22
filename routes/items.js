@@ -8,6 +8,7 @@ const { requireAuth } = require('../middleware/auth');
 const verificationService = require('../services/verificationService');
 const matchingEngine = require('../services/matchingEngine');
 const auditService = require('../services/auditService');
+const QRCode = require('qrcode');
 
 const router = express.Router();
 
@@ -66,52 +67,58 @@ router.get('/', (req, res) => {
     const params = [];
 
     if (type && ['lost', 'found'].includes(type)) {
-      clauses.push('type = ?');
+      clauses.push('i.type = ?');
       params.push(type);
     }
     if (category) {
-      clauses.push('category = ?');
+      clauses.push('i.category = ?');
       params.push(category);
     }
     if (location) {
-      clauses.push('location = ?');
+      clauses.push('i.location = ?');
       params.push(location);
     }
     if (color) {
-      clauses.push('color LIKE ?');
+      clauses.push('i.color LIKE ?');
       params.push(`%${color}%`);
     }
     if (brand) {
-      clauses.push('brand LIKE ?');
+      clauses.push('i.brand LIKE ?');
       params.push(`%${brand}%`);
     }
     if (status) {
-      clauses.push('status = ?');
+      clauses.push('i.status = ?');
       params.push(status);
     } else {
-      clauses.push(`status NOT IN ('resolved', 'withdrawn')`);
+      clauses.push(`i.status NOT IN ('resolved', 'withdrawn')`);
     }
     if (userId) {
-      clauses.push('user_id = ?');
+      clauses.push('i.user_id = ?');
       params.push(Number(userId));
     }
     if (dateFrom) {
-      clauses.push('date(created_at) >= date(?)');
+      clauses.push('date(i.created_at) >= date(?)');
       params.push(dateFrom);
     }
     if (dateTo) {
-      clauses.push('date(created_at) <= date(?)');
+      clauses.push('date(i.created_at) <= date(?)');
       params.push(dateTo);
     }
     if (q) {
-      clauses.push('(title LIKE ? OR description LIKE ? OR brand LIKE ?)');
+      clauses.push('(i.title LIKE ? OR i.description LIKE ? OR i.brand LIKE ? OR i.location LIKE ? OR i.category LIKE ?)');
       const like = `%${q}%`;
-      params.push(like, like, like);
+      params.push(like, like, like, like, like);
     }
 
-    const orderBy = sort === 'oldest' ? 'created_at ASC' : 'created_at DESC';
+    const orderBy = sort === 'oldest' ? 'i.created_at ASC' : 'i.created_at DESC';
     const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-    const rows = all(`SELECT * FROM items ${where} ORDER BY ${orderBy} LIMIT 200`, params);
+    const rows = all(
+      `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone
+       FROM items i
+       JOIN users u ON u.id = i.user_id
+       ${where} ORDER BY ${orderBy} LIMIT 200`,
+      params
+    );
     res.json({ items: rows.map(publicItem) });
   } catch (err) {
     console.error('List items error:', err.message);
@@ -119,9 +126,64 @@ router.get('/', (req, res) => {
   }
 });
 
+// GET /api/items/stats/by-location - active item counts per campus building
+router.get('/stats/by-location', (req, res) => {
+  try {
+    const rows = all(`
+      SELECT location, type, COUNT(*) as count
+      FROM items
+      WHERE status NOT IN ('resolved', 'withdrawn')
+      GROUP BY lower(trim(location)), type
+    `);
+
+    const stats = {};
+    for (const row of rows) {
+      const locKey = (row.location || '').trim().toLowerCase();
+      if (!locKey) continue;
+      if (!stats[locKey]) {
+        stats[locKey] = { location: row.location, lost: 0, found: 0, total: 0 };
+      }
+      if (row.type === 'lost') stats[locKey].lost += row.count;
+      if (row.type === 'found') stats[locKey].found += row.count;
+      stats[locKey].total += row.count;
+    }
+    res.json({ stats });
+  } catch (err) {
+    console.error('Location stats error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch location statistics.' });
+  }
+});
+
+// GET /api/items/:id/qr.svg - returns SVG QR code for flyer or sharing
+router.get('/:id/qr.svg', async (req, res) => {
+  try {
+    const item = get('SELECT id, title FROM items WHERE id = ?', [req.params.id]);
+    if (!item) return res.status(404).send('Item not found');
+    const host = req.get('host');
+    const protocol = req.protocol;
+    const url = `${protocol}://${host}/item.html?id=${item.id}`;
+    const svg = await QRCode.toString(url, {
+      type: 'svg',
+      margin: 1,
+      color: { dark: '#262220', light: '#ffffff' },
+    });
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  } catch (err) {
+    console.error('QR code generation error:', err.message);
+    res.status(500).send('Error generating QR code');
+  }
+});
+
 // GET /api/items/:id
 router.get('/:id', (req, res) => {
-  const item = get('SELECT * FROM items WHERE id = ?', [req.params.id]);
+  const item = get(
+    `SELECT i.*, u.name as reporter_name, u.phone as reporter_phone
+     FROM items i
+     JOIN users u ON u.id = i.user_id
+     WHERE i.id = ?`,
+    [req.params.id]
+  );
   if (!item) return res.status(404).json({ error: 'Item not found.' });
   res.json({ item: publicItem(item) });
 });

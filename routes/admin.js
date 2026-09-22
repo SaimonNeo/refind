@@ -20,12 +20,18 @@ router.get('/dashboard', (req, res) => {
   const activeMatches = get(`SELECT COUNT(*) as n FROM matches WHERE score >= 60`).n;
   const recentItems = all(`SELECT * FROM items ORDER BY created_at DESC LIMIT 8`);
   const highPriority = all(
-    `SELECT m.*, li.title as lost_title, fi.title as found_title
+    `SELECT m.*,
+            li.id as lost_id, li.title as lost_title, li.category as lost_category,
+            lu.name as lost_user_name, lu.phone as lost_user_phone, lu.email as lost_user_email,
+            fi.id as found_id, fi.title as found_title, fi.category as found_category,
+            fu.name as found_user_name, fu.phone as found_user_phone, fu.email as found_user_email
      FROM matches m
      JOIN items li ON li.id = m.lost_item_id
+     JOIN users lu ON lu.id = li.user_id
      JOIN items fi ON fi.id = m.found_item_id
-     WHERE m.score >= 80 AND li.status = 'active' AND fi.status = 'active'
-     ORDER BY m.score DESC LIMIT 5`
+     JOIN users fu ON fu.id = fi.user_id
+     WHERE m.score >= 70 AND li.status = 'active' AND fi.status = 'active'
+     ORDER BY m.score DESC LIMIT 10`
   );
 
   res.json({
@@ -34,6 +40,58 @@ router.get('/dashboard', (req, res) => {
     pendingClaims, rejectedClaims, activeMatches,
     recentItems, highPriorityCases: highPriority,
   });
+});
+
+// GET /api/admin/matches - all scored matches with full reporter contact details
+router.get('/matches', (req, res) => {
+  const minScore = Number(req.query.minScore) || 50;
+  const matches = all(
+    `SELECT m.*,
+            li.id as lost_id, li.title as lost_title, li.category as lost_category, li.location as lost_location, li.image as lost_image,
+            lu.id as lost_user_id, lu.name as lost_user_name, lu.email as lost_user_email, lu.phone as lost_user_phone,
+            fi.id as found_id, fi.title as found_title, fi.category as found_category, fi.location as found_location, fi.image as found_image,
+            fu.id as found_user_id, fu.name as found_user_name, fu.email as found_user_email, fu.phone as found_user_phone
+     FROM matches m
+     JOIN items li ON li.id = m.lost_item_id
+     JOIN users lu ON lu.id = li.user_id
+     JOIN items fi ON fi.id = m.found_item_id
+     JOIN users fu ON fu.id = fi.user_id
+     WHERE m.score >= ? AND li.status = 'active' AND fi.status = 'active'
+     ORDER BY m.score DESC LIMIT 100`,
+    [minScore]
+  );
+  res.json({ matches });
+});
+
+// POST /api/admin/matches/:id/notify - admin alerts both parties about the match
+router.post('/matches/:id/notify', (req, res) => {
+  const match = get(
+    `SELECT m.*, li.title as lost_title, li.user_id as lost_user_id,
+            fi.title as found_title, fi.user_id as found_user_id
+     FROM matches m
+     JOIN items li ON li.id = m.lost_item_id
+     JOIN items fi ON fi.id = m.found_item_id
+     WHERE m.id = ?`,
+    [req.params.id]
+  );
+  if (!match) return res.status(404).json({ error: 'Match not found.' });
+
+  const scorePct = Math.round(match.score);
+  notificationService.notify(
+    match.lost_user_id,
+    'match',
+    `Admin recommendation: High-confidence match (${scorePct}%) found for "${match.lost_title}" with found item "${match.found_title}". Check details to coordinate return.`,
+    `/matches.html?lostItemId=${match.lost_item_id}`
+  );
+  notificationService.notify(
+    match.found_user_id,
+    'match',
+    `Admin recommendation: Your found item "${match.found_title}" matched (${scorePct}%) with lost report "${match.lost_title}".`,
+    `/matches.html?foundItemId=${match.found_item_id}`
+  );
+
+  auditService.log(req.user, 'admin_notify_match', 'match', match.id, `Notified both parties about match #${match.id} (${scorePct}%)`);
+  res.json({ success: true, message: 'Notification sent to both reporters.' });
 });
 
 // ---- Claims review ----

@@ -7,12 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/admin.css">
+<script src="/js/ui.js"></script>
 </head>
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/index.html" class="brand"><span class="mark"></span>ReFind <span class="small muted">admin</span></a>
-    <div class="nav-links"><a href="/index.html">Exit admin</a><span id="notif-area"></span> <a href="#" id="logout-link">Log out</a></div>
+    <a href="/admin/dashboard.html" class="brand"><span class="mark"></span>ReFind <span class="badge" style="margin-left:8px;">Admin</span></a>
+    <div class="nav-links">
+      <span id="notif-area"></span>
+      <a href="#" id="logout-link">Log out</a>
+    </div>
   </div>
 </nav>
 
@@ -31,15 +35,16 @@
     <p class="muted mb-24">Suspending an account blocks login immediately and signs out any active session on their next request.</p>
 
     <div id="loading">Loading…</div>
-    <table class="admin-table" id="users-table" style="display:none;">
-      <thead><tr><th>Name</th><th>Email</th><th>Student / Staff ID</th><th>Role</th><th>Reports filed</th><th>Status</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrap" id="table-wrap" style="display:none;">
+      <table class="admin-table" id="users-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Student / Staff ID</th><th>Role</th><th>Reports filed</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
 <script src="/js/api.js"></script>
-<script src="/js/ui.js"></script>
 <script src="/js/notifications.js"></script>
 <script>
   requireAdmin();
@@ -53,6 +58,7 @@
       document.getElementById('loading').style.display = 'none';
       const table = document.getElementById('users-table');
       table.style.display = 'table';
+      document.getElementById('table-wrap').style.display = 'block';
       table.querySelector('tbody').innerHTML = users.map(u => `
         <tr>
           <td>${escapeHtml(u.name)}</td>

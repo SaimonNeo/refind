@@ -93,6 +93,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS verification_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  attempted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  passed INTEGER NOT NULL,
+  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_items_type_status ON items(type, status);
 CREATE INDEX IF NOT EXISTS idx_items_user ON items(user_id);
 CREATE INDEX IF NOT EXISTS idx_matches_lost ON matches(lost_item_id);
@@ -100,3 +110,4 @@ CREATE INDEX IF NOT EXISTS idx_matches_found ON matches(found_item_id);
 CREATE INDEX IF NOT EXISTS idx_claims_item ON claims(item_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_audit_target ON audit_log(target_type, target_id);
+CREATE INDEX IF NOT EXISTS idx_verification_attempts ON verification_attempts(item_id, user_id, attempted_at);
