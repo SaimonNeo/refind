@@ -41,9 +41,14 @@
         <div class="dp-upload-meta">
           <label for="avatar">Profile photo / DP <span class="small muted">(optional)</span></label>
           <p>Personalize your student identity for campus reports and handover coordination.</p>
-          <input type="file" id="avatar" accept="image/*" style="display:none;">
-          <div class="flex gap-8">
-            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('avatar').click()">Choose Photo</button>
+          <div class="flex gap-8 items-center flex-wrap" style="margin-top:6px;">
+            <button type="button" class="btn btn-outline btn-xs" onclick="document.getElementById('avatar').click()">Upload Photo</button>
+            <button type="button" class="btn btn-ghost btn-xs" id="pick-male-btn" title="Use Male student DP" style="display:inline-flex; align-items:center; gap:5px; font-weight:500;">
+              <img src="/img/avatars/male.svg" style="width:18px; height:18px; border-radius:50%;"> Male DP
+            </button>
+            <button type="button" class="btn btn-ghost btn-xs" id="pick-female-btn" title="Use Female student DP" style="display:inline-flex; align-items:center; gap:5px; font-weight:500;">
+              <img src="/img/avatars/female.svg" style="width:18px; height:18px; border-radius:50%;"> Female DP
+            </button>
             <button type="button" class="btn btn-ghost btn-xs" id="remove-dp-btn" style="display:none; color:var(--burgundy);">Remove</button>
           </div>
         </div>
@@ -97,9 +102,30 @@
   const placeholder = document.getElementById('dp-placeholder');
   const removeBtn = document.getElementById('remove-dp-btn');
 
+  let selectedDefaultAvatar = null;
+
+  document.getElementById('pick-male-btn').addEventListener('click', () => {
+    avatarInput.value = '';
+    selectedDefaultAvatar = '/img/avatars/male.svg';
+    previewImg.src = selectedDefaultAvatar;
+    previewImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display = 'inline-block';
+  });
+
+  document.getElementById('pick-female-btn').addEventListener('click', () => {
+    avatarInput.value = '';
+    selectedDefaultAvatar = '/img/avatars/female.svg';
+    previewImg.src = selectedDefaultAvatar;
+    previewImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display = 'inline-block';
+  });
+
   avatarInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    selectedDefaultAvatar = null;
     const reader = new FileReader();
     reader.onload = (ev) => {
       previewImg.src = ev.target.result;
@@ -112,6 +138,7 @@
 
   removeBtn.addEventListener('click', () => {
     avatarInput.value = '';
+    selectedDefaultAvatar = null;
     previewImg.src = '';
     previewImg.style.display = 'none';
     placeholder.style.display = 'flex';
@@ -142,7 +169,11 @@
       if (phone) fd.append('phone', phone);
 
       const avatarFile = avatarInput.files[0];
-      if (avatarFile) fd.append('avatar', avatarFile);
+      if (avatarFile) {
+        fd.append('avatar', avatarFile);
+      } else if (selectedDefaultAvatar) {
+        fd.append('defaultAvatar', selectedDefaultAvatar);
+      }
 
       const data = await api.post('/auth/register', fd, true);
       setSession(data.token, data.user);

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-male" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="skin-male" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#EAB308"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="60" fill="url(#bg-male)"/>
+  <!-- Shoulders & Collegiate Jacket -->
+  <path d="M20 112 C 22 90, 40 84, 60 84 C 80 84, 98 90, 100 112 Z" fill="#1E293B"/>
+  <path d="M46 84 L 60 102 L 74 84 Z" fill="#38BDF8"/>
+  <path d="M52 84 L 60 96 L 68 84 Z" fill="#FFFFFF"/>
+  <!-- Neck -->
+  <rect x="52" y="70" width="16" height="18" rx="4" fill="#D97706"/>
+  <!-- Face -->
+  <ellipse cx="60" cy="56" rx="21" ry="24" fill="url(#skin-male)"/>
+  <!-- Hair Base (Clean modern parted cut) -->
+  <path d="M37 50 C 36 32, 46 24, 60 24 C 74 24, 84 32, 83 50 C 78 38, 70 36, 58 36 C 45 36, 39 42, 37 50 Z" fill="#18181B"/>
+  <path d="M38 38 C 48 30, 66 28, 79 34 C 70 30, 52 30, 38 38 Z" fill="#27272A"/>
+  <!-- Eyebrows -->
+  <path d="M44 46 C 48 44, 53 44, 56 46" stroke="#18181B" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <path d="M64 46 C 67 44, 72 44, 76 46" stroke="#18181B" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <!-- Eyes -->
+  <circle cx="50" cy="54" r="2.6" fill="#18181B"/>
+  <circle cx="70" cy="54" r="2.6" fill="#18181B"/>
+  <circle cx="51" cy="53" r="0.9" fill="#FFF"/>
+  <circle cx="71" cy="53" r="0.9" fill="#FFF"/>
+  <!-- Nose -->
+  <path d="M59 57 L 61 62 L 58 63" stroke="#B45309" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Friendly Smile -->
+  <path d="M52 68 C 55 73, 65 73, 68 68" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+</svg>

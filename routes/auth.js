@@ -59,7 +59,9 @@ router.post('/register', upload.single('avatar'), async (req, res) => {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
-    const avatarUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    const avatarUrl = req.file
+      ? `/uploads/${req.file.filename}`
+      : (req.body && req.body.defaultAvatar ? String(req.body.defaultAvatar).trim() : null);
     const hash = await bcrypt.hash(password, 10);
     const { lastInsertRowid } = run(
       `INSERT INTO users (name, email, password, role, phone, student_id, batch, section, avatar) VALUES (?, ?, ?, 'student', ?, ?, ?, ?, ?)`,
@@ -131,6 +133,9 @@ router.patch('/me', requireAuth, upload.single('avatar'), (req, res) => {
     if (req.file) {
       updates.push('avatar = ?');
       params.push(`/uploads/${req.file.filename}`);
+    } else if (req.body && req.body.defaultAvatar) {
+      updates.push('avatar = ?');
+      params.push(String(req.body.defaultAvatar).trim());
     } else if (req.body && req.body.removeAvatar === 'true') {
       updates.push('avatar = ?');
       params.push(null);
