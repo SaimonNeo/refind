@@ -26,10 +26,15 @@ router.get('/dashboard', (req, res) => {
   );
   const highPriority = all(
     `SELECT m.*,
-            li.id as lost_id, li.title as lost_title, li.category as lost_category,
-            lu.name as lost_user_name, lu.phone as lost_user_phone, lu.email as lost_user_email,
-            fi.id as found_id, fi.title as found_title, fi.category as found_category,
-            fu.name as found_user_name, fu.phone as found_user_phone, fu.email as found_user_email
+            li.id as lost_id, li.title as lost_title, li.category as lost_category, li.color as lost_color, li.brand as lost_brand,
+            li.location as lost_location, li.description as lost_description, li.image as lost_image, li.created_at as lost_created_at, li.event_date as lost_event_date,
+            lu.id as lost_user_id, lu.name as lost_user_name, lu.phone as lost_user_phone, lu.email as lost_user_email,
+            lu.batch as lost_user_batch, lu.section as lost_user_section, lu.avatar as lost_user_avatar,
+            fi.id as found_id, fi.title as found_title, fi.category as found_category, fi.color as found_color, fi.brand as found_brand,
+            fi.location as found_location, fi.description as found_description, fi.image as found_image, fi.created_at as found_created_at, fi.event_date as found_event_date,
+            fi.storage_location as found_storage_location, fi.verification_question as found_verification_question,
+            fu.id as found_user_id, fu.name as found_user_name, fu.phone as found_user_phone, fu.email as found_user_email,
+            fu.batch as found_user_batch, fu.section as found_user_section, fu.avatar as found_user_avatar
      FROM matches m
      JOIN items li ON li.id = m.lost_item_id
      JOIN users lu ON lu.id = li.user_id
@@ -52,10 +57,15 @@ router.get('/matches', (req, res) => {
   const minScore = Number(req.query.minScore) || 50;
   const matches = all(
     `SELECT m.*,
-            li.id as lost_id, li.title as lost_title, li.category as lost_category, li.location as lost_location, li.image as lost_image,
-            lu.id as lost_user_id, lu.name as lost_user_name, lu.email as lost_user_email, lu.phone as lost_user_phone,
-            fi.id as found_id, fi.title as found_title, fi.category as found_category, fi.location as found_location, fi.image as found_image,
-            fu.id as found_user_id, fu.name as found_user_name, fu.email as found_user_email, fu.phone as found_user_phone
+            li.id as lost_id, li.title as lost_title, li.category as lost_category, li.color as lost_color, li.brand as lost_brand,
+            li.location as lost_location, li.description as lost_description, li.image as lost_image, li.created_at as lost_created_at, li.event_date as lost_event_date,
+            lu.id as lost_user_id, lu.name as lost_user_name, lu.phone as lost_user_phone, lu.email as lost_user_email,
+            lu.batch as lost_user_batch, lu.section as lost_user_section, lu.avatar as lost_user_avatar,
+            fi.id as found_id, fi.title as found_title, fi.category as found_category, fi.color as found_color, fi.brand as found_brand,
+            fi.location as found_location, fi.description as found_description, fi.image as found_image, fi.created_at as found_created_at, fi.event_date as found_event_date,
+            fi.storage_location as found_storage_location, fi.verification_question as found_verification_question,
+            fu.id as found_user_id, fu.name as found_user_name, fu.phone as found_user_phone, fu.email as found_user_email,
+            fu.batch as found_user_batch, fu.section as found_user_section, fu.avatar as found_user_avatar
      FROM matches m
      JOIN items li ON li.id = m.lost_item_id
      JOIN users lu ON lu.id = li.user_id
@@ -161,6 +171,15 @@ router.patch('/claims/:id', (req, res) => {
   );
   if (status === 'approved') {
     run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [claim.item_id]);
+    run(
+      `UPDATE items SET status = 'claimed'
+       WHERE id IN (
+         SELECT m.lost_item_id FROM matches m
+         JOIN items li ON li.id = m.lost_item_id
+         WHERE m.found_item_id = ? AND li.user_id = ?
+       )`,
+      [claim.item_id, claim.claimant_id]
+    );
   }
 
   auditService.log(req.user, `admin_${status}_claim`, 'claim', claim.id, `Reviewed by admin`);

@@ -573,3 +573,494 @@ if (document.readyState === 'loading') {
 } else {
   initUiHelpers();
 }
+
+// ============================================================
+// Side-by-Side Pair Comparison Inspector Modal
+// ============================================================
+
+function ensurePairModalRoot() {
+  let root = document.getElementById('pair-modal-root');
+  if (root) return root;
+
+  root = document.createElement('div');
+  root.id = 'pair-modal-root';
+  root.innerHTML = `
+    <div class="pair-modal-backdrop" id="pair-modal-backdrop" onclick="handlePairBackdropClick(event)">
+      <div class="pair-modal-box" id="pair-modal-box"></div>
+    </div>
+  `;
+  document.body.appendChild(root);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePairComparisonModal();
+    }
+  });
+
+  return root;
+}
+
+function handlePairBackdropClick(e) {
+  if (e.target && e.target.id === 'pair-modal-backdrop') {
+    closePairComparisonModal();
+  }
+}
+
+function closePairComparisonModal() {
+  const backdrop = document.getElementById('pair-modal-backdrop');
+  if (backdrop) {
+    backdrop.classList.remove('open');
+  }
+  document.body.style.overflow = '';
+}
+
+async function notifyPairMatch(matchId, btnEl) {
+  const btn = btnEl || document.getElementById('pair-notify-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle; margin-right:6px;"></span> Sending...`;
+  }
+
+  try {
+    if (typeof api !== 'undefined' && typeof api.post === 'function') {
+      await api.post(`/admin/matches/${matchId}/notify`, {});
+    } else {
+      const token = localStorage.getItem('refind_token');
+      const res = await fetch(`/api/admin/matches/${matchId}/notify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to send notification');
+      }
+    }
+    toast('Notification sent! Both owner and finder were alerted with return & claim links.');
+    if (btn) {
+      btn.className = 'btn btn-sm';
+      btn.style.background = 'var(--moss-deep)';
+      btn.style.color = '#ffffff';
+      btn.style.borderColor = 'var(--moss-deep)';
+      btn.innerHTML = `✓ Both Parties Notified`;
+    }
+  } catch (err) {
+    toast(err.message || 'Failed to send notification', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notify Both Parties`;
+    }
+  }
+}
+
+async function showPairComparisonModal(matchIdOrData) {
+  ensurePairModalRoot();
+  const backdrop = document.getElementById('pair-modal-backdrop');
+  const box = document.getElementById('pair-modal-box');
+  if (!backdrop || !box) return;
+
+  document.body.style.overflow = 'hidden';
+  backdrop.classList.add('open');
+
+  // Loading state
+  box.innerHTML = `
+    <div style="padding: 56px 24px; text-align: center;">
+      <div style="margin: 0 auto 16px; border: 3px solid var(--line); border-top-color: var(--clay); width: 38px; height: 38px; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <div style="font-weight: 600; font-size: 1.05rem; color: var(--ink);">Loading Pair Comparison...</div>
+      <div class="small muted mt-4">Gathering photos, verified student details, and AI matching score breakdown</div>
+    </div>
+  `;
+
+  try {
+    let match, lost, found;
+    if (typeof matchIdOrData === 'object' && matchIdOrData !== null && matchIdOrData.lostItem && matchIdOrData.foundItem) {
+      match = matchIdOrData.match || matchIdOrData;
+      lost = matchIdOrData.lostItem;
+      found = matchIdOrData.foundItem;
+    } else {
+      const matchId = typeof matchIdOrData === 'object' && matchIdOrData !== null ? matchIdOrData.id : matchIdOrData;
+      let data;
+      if (typeof api !== 'undefined' && typeof api.get === 'function') {
+        data = await api.get(`/matches/${matchId}`);
+      } else {
+        const token = localStorage.getItem('refind_token');
+        const res = await fetch(`/api/matches/${matchId}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Failed to fetch match details (${res.status})`);
+        }
+        data = await res.json();
+      }
+      match = data.match;
+      lost = data.lostItem;
+      found = data.foundItem;
+    }
+
+    if (!match || !lost || !found) {
+      throw new Error('Incomplete match record returned from server.');
+    }
+
+    renderPairComparison(match, lost, found, box);
+  } catch (err) {
+    box.innerHTML = `
+      <div style="padding: 36px 24px; text-align: center;">
+        <div style="color: var(--danger); font-size: 2.2rem; margin-bottom: 10px;">⚠️</div>
+        <h3 style="margin-bottom: 8px;">Unable to load pair comparison</h3>
+        <p class="small muted mb-16">${(typeof escapeHtml === 'function' ? escapeHtml(err.message) : err.message) || 'An unexpected error occurred.'}</p>
+        <button class="btn btn-outline btn-sm" onclick="closePairComparisonModal()">Close</button>
+      </div>
+    `;
+  }
+}
+
+function renderPairComparison(match, lost, found, box) {
+  const esc = typeof escapeHtml === 'function' ? escapeHtml : (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const score = Math.round(match.score || 0);
+  const scoreBadgeClass = score >= 85 ? 'badge-claimed' : (score >= 70 ? 'badge-matched' : 'badge-active');
+  const scoreLabel = score >= 85 ? 'VERY HIGH MATCH' : (score >= 70 ? 'STRONG MATCH' : 'MODERATE MATCH');
+
+  // Attribute match detection
+  const isCategoryMatch = lost.category && found.category && lost.category.trim().toLowerCase() === found.category.trim().toLowerCase();
+  const normLostColor = (lost.color || '').trim().toLowerCase();
+  const normFoundColor = (found.color || '').trim().toLowerCase();
+  const isColorMatch = normLostColor && normFoundColor && (normLostColor === normFoundColor || normLostColor.includes(normFoundColor) || normFoundColor.includes(normLostColor));
+  const isBrandMatch = lost.brand && found.brand && lost.brand.trim().toLowerCase() === found.brand.trim().toLowerCase();
+  const normLostLoc = (lost.location || '').trim().toLowerCase();
+  const normFoundLoc = (found.location || '').trim().toLowerCase();
+  const isLocationMatch = normLostLoc && normFoundLoc && (normLostLoc === normFoundLoc || normLostLoc.includes(normFoundLoc) || normFoundLoc.includes(normLostLoc));
+
+  // Contacts
+  const lostPhone = lost.reporter_phone;
+  const lostCallBtn = lostPhone ? `<a href="tel:${lostPhone}" class="btn btn-outline btn-xs" style="text-decoration:none;"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Call (${esc(lostPhone)})</a>` : '';
+  const lostWaBtn = lostPhone ? whatsappButtonHtml(lostPhone, `Hello ${lost.reporter_name}, this is the Campus Lost & Found Desk regarding your lost item report #${lost.id} ("${lost.title}"). A potential match (${score}%) was turned in.`, 'WhatsApp', 'btn-xs') : '';
+
+  const foundPhone = found.reporter_phone;
+  const foundCallBtn = foundPhone ? `<a href="tel:${foundPhone}" class="btn btn-outline btn-xs" style="text-decoration:none;"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Call (${esc(foundPhone)})</a>` : '';
+  const foundWaBtn = foundPhone ? whatsappButtonHtml(foundPhone, `Hello ${found.reporter_name}, this is the Campus Lost & Found Desk regarding the item you turned in #${found.id} ("${found.title}"). An owner has reported a matching item (${score}%).`, 'WhatsApp', 'btn-xs') : '';
+
+  const lostImg = lost.image || lost.photo_url;
+  const foundImg = found.image || found.photo_url;
+
+  const features = Array.isArray(match.matching_features)
+    ? match.matching_features
+    : (typeof match.matching_features === 'string' ? JSON.parse(match.matching_features || '[]') : []);
+
+  box.innerHTML = `
+    <!-- Modal Header -->
+    <div class="pair-modal-header">
+      <div class="pair-header-left">
+        <div class="pair-header-tags">
+          <span class="badge-pair-brand">ReFind Pair Inspector</span>
+          <span class="badge ${scoreBadgeClass}" style="font-size:0.82rem; font-weight:700;">${score}% MATCH • ${scoreLabel}</span>
+          <span class="small muted" style="font-family:var(--font-num);">Pair #${match.id}</span>
+        </div>
+        <h2 id="pair-modal-title" class="pair-modal-title">Lost &amp; Found Side-by-Side Match Comparison</h2>
+        <p class="pair-modal-sub">Compare photos, full descriptions, campus locations, timestamps, and secret verification questions side-by-side.</p>
+      </div>
+      <button type="button" class="pair-close-btn" onclick="closePairComparisonModal()" title="Close inspector (Esc)">&times;</button>
+    </div>
+
+    <!-- Scrollable Comparison Body -->
+    <div class="pair-modal-body">
+
+      <!-- Side-by-Side 2-Column Comparative Grid -->
+      <div class="pair-compare-grid">
+
+        <!-- ================= LEFT COLUMN: LOST POST ================= -->
+        <div class="pair-card pair-card-lost">
+          <div class="pair-card-header">
+            <span class="badge badge-lost" style="font-weight:700; letter-spacing:0.5px;">🔴 LOST POST #${lost.id}</span>
+            <span class="pair-post-date">${typeof timeAgo === 'function' ? timeAgo(lost.created_at) : (lost.created_at || '')}</span>
+          </div>
+
+          <!-- Image container -->
+          <div class="pair-image-container">
+            ${lostImg
+              ? `<img src="${esc(lostImg)}" alt="${esc(lost.title)}" class="pair-item-img" onclick="window.open('${esc(lostImg)}', '_blank')" title="Click to view full image">`
+              : `<div class="pair-img-placeholder">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>No photo provided in lost report</span>
+                </div>`
+            }
+          </div>
+
+          <h3 class="pair-item-title">
+            <a href="/item.html?id=${lost.id}&from=admin" target="_blank" title="Open full item page in new tab">
+              ${esc(lost.title)} <span style="font-size:0.85rem; font-family:var(--font-body); font-weight:normal;">↗</span>
+            </a>
+          </h3>
+
+          <!-- Attributes Comparison Table -->
+          <div class="pair-attr-table">
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Category</span>
+              <span class="pair-attr-val ${isCategoryMatch ? 'is-match' : ''}">
+                ${esc(lost.category || '—')} ${isCategoryMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Color</span>
+              <span class="pair-attr-val ${isColorMatch ? 'is-match' : ''}">
+                ${esc(lost.color || '—')} ${isColorMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Brand</span>
+              <span class="pair-attr-val ${isBrandMatch ? 'is-match' : ''}">
+                ${esc(lost.brand || '—')} ${isBrandMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Lost Location</span>
+              <span class="pair-attr-val ${isLocationMatch ? 'is-match' : ''}">
+                📍 ${esc(lost.location || '—')} ${isLocationMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Date Lost</span>
+              <span class="pair-attr-val">
+                🕒 ${lost.event_date ? esc(lost.event_date) : 'Not specified'}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Report Status</span>
+              <span class="pair-attr-val">
+                <span class="badge ${lost.status === 'active' ? 'badge-active' : 'badge-claimed'}">${esc(lost.status)}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Description Box -->
+          <div class="pair-desc-box">
+            <div class="pair-box-label">Student's Lost Description:</div>
+            <div class="pair-desc-content">${esc(lost.description || 'No detailed description provided.')}</div>
+          </div>
+
+          <!-- Reporter (Owner) Profile Card -->
+          <div class="pair-user-box">
+            <div class="pair-user-avatar">
+              ${renderUserAvatar(lost.reporter_avatar, lost.reporter_name, 'md')}
+            </div>
+            <div class="pair-user-info">
+              <div class="pair-user-role-tag">Reported By (Claimant Owner)</div>
+              <div class="pair-user-name">${esc(lost.reporter_name || 'Anonymous Student')}</div>
+              <div class="pair-user-meta">
+                ${esc(lost.reporter_email || '')}
+                ${lost.reporter_batch ? `<br>Batch ${esc(lost.reporter_batch)}${lost.reporter_section ? ` (${esc(lost.reporter_section)})` : ''}` : ''}
+              </div>
+              <div class="pair-user-actions">
+                ${lostCallBtn}
+                ${lostWaBtn}
+                ${!lostPhone ? '<span class="small muted">No phone on file</span>' : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer Links -->
+          <div class="pair-card-footer">
+            <a href="/flyer.html?id=${lost.id}&from=admin" target="_blank" class="btn btn-ghost btn-xs">
+              <svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Lost Flyer PDF
+            </a>
+            <a href="/item.html?id=${lost.id}&from=admin" target="_blank" class="btn btn-outline btn-xs">Open Lost Post ↗</a>
+          </div>
+        </div>
+
+        <!-- ================= RIGHT COLUMN: FOUND POST ================= -->
+        <div class="pair-card pair-card-found">
+          <div class="pair-card-header">
+            <span class="badge badge-found" style="font-weight:700; letter-spacing:0.5px;">🟢 FOUND POST #${found.id}</span>
+            <span class="pair-post-date">${typeof timeAgo === 'function' ? timeAgo(found.created_at) : (found.created_at || '')}</span>
+          </div>
+
+          <!-- Image container -->
+          <div class="pair-image-container">
+            ${foundImg
+              ? `<img src="${esc(foundImg)}" alt="${esc(found.title)}" class="pair-item-img" onclick="window.open('${esc(foundImg)}', '_blank')" title="Click to view full image">`
+              : `<div class="pair-img-placeholder">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>No photo provided in found report</span>
+                </div>`
+            }
+          </div>
+
+          <h3 class="pair-item-title">
+            <a href="/item.html?id=${found.id}&from=admin" target="_blank" title="Open full item page in new tab">
+              ${esc(found.title)} <span style="font-size:0.85rem; font-family:var(--font-body); font-weight:normal;">↗</span>
+            </a>
+          </h3>
+
+          <!-- Attributes Comparison Table -->
+          <div class="pair-attr-table">
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Category</span>
+              <span class="pair-attr-val ${isCategoryMatch ? 'is-match' : ''}">
+                ${esc(found.category || '—')} ${isCategoryMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Color</span>
+              <span class="pair-attr-val ${isColorMatch ? 'is-match' : ''}">
+                ${esc(found.color || '—')} ${isColorMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Brand</span>
+              <span class="pair-attr-val ${isBrandMatch ? 'is-match' : ''}">
+                ${esc(found.brand || '—')} ${isBrandMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Found Location</span>
+              <span class="pair-attr-val ${isLocationMatch ? 'is-match' : ''}">
+                📍 ${esc(found.location || '—')} ${isLocationMatch ? '<span class="match-indicator">✓ Match</span>' : ''}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Date Found</span>
+              <span class="pair-attr-val">
+                🕒 ${found.event_date ? esc(found.event_date) : 'Not specified'}
+              </span>
+            </div>
+            <div class="pair-attr-row">
+              <span class="pair-attr-label">Current Custody</span>
+              <span class="pair-attr-val">
+                🏢 ${esc(found.storage_location || 'Campus Admin / Security Desk')}
+              </span>
+            </div>
+          </div>
+
+          <!-- Secret Admin Verification Question (if provided) -->
+          ${found.verification_question ? `
+            <div class="pair-verification-box">
+              <div class="pair-verification-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Confidential Admin Verification Question</span>
+              </div>
+              <div class="pair-verification-body">
+                "${esc(found.verification_question)}"
+              </div>
+              <div class="pair-verification-note">
+                💡 Admin Tip: Ask this confidential question to the owner before releasing the item to verify authentic ownership.
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Description Box -->
+          <div class="pair-desc-box">
+            <div class="pair-box-label">Finder's Found Description:</div>
+            <div class="pair-desc-content">${esc(found.description || 'No detailed description provided.')}</div>
+          </div>
+
+          <!-- Finder Profile Card -->
+          <div class="pair-user-box">
+            <div class="pair-user-avatar">
+              ${renderUserAvatar(found.reporter_avatar, found.reporter_name, 'md')}
+            </div>
+            <div class="pair-user-info">
+              <div class="pair-user-role-tag">Turned In By (Finder)</div>
+              <div class="pair-user-name">${esc(found.reporter_name || 'Anonymous Finder')}</div>
+              <div class="pair-user-meta">
+                ${esc(found.reporter_email || '')}
+                ${found.reporter_batch ? `<br>Batch ${esc(found.reporter_batch)}${found.reporter_section ? ` (${esc(found.reporter_section)})` : ''}` : ''}
+              </div>
+              <div class="pair-user-actions">
+                ${foundCallBtn}
+                ${foundWaBtn}
+                ${!foundPhone ? '<span class="small muted">No phone on file</span>' : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer Links -->
+          <div class="pair-card-footer">
+            <a href="/flyer.html?id=${found.id}&from=admin" target="_blank" class="btn btn-ghost btn-xs">
+              <svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Found Flyer PDF
+            </a>
+            <a href="/item.html?id=${found.id}&from=admin" target="_blank" class="btn btn-outline btn-xs">Open Found Post ↗</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= Algorithmic & AI Match Evaluation Panel ================= -->
+      <div class="pair-eval-panel">
+        <div class="pair-eval-header">
+          <div class="pair-eval-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Matching Engine Breakdown &amp; Multimodal AI Analysis
+          </div>
+          <div class="pair-eval-total">
+            Total Composite Score: <strong style="color:var(--clay); font-size:1.05rem;">${score} / 100 pts</strong>
+          </div>
+        </div>
+
+        <!-- 5 Dimension Scoring Meters -->
+        <div class="pair-meters-grid">
+          <div class="pair-meter-card">
+            <div class="pair-meter-label">Category Match</div>
+            <div class="pair-meter-bar"><div class="pair-meter-fill" style="width:${Math.min(100, Math.round(((match.category_score || 0) / 25) * 100))}%;"></div></div>
+            <div class="pair-meter-score">${Math.round(match.category_score || 0)} / 25 pts</div>
+          </div>
+          <div class="pair-meter-card">
+            <div class="pair-meter-label">Color Similarity</div>
+            <div class="pair-meter-bar"><div class="pair-meter-fill" style="width:${Math.min(100, Math.round(((match.color_score || 0) / 15) * 100))}%;"></div></div>
+            <div class="pair-meter-score">${Math.round(match.color_score || 0)} / 15 pts</div>
+          </div>
+          <div class="pair-meter-card">
+            <div class="pair-meter-label">Campus Proximity</div>
+            <div class="pair-meter-bar"><div class="pair-meter-fill" style="width:${Math.min(100, Math.round(((match.location_score || 0) / 20) * 100))}%;"></div></div>
+            <div class="pair-meter-score">${Math.round(match.location_score || 0)} / 20 pts</div>
+          </div>
+          <div class="pair-meter-card">
+            <div class="pair-meter-label">Time Window</div>
+            <div class="pair-meter-bar"><div class="pair-meter-fill" style="width:${Math.min(100, Math.round(((match.time_score || 0) / 15) * 100))}%;"></div></div>
+            <div class="pair-meter-score">${Math.round(match.time_score || 0)} / 15 pts</div>
+          </div>
+          <div class="pair-meter-card">
+            <div class="pair-meter-label">Semantic AI (Gemini)</div>
+            <div class="pair-meter-bar"><div class="pair-meter-fill" style="width:${Math.min(100, Math.round(((match.ai_score || 0) / 25) * 100))}%;"></div></div>
+            <div class="pair-meter-score">${Math.round(match.ai_score || 0)} / 25 pts</div>
+          </div>
+        </div>
+
+        <!-- AI Semantic Reasoning & Features List -->
+        <div class="pair-ai-findings">
+          <div class="pair-ai-title">
+            <span>🧠 Semantic AI Reasoning &amp; Context Extraction</span>
+          </div>
+          <p class="pair-ai-text">${esc(match.explanation || 'Calculated via deterministic attributes and text vector matching.')}</p>
+          ${features && features.length ? `
+            <div class="pair-features-list">
+              ${features.map(f => `<span class="pair-feature-pill">✦ ${esc(f)}</span>`).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="pair-modal-footer">
+      <div class="pair-footer-left">
+        <span class="small muted">Match ID #${match.id} • Registered ${typeof timeAgo === 'function' ? timeAgo(match.created_at) : (match.created_at || '')}</span>
+      </div>
+      <div class="pair-footer-right">
+        <button type="button" class="btn btn-primary btn-sm" id="pair-notify-btn" onclick="notifyPairMatch(${match.id}, this)">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notify Both Parties
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closePairComparisonModal()">Close</button>
+      </div>
+    </div>
+  `;
+}
+
+window.showPairComparisonModal = showPairComparisonModal;
+window.closePairComparisonModal = closePairComparisonModal;
+window.notifyPairMatch = notifyPairMatch;
+

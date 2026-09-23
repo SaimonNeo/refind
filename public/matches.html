@@ -103,7 +103,8 @@
         </details>
         <div class="mt-16 flex gap-8 flex-wrap">
           <a href="/item.html?id=${counterpartId}" class="btn btn-outline btn-sm">View item</a>
-          ${counterpartType === 'found' ? `<a href="/claim.html?itemId=${counterpartId}" class="btn btn-primary btn-sm">Claim this item →</a>` : ''}
+          ${user && user.role === 'admin' ? `<button type="button" class="btn btn-primary btn-sm" onclick="showPairComparisonModal(${m.id})"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg> Compare Pair ↔</button>` : ''}
+          ${counterpartType === 'found' && (!user || user.role !== 'admin') ? `<a href="/claim.html?itemId=${counterpartId}" class="btn btn-primary btn-sm">Claim this item →</a>` : ''}
         </div>
       </div>
     `;

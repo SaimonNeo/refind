@@ -4,3 +4,4 @@ database/refind.db*
 uploads/*
 !uploads/.gitkeep
 *.log
+scratch/

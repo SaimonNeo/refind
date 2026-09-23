@@ -295,12 +295,16 @@
 
     try {
       const data = await api.get(`/items?${params.toString()}`);
-      if (!data.items.length) {
+      // Ensure claimed, resolved, or withdrawn items are strictly hidden from the public item browser
+      const visibleItems = (data.items || []).filter(item =>
+        item.status !== 'claimed' && item.status !== 'resolved' && item.status !== 'withdrawn'
+      );
+      if (!visibleItems.length) {
         resultsEl.innerHTML = '';
         emptyEl.style.display = 'block';
         return;
       }
-      resultsEl.innerHTML = data.items.map(itemCardHtml).join('');
+      resultsEl.innerHTML = visibleItems.map(itemCardHtml).join('');
     } catch (err) {
       resultsEl.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
     }

@@ -39,6 +39,10 @@ function confidenceFromVerify(verifyResult, hasVerification) {
 // GET /api/claims/verification-question/:itemId
 // Returns only the QUESTION (never the answer) + anti-brute-force rate limit status.
 router.get('/verification-question/:itemId', requireAuth, (req, res) => {
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'Administrators cannot submit ownership claims. Claims can only be filed by student claimants.' });
+  }
+
   const item = get('SELECT id, type, verification_question, verification_answer_hash FROM items WHERE id = ?', [req.params.itemId]);
   if (!item || item.type !== 'found') return res.status(404).json({ error: 'Found item not found.' });
 
@@ -63,6 +67,10 @@ router.get('/verification-question/:itemId', requireAuth, (req, res) => {
 // POST /api/claims - submit a claim on a found item
 router.post('/', requireAuth, upload.single('idProof'), (req, res) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ error: 'Administrators cannot submit ownership claims. Claims can only be filed by student claimants.' });
+    }
+
     const { itemId, answer, phone } = req.body || {};
     if (!itemId) return res.status(400).json({ error: 'itemId is required.' });
 
@@ -122,6 +130,15 @@ router.post('/', requireAuth, upload.single('idProof'), (req, res) => {
 
     if (status === 'approved') {
       run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [item.id]);
+      run(
+        `UPDATE items SET status = 'claimed'
+         WHERE id IN (
+           SELECT m.lost_item_id FROM matches m
+           JOIN items li ON li.id = m.lost_item_id
+           WHERE m.found_item_id = ? AND li.user_id = ?
+         )`,
+        [item.id, req.user.id]
+      );
     }
 
     auditService.log(req.user, 'submit_claim', 'claim', lastInsertRowid, `Claim on item #${item.id}, outcome: ${status}`);
@@ -186,6 +203,15 @@ router.post('/:id/confirm', requireAuth, (req, res) => {
 
   run(`UPDATE claims SET claimant_confirmed = 1 WHERE id = ?`, [claim.id]);
   run(`UPDATE items SET status = 'resolved' WHERE id = ?`, [claim.item_id]);
+  run(
+    `UPDATE items SET status = 'resolved'
+     WHERE id IN (
+       SELECT m.lost_item_id FROM matches m
+       JOIN items li ON li.id = m.lost_item_id
+       WHERE m.found_item_id = ? AND li.user_id = ?
+     )`,
+    [claim.item_id, claim.claimant_id]
+  );
   auditService.log(req.user, 'confirm_handover', 'claim', claim.id, 'Claimant confirmed receipt of item.');
 
   const item = get('SELECT * FROM items WHERE id = ?', [claim.item_id]);

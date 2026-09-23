@@ -27,13 +27,28 @@ router.get('/:id', requireAuth, (req, res) => {
   const match = matchingEngine.getMatchById(req.params.id);
   if (!match) return res.status(404).json({ error: 'Match not found.' });
 
-  const lost = get('SELECT * FROM items WHERE id = ?', [match.lost_item_id]);
-  const found = get('SELECT * FROM items WHERE id = ?', [match.found_item_id]);
+  const lost = get(`
+    SELECT i.*, u.name as reporter_name, u.email as reporter_email, u.phone as reporter_phone,
+           u.batch as reporter_batch, u.section as reporter_section, u.avatar as reporter_avatar
+    FROM items i
+    JOIN users u ON u.id = i.user_id
+    WHERE i.id = ?
+  `, [match.lost_item_id]);
+
+  const found = get(`
+    SELECT i.*, u.name as reporter_name, u.email as reporter_email, u.phone as reporter_phone,
+           u.batch as reporter_batch, u.section as reporter_section, u.avatar as reporter_avatar
+    FROM items i
+    JOIN users u ON u.id = i.user_id
+    WHERE i.id = ?
+  `, [match.found_item_id]);
 
   const isOwner = req.user.id === lost?.user_id || req.user.id === found?.user_id;
   if (!isOwner && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Not authorized to view this match.' });
   }
+
+  if (found) delete found.verification_answer_hash;
 
   res.json({ match, lostItem: lost, foundItem: found });
 });

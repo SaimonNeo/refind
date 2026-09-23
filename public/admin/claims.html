@@ -95,6 +95,7 @@
         <span class="badge ${colorClass}" style="font-size:0.82rem; font-weight:600;">${score}% match</span>
         ${c.match_ai_score ? `<br><span class="small muted">AI: ${c.match_ai_score}/25 pts</span>` : ''}
         ${c.lost_title ? `<br><span class="small muted" title="${escapeHtml(c.lost_title)}" style="display:inline-block; max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Lost: "${escapeHtml(c.lost_title)}"</span>` : ''}
+        ${c.match_id ? `<div class="mt-4"><button type="button" class="btn btn-outline btn-xs" onclick="showPairComparisonModal(${c.match_id})" style="font-size:0.75rem; padding:2px 8px; white-space:nowrap;">Pair ↔ Compare</button></div>` : ''}
       </div>
     `;
   }

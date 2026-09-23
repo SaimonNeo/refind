@@ -76,6 +76,28 @@
   const itemId = params.get('itemId');
 
   async function init() {
+    if (me && me.role === 'admin') {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('claim-area').style.display = 'block';
+      document.getElementById('item-title').textContent = 'Administrator Notice';
+      document.getElementById('question-area').innerHTML = `
+        <div class="alert alert-info">
+          <strong style="display:inline-flex; align-items:center; gap:6px;">
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin Action Restricted:
+          </strong>
+          Administrators cannot submit ownership claims. Claims are submitted by student claimants and reviewed from the Admin Claims Desk.
+        </div>
+        <div class="mt-16 flex gap-8 flex-wrap">
+          <a href="/admin/claims.html" class="btn btn-primary btn-sm">Go to Admin Claims Desk</a>
+          ${itemId ? `<a href="/item.html?id=${encodeURIComponent(itemId)}&from=admin" class="btn btn-outline btn-sm">View Item Details</a>` : ''}
+          <a href="/browse.html" class="btn btn-ghost btn-sm">Back to Browse</a>
+        </div>
+      `;
+      const form = document.getElementById('claim-form');
+      if (form) form.style.display = 'none';
+      return;
+    }
+
     if (!itemId) {
       document.getElementById('loading').innerHTML = `<div class="alert alert-error">No item specified.</div>`;
       return;
@@ -92,6 +114,20 @@
 
       const form = document.getElementById('claim-form');
       const qArea = document.getElementById('question-area');
+
+      if (item.status === 'claimed' || item.status === 'resolved') {
+        qArea.innerHTML = `
+          <div class="alert alert-info">
+            <strong style="display:inline-flex; align-items:center; gap:6px;"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Item Already Claimed:</strong>
+            This item has already been successfully claimed and approved. It is no longer available in the public catalog.
+          </div>
+          <div class="mt-16">
+            <a href="/browse.html" class="btn btn-outline btn-sm">← Back to Browse</a>
+          </div>
+        `;
+        form.style.display = 'none';
+        return;
+      }
 
       if (verifyInfo.locked) {
         qArea.innerHTML = `

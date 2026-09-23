@@ -120,7 +120,8 @@
     wrap.style.display = 'grid';
 
     const isOwner = user && user.id === item.user_id;
-    const canClaim = user && item.type === 'found' && !isOwner && item.status === 'active';
+    const isAdmin = user && user.role === 'admin';
+    const canClaim = user && !isAdmin && item.type === 'found' && !isOwner && item.status === 'active';
 
     wrap.innerHTML = `
       <div>

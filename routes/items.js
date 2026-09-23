@@ -89,8 +89,13 @@ router.get('/', (req, res) => {
     if (status) {
       clauses.push('i.status = ?');
       params.push(status);
+    } else if (userId) {
+      // User viewing their own reports on their dashboard/profile
+      clauses.push(`i.status NOT IN ('withdrawn')`);
     } else {
-      clauses.push(`i.status NOT IN ('resolved', 'withdrawn')`);
+      // Public browsing (browse.html, map drawer, search, general feed):
+      // When claimed successfully approved, item should be hidden from browser.
+      clauses.push(`i.status NOT IN ('claimed', 'resolved', 'withdrawn')`);
     }
     if (userId) {
       clauses.push('i.user_id = ?');
@@ -132,7 +137,7 @@ router.get('/stats/by-location', (req, res) => {
     const rows = all(`
       SELECT location, type, COUNT(*) as count
       FROM items
-      WHERE status NOT IN ('resolved', 'withdrawn')
+      WHERE status NOT IN ('claimed', 'resolved', 'withdrawn')
       GROUP BY lower(trim(location)), type
     `);
 

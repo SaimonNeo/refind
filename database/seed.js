@@ -276,7 +276,18 @@ async function seedClaims({ studentIds }) {
       `INSERT INTO claims (item_id, claimant_id, verification_answer_submitted, status, created_at) VALUES (?, ?, ?, ?, ?)`,
       [idCard.id, s3, '[submitted]', status, hoursAgo(20)]
     );
-    if (status === 'approved') run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [idCard.id]);
+    if (status === 'approved') {
+      run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [idCard.id]);
+      run(
+        `UPDATE items SET status = 'claimed'
+         WHERE id IN (
+           SELECT m.lost_item_id FROM matches m
+           JOIN items li ON li.id = m.lost_item_id
+           WHERE m.found_item_id = ? AND li.user_id = ?
+         )`,
+        [idCard.id, s3]
+      );
+    }
   }
 
   // A claim that goes to manual review: wrong-ish answer.
@@ -315,7 +326,18 @@ async function seedClaims({ studentIds }) {
       `INSERT INTO claims (item_id, claimant_id, verification_answer_submitted, status, created_at) VALUES (?, ?, ?, ?, ?)`,
       [calc.id, s1, '[submitted]', status, hoursAgo(70)]
     );
-    if (status === 'approved') run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [calc.id]);
+    if (status === 'approved') {
+      run(`UPDATE items SET status = 'claimed' WHERE id = ?`, [calc.id]);
+      run(
+        `UPDATE items SET status = 'claimed'
+         WHERE id IN (
+           SELECT m.lost_item_id FROM matches m
+           JOIN items li ON li.id = m.lost_item_id
+           WHERE m.found_item_id = ? AND li.user_id = ?
+         )`,
+        [calc.id, s1]
+      );
+    }
   }
 
   const claimCount = get('SELECT COUNT(*) as n FROM claims').n;
