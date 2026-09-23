@@ -44,18 +44,30 @@ function migrateSchema() {
       UPDATE users SET batch = 'Staff', section = 'Security', avatar = '/img/avatars/admin.svg' WHERE email = 'admin@campus.edu';
     `);
 
-    // Backfill standard demo items with default images if currently null
+    // Backfill standard demo items with realistic dual-angle photos (Lost Angle A vs Found Angle B)
     db.exec(`
-      UPDATE items SET image = '/img/items/headphones-white.svg' WHERE title LIKE '%headphone%';
-      UPDATE items SET image = '/img/items/backpack-black.svg' WHERE (title LIKE '%backpack%' OR title LIKE '%laptop bag%') AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/iphone-blue.svg' WHERE (title LIKE '%iPhone%' OR title LIKE '%i-Phone%') AND (image IS NULL OR image = '' OR image = '/img/items/headphones-white.svg');
-      UPDATE items SET image = '/img/items/student-id-card.svg' WHERE title LIKE '%ID card%' AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/calculator-casio.svg' WHERE title LIKE '%calculator%' AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/water-bottle-green.svg' WHERE title LIKE '%water bottle%' AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/umbrella-black.svg' WHERE title LIKE '%umbrella%' AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/wallet-brown.svg' WHERE title LIKE '%wallet%' AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/usb-drive-black.svg' WHERE (title LIKE '%USB%' OR title LIKE '%flash drive%') AND (image IS NULL OR image = '');
-      UPDATE items SET image = '/img/items/notebook-blue.svg' WHERE title LIKE '%notebook%' AND (image IS NULL OR image = '');
+      -- Lost posts (Angle A: upright/front catalog view)
+      UPDATE items SET image = '/img/items/lost/backpack-lost.jpg' WHERE type = 'lost' AND (title LIKE '%backpack%' OR title LIKE '%laptop bag%');
+      UPDATE items SET image = '/img/items/lost/iphone-lost.jpg' WHERE type = 'lost' AND (title LIKE '%iPhone%' OR title LIKE '%i-Phone%');
+      UPDATE items SET image = '/img/items/lost/student-id-lost.jpg' WHERE type = 'lost' AND title LIKE '%ID card%';
+      UPDATE items SET image = '/img/items/lost/calculator-lost.jpg' WHERE type = 'lost' AND title LIKE '%calculator%';
+      UPDATE items SET image = '/img/items/lost/water-bottle-lost.jpg' WHERE type = 'lost' AND title LIKE '%water bottle%';
+      UPDATE items SET image = '/img/items/lost/headphones-lost.jpg' WHERE type = 'lost' AND title LIKE '%headphone%';
+      UPDATE items SET image = '/img/items/lost/umbrella-lost.jpg' WHERE type = 'lost' AND title LIKE '%umbrella%';
+      UPDATE items SET image = '/img/items/lost/wallet-lost.jpg' WHERE type = 'lost' AND title LIKE '%wallet%';
+      UPDATE items SET image = '/img/items/usb-drive-black.svg' WHERE type = 'lost' AND (title LIKE '%USB%' OR title LIKE '%flash drive%') AND (image IS NULL OR image = '');
+      UPDATE items SET image = '/img/items/notebook-blue.svg' WHERE type = 'lost' AND title LIKE '%notebook%' AND (image IS NULL OR image = '');
+
+      -- Found posts (Angle B: in-situ / discovery angle)
+      UPDATE items SET image = '/img/items/found/backpack-found.jpg' WHERE type = 'found' AND (title LIKE '%backpack%' OR title LIKE '%laptop bag%');
+      UPDATE items SET image = '/img/items/found/iphone-found.jpg' WHERE type = 'found' AND (title LIKE '%iPhone%' OR title LIKE '%i-Phone%');
+      UPDATE items SET image = '/img/items/found/student-id-found.jpg' WHERE type = 'found' AND title LIKE '%ID card%';
+      UPDATE items SET image = '/img/items/found/calculator-found.jpg' WHERE type = 'found' AND title LIKE '%calculator%';
+      UPDATE items SET image = '/img/items/found/water-bottle-found.jpg' WHERE type = 'found' AND title LIKE '%water bottle%';
+      UPDATE items SET image = '/img/items/found/headphones-found.jpg' WHERE type = 'found' AND title LIKE '%headphone%';
+      UPDATE items SET image = '/img/items/found/umbrella-found.jpg' WHERE type = 'found' AND title LIKE '%umbrella%';
+      UPDATE items SET image = '/img/items/found/wallet-found.jpg' WHERE type = 'found' AND title LIKE '%wallet%';
+      UPDATE items SET image = '/img/items/usb-drive-black.svg' WHERE type = 'found' AND (title LIKE '%USB%' OR title LIKE '%flash drive%') AND (image IS NULL OR image = '');
     `);
   } catch (err) {
     console.error('Migration error:', err.message);
