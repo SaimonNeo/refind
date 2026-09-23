@@ -34,9 +34,9 @@ function confirmDialog({ title = 'Are you sure?', body = '', confirmLabel = 'Con
 
   return new Promise((resolve) => {
     function cleanup(result) {
-      backdrop.classList.remove('open');
-      okBtn.removeEventListener('click', onOk);
-      cancelBtn.removeEventListener('click', onCancel);
+      if (backdrop) backdrop.classList.remove('open');
+      if (okBtn) okBtn.removeEventListener('click', onOk);
+      if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
       resolve(result);
     }
     function onOk() { cleanup(true); }

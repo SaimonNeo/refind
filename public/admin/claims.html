@@ -149,11 +149,11 @@
     document.getElementById('approve-backdrop').classList.add('open');
   }
 
-  document.getElementById('approve-cancel').addEventListener('click', () => {
-    document.getElementById('approve-backdrop').classList.remove('open');
+  document.getElementById('approve-cancel')?.addEventListener('click', () => {
+    document.getElementById('approve-backdrop')?.classList.remove('open');
   });
 
-  document.getElementById('approve-confirm').addEventListener('click', async () => {
+  document.getElementById('approve-confirm')?.addEventListener('click', async () => {
     try {
       await api.patch(`/admin/claims/${pendingApproveId}`, {
         status: 'approved',
@@ -161,7 +161,7 @@
         handover_datetime: document.getElementById('handover-datetime').value,
         collection_instructions: document.getElementById('collection-instructions').value.trim(),
       });
-      document.getElementById('approve-backdrop').classList.remove('open');
+      document.getElementById('approve-backdrop')?.classList.remove('open');
       toast('Claim approved.');
       load();
     } catch (err) {

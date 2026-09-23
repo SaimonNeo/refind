@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — ReFind</title>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/dashboard.css">
-<script src="/js/ui.js"></script>
+<link rel="stylesheet" href="/css/style.css?v=2.2">
+<link rel="stylesheet" href="/css/dashboard.css?v=2.2">
+<script src="/js/ui.js?v=2.2"></script>
 </head>
 <body>
 <nav class="nav">
@@ -276,16 +276,22 @@
         api.get(`/items?userId=${user.id}&type=lost`),
         api.get(`/items?userId=${user.id}&type=found`),
       ]);
-      myLost = lostAll.items;
-      myFound = foundAll.items;
-      myClaims = claimsRes.claims;
+      myLost = (lostAll && lostAll.items) || [];
+      myFound = (foundAll && foundAll.items) || [];
+      myClaims = (claimsRes && claimsRes.claims) || [];
 
       const loadingEl = document.getElementById('loading');
-      if (loadingEl) loadingEl.remove();
+      if (loadingEl && typeof loadingEl.remove === 'function') {
+        loadingEl.remove();
+      }
       renderStats();
       renderTab();
     } catch (err) {
-      document.getElementById('tab-content').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+      console.error('Failed to load dashboard:', err);
+      const tabContent = document.getElementById('tab-content');
+      if (tabContent) {
+        tabContent.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message || 'Error loading dashboard data')}</div>`;
+      }
     }
   }
 
