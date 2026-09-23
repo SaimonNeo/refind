@@ -171,7 +171,7 @@ router.patch('/claims/:id', (req, res) => {
     status === 'approved'
       ? `An admin approved your claim on "${item?.title}". Check collection details.`
       : `An admin rejected your claim on "${item?.title}".`,
-    '/dashboard.html'
+    '/dashboard.html?tab=claims'
   );
 
   const updated = get('SELECT * FROM claims WHERE id = ?', [claim.id]);

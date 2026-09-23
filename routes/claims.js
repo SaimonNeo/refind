@@ -136,7 +136,7 @@ router.post('/', requireAuth, upload.single('idProof'), (req, res) => {
       status === 'approved'
         ? `Your claim on "${item.title}" was approved.`
         : `Your claim on "${item.title}" is ${status.replace('_', ' ')}.`,
-      `/dashboard.html`
+      `/dashboard.html?tab=claims`
     );
 
     const claim = get('SELECT * FROM claims WHERE id = ?', [lastInsertRowid]);

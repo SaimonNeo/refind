@@ -104,6 +104,12 @@
   const storedTab = sessionStorage.getItem('refind_dash_tab');
   let activeTab = urlTab || storedTab || 'lost';
   if (!['lost', 'found', 'claims'].includes(activeTab)) activeTab = 'lost';
+  sessionStorage.setItem('refind_dash_tab', activeTab);
+  if (!urlTab) {
+    const url = new URL(window.location);
+    url.searchParams.set('tab', activeTab);
+    window.history.replaceState(null, '', url.toString());
+  }
 
   // Reflect initial tab selection in markup
   document.querySelectorAll('.dash-tab').forEach((b) => {
@@ -274,7 +280,8 @@
       myFound = foundAll.items;
       myClaims = claimsRes.claims;
 
-      document.getElementById('loading').remove();
+      const loadingEl = document.getElementById('loading');
+      if (loadingEl) loadingEl.remove();
       renderStats();
       renderTab();
     } catch (err) {

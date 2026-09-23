@@ -24,7 +24,7 @@
   <div class="nav-inner">
     <a href="/index.html" class="brand"><span class="mark"></span>ReFind</a>
     <div class="nav-links">
-      <a href="/dashboard.html">Dashboard</a>
+      <a href="/dashboard.html?tab=claims">Dashboard</a>
       <span id="notif-area"></span>
     </div>
   </div>
@@ -130,6 +130,7 @@
           if (file) fd.append('idProof', file);
 
           const { claim } = await api.post('/claims', fd, true);
+          sessionStorage.setItem('refind_dash_tab', 'claims');
           showResult(claim.status);
         } catch (err) {
           document.getElementById('alert-area').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
@@ -178,7 +179,7 @@
         <div class="result-icon">${c.icon}</div>
         <h3>${c.title}</h3>
         <p class="muted">${c.body}</p>
-        <a href="/dashboard.html" class="btn btn-primary mt-16">Back to dashboard</a>
+        <a href="/dashboard.html?tab=claims" class="btn btn-primary mt-16">View in My Claims</a>
       </div>
     `;
   }
