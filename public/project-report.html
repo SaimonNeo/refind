@@ -760,9 +760,9 @@
 
   <h3>3. HOW: In-Depth Component Mechanics</h3>
 
-  <h4>A. Category Matching ($S_{\text{cat}} \in [0, 1.0]$ — Max 25 Points)</h4>
+  <h4>A. Category Matching ($S_{\text{cat}}$ — Max 25 Points)</h4>
   <p>
-    An exact category match yields $S_{\text{cat}} = 1.0$ ($25$ pts). Because human reporters may classify an item differently (e.g., a laptop sleeve as an "accessory" or a "bag"), ReFind models categories as a bidirectional adjacency graph:
+    An exact category match yields <strong>25 points</strong> ($100\%$ score). Because human reporters may classify an item differently (e.g., an iPad sleeve as an "accessory" or a "bag", or a student ID as "cards" or "documents"), ReFind models taxonomy using an adjacency graph:
   </p>
   <pre>
 const RELATED_CATEGORIES = {
@@ -776,12 +776,12 @@ const RELATED_CATEGORIES = {
 };
   </pre>
   <p>
-    If $(L_{\text{cat}}, F_{\text{cat}})$ forms an edge in this graph, partial credit of $S_{\text{cat}} = 0.5$ ($12.5 \approx 12$ pts) is awarded. Otherwise, $S_{\text{cat}} = 0$.
+    If $(L_{\text{cat}}, F_{\text{cat}})$ forms an edge in this graph, partial credit of <strong>10 points</strong> ($\text{round}(25 \times 0.4)$) is awarded. Unrelated categories yield <strong>0 points</strong>.
   </p>
 
-  <h4>B. Color Family Chromatic Clustering ($S_{\text{col}} \in [0, 1.0]$ — Max 15 Points)</h4>
+  <h4>B. Color Family Chromatic Clustering ($S_{\text{col}}$ — Max 15 Points)</h4>
   <p>
-    Due to ambient lighting, camera white-balance, or subjective naming, reporters frequently use synonymous color names. ReFind utilizes 11 chromatic families:
+    Due to ambient lighting, camera white-balance, or subjective descriptions, reporters frequently use varying color terms. ReFind employs substring matching and 11 chromatic family clusters:
   </p>
   <pre>
 const COLOR_FAMILIES = [
@@ -798,53 +798,97 @@ const COLOR_FAMILIES = [
   ['purple', 'violet']
 ];
   </pre>
-  <p>
-    Exact string equality yields $1.0$ ($15$ pts). If both colors share membership in the same chromatic cluster, $0.6$ ($9$ pts) is awarded.
-  </p>
+  <ul>
+    <li><strong>Exact or Substring Match:</strong> If colors are identical or one contains the other (e.g., <code>"navy blue"</code> and <code>"blue"</code>), the full <strong>15 points</strong> ($100\%$) is awarded.</li>
+    <li><strong>Color Family Match:</strong> If both colors belong to the same chromatic cluster (e.g., <code>"charcoal"</code> and <code>"black"</code>, or <code>"silver"</code> and <code>"gray"</code>), partial credit of <strong>8 points</strong> ($\text{round}(15 \times 0.5)$) is awarded.</li>
+    <li><strong>Different Colors / Unspecified:</strong> <strong>0 points</strong>.</li>
+  </ul>
 
-  <h4>C. Spatial Campus Topology & Alias Normalization ($S_{\text{loc}} \in [0, 1.0]$ — Max 20 Points)</h4>
+  <h4>C. Spatial Campus Topology & Alias Normalization ($S_{\text{loc}}$ — Max 20 Points)</h4>
   <p>
-    Colloquial campus abbreviations are first normalized via a canonical dictionary (e.g., <code>'lib' &rarr; 'central library'</code>, <code>'audi' &rarr; 'auditorium'</code>, <code>'canteen' &rarr; 'cafeteria'</code>). Exact location matches score $1.0$ ($20$ pts). Adjacent buildings connected on the campus walking grid score $0.5$ ($10$ pts).
+    Campus place names are first passed through a canonical alias dictionary that normalizes informal student jargon into primary campus buildings:
   </p>
+  <pre>
+const LOCATION_ALIASES = {
+  'library': 'central library', 'lib': 'central library', 'main library': 'central library',
+  'cs building': 'computer science building', 'cs': 'computer science building', 'cse': 'computer science building',
+  'canteen': 'cafeteria', 'food court': 'cafeteria', 'dining hall': 'cafeteria',
+  'gate': 'main gate', 'entrance': 'main gate', 'front gate': 'main gate',
+  'lab': 'laboratory', 'audi': 'auditorium', 'union': 'student center', 'gym': 'student center'
+};
+  </pre>
+  <p>Once normalized, scores are awarded based on physical walking proximity on the campus graph:</p>
+  <ul>
+    <li><strong>Exact Match:</strong> Same canonical building yields the full <strong>20 points</strong> ($100\%$).</li>
+    <li><strong>Adjacent / Nearby Buildings:</strong> If locations are connected in the campus adjacency graph <code>LOCATION_PROXIMITY</code> (e.g., Central Library &harr; Computer Science Building, or Cafeteria &harr; Student Center), <strong>12 points</strong> ($\text{round}(20 \times 0.6)$) is awarded.</li>
+    <li><strong>Non-Adjacent Campus Locations:</strong> Items found in different campus zones still receive <strong>2 points</strong> ($\text{round}(20 \times 0.1)$) as a baseline campus presence signal.</li>
+    <li><strong>Unspecified:</strong> <strong>0 points</strong>.</li>
+  </ul>
 
-  <h4>D. Temporal Exponential Decay Curve ($S_{\text{time}} \in [0, 1.0]$ — Max 15 Points)</h4>
+  <h4>D. Temporal Decay Curve ($S_{\text{time}}$ — Max 15 Points)</h4>
   <p>
-    The temporal delta $\Delta t = |t_{\text{lost}} - t_{\text{found}}|$ is evaluated against an empirical time-window decay function:
+    The temporal delta $\Delta t = |t_{\text{lost}} - t_{\text{found}}|$ is evaluated against an exact stepwise decay function:
   </p>
   <table>
     <thead>
-      <tr><th>Time Delta ($\Delta t$)</th><th>Scoring Multiplier</th><th>Awarded Points</th><th>Physical Interpretation</th></tr>
+      <tr><th>Time Delta ($\Delta t$)</th><th>Weight Multiplier</th><th>Awarded Points</th><th>Physical Interpretation</th></tr>
     </thead>
     <tbody>
-      <tr><td>$\Delta t \le 24 \text{ hours}$</td><td>$1.00$</td><td><strong>15 pts</strong></td><td>Immediate co-temporal loss and discovery.</td></tr>
-      <tr><td>$24 \text{ hrs} < \Delta t \le 72 \text{ hrs}$</td><td>$0.67$</td><td><strong>10 pts</strong></td><td>Standard weekend/short-delay discovery window.</td></tr>
-      <tr><td>$3 \text{ days} < \Delta t \le 7 \text{ days}$</td><td>$0.40$</td><td><strong>6 pts</strong></td><td>Delayed cleaning/facility inspection turn-in.</td></tr>
-      <tr><td>$\Delta t > 7 \text{ days}$</td><td>$0.13$</td><td><strong>2 pts</strong></td><td>Late-semester crate clearing.</td></tr>
+      <tr><td>$\Delta t \le 6 \text{ hours}$</td><td>$1.00$</td><td><strong>15 pts</strong></td><td>Immediate co-temporal loss and discovery (same morning/afternoon).</td></tr>
+      <tr><td>$6 \text{ hrs} < \Delta t \le 24 \text{ hrs}$</td><td>$0.80$</td><td><strong>12 pts</strong></td><td>Reported within the same calendar day.</td></tr>
+      <tr><td>$24 \text{ hrs} < \Delta t \le 72 \text{ hrs}$</td><td>$0.53$</td><td><strong>8 pts</strong></td><td>Reported within 3 days (e.g., across a weekend).</td></tr>
+      <tr><td>$3 \text{ days} < \Delta t \le 7 \text{ days}$</td><td>$0.27$</td><td><strong>4 pts</strong></td><td>Reported within 1 week (delayed sweep / custodial turn-in).</td></tr>
+      <tr><td>$\Delta t > 7 \text{ days}$</td><td>$0.00$</td><td><strong>0 pts</strong></td><td>Reported far apart in time.</td></tr>
+      <tr><td><em>Date Unspecified</em></td><td>$0.33$</td><td><strong>5 pts</strong></td><td>Neutral baseline credit when date is unrecorded.</td></tr>
     </tbody>
   </table>
 
-  <h4>E. Semantic AI & Fail-Safe Offline Fallback ($S_{\text{ai}} \in [0, 1.0]$ — Max 25 Points)</h4>
+  <h4>E. Semantic AI & Zero-Cost Local Synonym Engine ($S_{\text{ai}}$ — Max 25 Points)</h4>
   <p>
-    Descriptions are evaluated by Google Gemini (structured JSON prompt) to extract fine-grained details: brand names, stickers, scratches, zipper counts, and keychains.
+    Semantic similarity is computed using a <strong>dual-engine hybrid architecture</strong>:
   </p>
+  <ol>
+    <li>
+      <strong>Category Compatibility Pre-Check:</strong> To eliminate wasted cloud API tokens and avoid nonsensical comparisons (e.g., comparing an umbrella description to a laptop), AI evaluation runs only on compatible categories (same category, <code>"other"</code>, or closely linked pairs like <code>cards &harr; documents</code>). Incompatible pairs yield 0 AI points.
+    </li>
+    <li>
+      <strong>Local Zero-Cost Synonym Engine (<code>computeSynonymSemanticMatch</code>):</strong>
+      Evaluates item titles and descriptions locally across 20+ canonical synonym clusters (e.g., <code>laptop/macbook/thinkpad</code>, <code>phone/iphone/android</code>, <code>earbuds/airpods/headphones</code>, <code>bottle/hydroflask/tumbler</code>, <code>backpack/bag/rucksack</code>). It detects 30+ major brands (Apple, Lenovo, Dell, Casio, Nike, Stanley, etc.) and awards an immediate <strong>+20 pt bonus</strong> for verified brand alignment. Score is calculated via Title Overlap ($65\%$) and Jaccard Token Overlap ($35\%$).
+    </li>
+    <li>
+      <strong>Google Gemini Semantic Cloud AI (<code>aiService.compareItems</code>):</strong>
+      Reads raw unstructured text to discern unique details (e.g., <em>"scratched bottom right corner"</em>, <em>"purple anime keychain"</em>, <em>"broken zipper on front pocket"</em>).
+    </li>
+    <li>
+      <strong>Dual-Engine Fusion Formula:</strong>
+      $$\text{Final Similarity (0–100)} = \max(\text{Gemini Similarity}, \text{Synonym Engine Similarity})$$
+      $$\text{AI Points (0–25)} = \text{round}\left(\frac{\text{Final Similarity}}{100} \times 25\right)$$
+    </li>
+  </ol>
   <div class="callout callout-success">
-    <strong>Offline Resilience Guarantee:</strong>
-    If the cloud AI is unreachable or unconfigured, <code>aiService.js</code> activates a local tokenized synonym clustering algorithm that evaluates shared unigrams and bigrams against a campus synonym dictionary. The system operates 100% reliably in an air-gapped demo environment.
+    <strong>100% Offline & Fallback Guarantee:</strong>
+    If the Gemini API key is omitted, quota is exhausted, or the server is completely offline during an on-campus demonstration, the local synonym engine automatically provides full semantic scoring with zero downtime and zero errors.
   </div>
 
   <h3>4. WHEN: Execution Triggers</h3>
   <ul>
-    <li><strong>Real-time Ingestion:</strong> Whenever a student submits a new lost or found report, <code>matchingEngine.generateMatchesForItem()</code> triggers asynchronously, evaluating against all counterpart items.</li>
-    <li><strong>On-Demand Inspection:</strong> Triggered whenever an admin opens the Pair Comparison modal to guarantee fresh status verification.</li>
+    <li><strong>Real-time Asynchronous Ingestion:</strong> Whenever a student submits a new report, <code>matchingEngine.generateMatchesForItem()</code> executes asynchronously in the background, scoring against all counterpart active items without blocking user response.</li>
+    <li><strong>On-Demand Inspection:</strong> Triggered whenever an administrator or security officer launches the Side-by-Side Pair Comparison Inspector.</li>
   </ul>
 
-  <h3>5. SORTING & THRESHOLD TRIAGE</h3>
-  <pre>
-  Score >= 85%  --> [VERY HIGH MATCH]  Auto-alert both parties + Priority badge
-  Score >= 70%  --> [STRONG MATCH]     Displayed on Admin Priority Matches Table
-  Score >= 55%  --> [MODERATE MATCH]   Available in student match candidate list
-  Score <  55%  --> [FILTERED OUT]     Suppressed to eliminate student notification spam
-  </pre>
+  <h3>5. SORTING & TRIAGE THRESHOLDS</h3>
+  <table>
+    <thead>
+      <tr><th>Total Score Range</th><th>Confidence Label</th><th>System Action & Notification Behavior</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>$\mathbf{85\% - 100\%}$</td><td><span class="badge badge-success">Strong Match</span></td><td>Immediate dual in-app alert + audio chime; flagged at top of Admin priority queue.</td></tr>
+      <tr><td>$\mathbf{60\% - 84\%}$</td><td><span class="badge badge-warning">Likely Match</span></td><td>Immediate dual in-app alert; listed prominently on candidate match tables.</td></tr>
+      <tr><td>$\mathbf{35\% - 59\%}$</td><td><span class="badge" style="background:#e0e7ff; color:#3730a3;">Possible Match</span></td><td>Stored in database; displayed in browse & matches inspect views.</td></tr>
+      <tr><td>$\mathbf{20\% - 34\%}$</td><td><span class="badge" style="background:#f3f4f6; color:#4b5563;">Weak Match</span></td><td>Minimum threshold stored in database (<code>MIN_SCORE_TO_STORE = 20</code>); suppressed from notifications.</td></tr>
+      <tr><td>$\mathbf{< 20\%}$</td><td><em>Disregarded</em></td><td>Discarded to prevent database bloat and eliminate notification spam.</td></tr>
+    </tbody>
+  </table>
 
   <!-- ==================== CHAPTER 4 ==================== -->
   <div class="chapter-header">
