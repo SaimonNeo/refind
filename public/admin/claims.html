@@ -37,7 +37,7 @@
     <div id="loading">Loading…</div>
     <div class="table-wrap" id="table-wrap" style="display:none;">
       <table class="admin-table" id="claims-table">
-        <thead><tr><th>Item</th><th>Claimant</th><th>Match</th><th>Confidence</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Item</th><th>Claimant</th><th>Match</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -100,13 +100,6 @@
     `;
   }
 
-  function confidenceLabel(score) {
-    if (score === null || score === undefined) return '—';
-    if (score >= 85) return `<span style="color: var(--moss-deep); font-weight:600;">${score} — high</span>`;
-    if (score >= 50) return `<span style="color: #8a5f16; font-weight:600;">${score} — medium</span>`;
-    return `<span style="color: var(--danger); font-weight:600;">${score} — low</span>`;
-  }
-
   async function load() {
     try {
       const { claims } = await api.get('/admin/claims');
@@ -124,7 +117,6 @@
             ${c.id_proof_image ? `<br><a href="${escapeHtml(c.id_proof_image)}" target="_blank" class="small">ID proof</a>` : ''}
           </td>
           <td>${matchLabel(c)}</td>
-          <td>${confidenceLabel(c.confidence_score)}</td>
           <td>${timeAgo(c.created_at)}</td>
           <td>${statusBadge(c.status)}</td>
           <td>${c.status === 'manual_review' || c.status === 'pending' ? `

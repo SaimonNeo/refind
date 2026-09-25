@@ -38,23 +38,6 @@
     <div id="content" style="display:none;">
       <div class="admin-stat-grid" id="stat-grid"></div>
 
-      <div class="panel">
-        <div class="mb-16">
-          <h3 style="margin-bottom:4px;">High-Priority Potential Matches Desk</h3>
-          <p class="small muted" style="margin-bottom:0;">High confidence (≥70%) between active reports. Call or WhatsApp students to connect them.</p>
-        </div>
-        <table class="admin-table" id="priority-table">
-          <thead>
-            <tr>
-              <th style="width:85px;">Match</th>
-              <th>Lost Item &amp; Owner</th>
-              <th>Found Item &amp; Finder</th>
-              <th style="width:110px;">Action</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
 
       <div class="panel">
         <h3>Recent reports</h3>
@@ -95,57 +78,6 @@
         statHtml(data.activeMatches, 'Strong matches (≥60%)'),
       ].join('');
 
-      const priBody = document.querySelector('#priority-table tbody');
-      priBody.innerHTML = data.highPriorityCases.length
-        ? data.highPriorityCases.map(m => {
-            const score = Math.round(m.score);
-            const scoreClass = score >= 85 ? 'badge-claimed' : (score >= 70 ? 'badge-matched' : 'badge-active');
-
-            const lostPhone = m.lost_user_phone;
-            const lostCall = lostPhone ? `<a href="tel:${lostPhone}" class="btn btn-outline btn-xs"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ${lostPhone}</a>` : '';
-            const lostWa = lostPhone ? whatsappButtonHtml(lostPhone, `Hello ${m.lost_user_name}, ReFind admin here! We found a ${score}% match for your lost item "${m.lost_title}".`, 'WhatsApp', 'btn-xs') : '';
-
-            const foundPhone = m.found_user_phone;
-            const foundCall = foundPhone ? `<a href="tel:${foundPhone}" class="btn btn-outline btn-xs"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ${foundPhone}</a>` : '';
-            const foundWa = foundPhone ? whatsappButtonHtml(foundPhone, `Hello ${m.found_user_name}, ReFind admin here regarding "${m.found_title}". An owner reported a ${score}% matching item.`, 'WhatsApp', 'btn-xs') : '';
-
-            return `
-              <tr>
-                <td><span class="badge ${scoreClass}" style="font-weight:700; font-size:0.95rem;">${score}%</span></td>
-                <td>
-                  <a href="/item.html?id=${m.lost_id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(m.lost_title)}</a>
-                  <div class="small muted mt-4">
-                    <strong>${escapeHtml(m.lost_user_name)}</strong>
-                  </div>
-                  <div class="flex gap-4 mt-6 flex-wrap">
-                    ${lostCall}
-                    ${lostWa}
-                    ${!lostPhone ? '<span class="small muted">No phone</span>' : ''}
-                  </div>
-                </td>
-                <td>
-                  <a href="/item.html?id=${m.found_id}&from=admin" target="_blank" style="font-weight:600;">${escapeHtml(m.found_title)}</a>
-                  <div class="small muted mt-4">
-                    <strong>${escapeHtml(m.found_user_name)}</strong>
-                  </div>
-                  <div class="flex gap-4 mt-6 flex-wrap">
-                    ${foundCall}
-                    ${foundWa}
-                    ${!foundPhone ? '<span class="small muted">No phone</span>' : ''}
-                  </div>
-                </td>
-                <td>
-                  <div class="flex gap-4 flex-wrap">
-                    <button type="button" class="btn btn-primary btn-xs" onclick="showPairComparisonModal(${m.id})" title="Inspect side-by-side comparison of lost and found posts"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg> Pair ↔</button>
-                    <button type="button" class="btn btn-ghost btn-xs" onclick="notifyBoth(${m.id})" title="Alert both owner and finder with direct claim links"><svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notify</button>
-                    <a href="/flyer.html?id=${m.lost_id}&from=admin&returnUrl=/admin/dashboard.html" target="_blank" class="btn btn-ghost btn-xs" title="View Lost Flyer PDF">Lost Flyer</a>
-                  </div>
-                </td>
-              </tr>
-            `;
-          }).join('')
-        : `<tr><td colspan="4" class="muted">No high-priority matches right now.</td></tr>`;
-
       const recentBody = document.querySelector('#recent-table tbody');
       recentBody.innerHTML = data.recentItems.map(i => `
         <tr>
@@ -175,15 +107,6 @@
       `).join('');
     } catch (err) {
       document.getElementById('loading').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
-    }
-  }
-
-  async function notifyBoth(matchId) {
-    try {
-      await api.post(`/admin/matches/${matchId}/notify`, {});
-      toast('Notification sent! The owner was alerted with a direct link to review and claim the item.');
-    } catch (err) {
-      toast(err.message, 'error');
     }
   }
 
