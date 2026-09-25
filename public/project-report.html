@@ -77,6 +77,19 @@
   }
   .print-btn:hover { background: #ab3c26; transform: translateY(-1px); }
 
+  .lang-link {
+    color: #fde68a;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    text-decoration: none;
+    margin-right: 15px;
+    border: 1px solid rgba(253,230,138,0.4);
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .lang-link:hover { background: rgba(253,230,138,0.15); }
+
   .document-container {
     max-width: 940px;
     margin: 0 auto;
@@ -353,7 +366,10 @@
     <strong style="font-family:var(--font-sans); font-size:16px;">ReFind Master Documentation & Competition Dossier</strong><br>
     <span style="font-size:12px; color:#c7c2bb;">Premier University Robotics Club: Clash of Projects 2026 — Ready to Print / Export</span>
   </div>
-  <button class="print-btn" onclick="window.print()">Print / Save as PDF (Ctrl + P)</button>
+  <div>
+    <a href="project-report-bn.html" class="lang-link">বাংলা সংস্করণ (Bangla)</a>
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF (Ctrl + P)</button>
+  </div>
 </div>
 
 <div class="document-container">
@@ -1660,7 +1676,7 @@ const COLOR_FAMILIES = [
     <strong>Mandatory Equipment Checklist (Page 04 Compliance):</strong>
     <ul>
       <li>[ ] <strong>Primary Laptop (Demo):</strong> Fully charged; charger connected to multi-plug; local server running at <code>http://localhost:3000</code>; demo items pre-seeded in SQLite database.</li>
-      <li>[ ] <strong>Secondary Laptop (Inspector):</strong> Displaying this Master Engineering Dossier (<code>project-report.html</code>) and VS Code with <code>matchingEngine.js</code> ready for instant code inspection.</li>
+      <li>[ ] <strong>Secondary Laptop (Inspector):</strong> Displaying this Master Engineering Dossier (<code>project-report.html</code> / <code>project-report-bn.html</code>) and VS Code with <code>matchingEngine.js</code> ready for instant code inspection.</li>
       <li>[ ] <strong>Electrical Gear:</strong> 1 surge-protected 4-socket multi-plug, 2 OEM laptop chargers, 1 HDMI cable, and 1 USB-C to HDMI adapter.</li>
       <li>[ ] <strong>Printed Physical Artifacts:</strong> 3 printed copies of the Serialized Custody Release Receipt and 2 printed Lost Noticeboard Flyers to physically hand to judges during the pitch.</li>
       <li>[ ] <strong>Student IDs:</strong> Official university identity cards for all 3 members on lanyards around their necks.</li>

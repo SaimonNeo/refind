@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReFind — মাস্টার ইঞ্জিনিয়ারিং ডসিয়ার ও কনটেস্ট ডিফেন্স গাইড (Clash of Projects 2026)</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=Work+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-right {
+      content: counter(page);
+      font-family: 'Hind Siliguri', 'Work Sans', sans-serif;
+      font-size: 8.5pt;
+      color: #71695f;
+    }
+    @bottom-left {
+      content: "ReFind: মাস্টার ইঞ্জিনিয়ারিং ডসিয়ার — Clash of Projects 2026";
+      font-family: 'Hind Siliguri', 'Work Sans', sans-serif;
+      font-size: 8pt;
+      color: #71695f;
+    }
+  }
+
+  :root {
+    --ink: #1b1917;
+    --muted: #57534e;
+    --paper: #ffffff;
+    --sidebar-bg: #fcfbf9;
+    --line: #e7e5e4;
+    --primary: #943425;
+    --primary-light: #fbeee9;
+    --accent: #2e6038;
+    --accent-light: #eaf3ec;
+    --gold: #b45309;
+    --gold-light: #fef3c7;
+    --font-bengali: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-serif: 'Newsreader', Georgia, serif;
+    --font-sans: 'Work Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: #f4efe6;
+    color: var(--ink);
+    font-family: var(--font-bengali);
+    font-size: 10.5pt;
+    line-height: 1.65;
+    margin: 0;
+    padding: 30px 10px;
+  }
+
+  .print-controls {
+    max-width: 940px;
+    margin: 0 auto 24px auto;
+    background: #25201b;
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+  .print-btn {
+    background: #c84e36;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: var(--font-bengali);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .print-btn:hover { background: #ab3c26; transform: translateY(-1px); }
+
+  .lang-link {
+    color: #fde68a;
+    font-family: var(--font-bengali);
+    font-size: 13px;
+    text-decoration: none;
+    margin-right: 15px;
+    border: 1px solid rgba(253,230,138,0.4);
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .lang-link:hover { background: rgba(253,230,138,0.15); }
+
+  .document-container {
+    max-width: 940px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 60px 75px;
+    border: 1px solid #dfd8cc;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.06);
+  }
+
+  /* Cover Page */
+  .cover-page {
+    text-align: center;
+    padding: 70px 20px 90px 20px;
+    page-break-after: always;
+  }
+  .contest-badge-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .cover-badge {
+    display: inline-block;
+    font-family: var(--font-bengali);
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 6px 18px;
+    border-radius: 30px;
+    border: 1px solid rgba(148, 52, 37, 0.2);
+  }
+  .cover-badge-alt {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-color: rgba(46, 96, 56, 0.2);
+  }
+  .cover-title {
+    font-family: var(--font-sans);
+    font-size: 38pt;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #1c1917;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.5px;
+  }
+  .cover-subtitle {
+    font-family: var(--font-bengali);
+    font-size: 15.5pt;
+    color: var(--muted);
+    max-width: 740px;
+    margin: 0 auto 30px auto;
+    line-height: 1.5;
+  }
+  .cover-rule {
+    width: 90px;
+    height: 4px;
+    background: var(--primary);
+    margin: 30px auto;
+    border: none;
+    border-radius: 2px;
+  }
+  .cover-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 720px;
+    margin: 40px auto 0 auto;
+    text-align: left;
+    font-family: var(--font-bengali);
+    font-size: 9.5pt;
+    background: #faf8f5;
+    border: 1px solid #e7e3dc;
+    padding: 20px 24px;
+    border-radius: 6px;
+  }
+  .cover-meta-col strong {
+    color: var(--ink);
+    display: block;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  /* Section Styling */
+  .chapter-header {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    page-break-before: always;
+  }
+  .chapter-header:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .chapter-number {
+    font-family: var(--font-bengali);
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: var(--font-bengali);
+    font-size: 21pt;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 18px 0;
+    line-height: 1.3;
+  }
+  h2 {
+    font-family: var(--font-bengali);
+    font-size: 14pt;
+    font-weight: 600;
+    color: #292524;
+    margin: 30px 0 10px 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 5px;
+  }
+  h3 {
+    font-family: var(--font-bengali);
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: #44403c;
+    margin: 22px 0 8px 0;
+  }
+  h4 {
+    font-family: var(--font-bengali);
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 16px 0 6px 0;
+  }
+  p { margin: 0 0 12px 0; }
+  ul, ol { margin: 0 0 16px 0; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-bengali);
+    font-size: 9.5pt;
+    margin: 18px 0 24px 0;
+  }
+  th, td {
+    border: 1px solid #d6d3d1;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f5f5f4;
+    font-weight: 600;
+    color: #1c1917;
+  }
+  tr:nth-child(even) td { background: #fafaf9; }
+
+  /* Code blocks & Pre */
+  pre, code {
+    font-family: var(--font-mono);
+  }
+  pre {
+    background: #f6f5f2;
+    border: 1px solid #e4e0d8;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 14px 0 20px 0;
+    page-break-inside: avoid;
+  }
+  code {
+    background: #f1ede6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+  }
+  pre code { background: transparent; padding: 0; }
+
+  /* Callouts & Stat Grids */
+  .callout {
+    background: #fdfaf6;
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout.callout-success {
+    background: #f6faf7;
+    border-left-color: var(--accent);
+  }
+  .callout.callout-gold {
+    background: #fefdf6;
+    border-left-color: var(--gold);
+  }
+  .callout strong {
+    font-family: var(--font-bengali);
+    display: block;
+    margin-bottom: 4px;
+    color: var(--primary);
+  }
+  .callout.callout-success strong { color: var(--accent); }
+  .callout.callout-gold strong { color: var(--gold); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 22px 0 28px 0;
+  }
+  .stat-card {
+    background: #faf8f5;
+    border: 1px solid #e7e3dc;
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--font-sans);
+    font-size: 20pt;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-family: var(--font-bengali);
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* Badges */
+  .badge-score {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-family: var(--font-sans);
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-score-25 { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .badge-score-20 { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .badge-score-15 { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+  .badge-score-10 { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+
+  /* Print Media Rules */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .print-controls { display: none !important; }
+    .document-container {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      max-width: 100%;
+    }
+    .chapter-header { page-break-before: always; }
+    pre, table, .callout, .stat-card, .cover-meta-grid { page-break-inside: avoid; }
+    h1, h2, h3 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div>
+    <strong style="font-family:var(--font-bengali); font-size:16px;">ReFind মাস্টার ইঞ্জিনিয়ারিং ডসিয়ার ও কনটেস্ট ডিফেন্স গাইড</strong><br>
+    <span style="font-size:12px; color:#c7c2bb;">প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব (PURC) — Clash of Projects 2026</span>
+  </div>
+  <div>
+    <a href="project-report.html" class="lang-link">English Version</a>
+    <button class="print-btn" onclick="window.print()">প্রিন্ট / PDF হিসেবে সংরক্ষণ করুন (Ctrl + P)</button>
+  </div>
+</div>
+
+<div class="document-container">
+
+  <!-- ==================== কভার পেজ ==================== -->
+  <div class="cover-page">
+    <div class="contest-badge-group">
+      <span class="cover-badge">প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব</span>
+      <span class="cover-badge cover-badge-alt">Clash of Projects 2026</span>
+      <span class="cover-badge" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">অফিসিয়াল রুলবুক ডিফেন্স</span>
+    </div>
+
+    <h1 class="cover-title">ReFind</h1>
+    <div class="cover-subtitle">
+      জিরো-নলেজ ওনারশিপ ক্রিপ্টোগ্রাফি, ক্লায়েন্ট-সাইড কম্পিউটার ভিশন ও ব্যাখ্যামূলক মাল্টি-ফ্যাক্টর স্কোরিং ইঞ্জিন সমন্বিত একটি স্বয়ংক্রিয় ক্যাম্পাস অ্যাসেট রিকভারি ও চেইন-অফ-কাস্টডি প্ল্যাটফর্ম
+    </div>
+    <hr class="cover-rule">
+    
+    <p style="font-family:var(--font-bengali); font-size:10.5pt; color:var(--muted); max-width:700px; margin:0 auto 24px auto;">
+      প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব (PURC) আয়োজিত <strong>Clash of Projects 2026</strong> প্রতিযোগিতার জন্য প্রস্তুতকৃত পূর্ণাঙ্গ কারিগরি থিসিস, গাণিতিক অ্যালগরিদম স্পেসিফিকেশন, কোডবেজ ক্যাটালগ, ইলেকট্রিক্যাল নিরাপত্তা সনদ ও ১০০% মার্কস অর্জনের ডিফেন্স ব্লুপ্রিন্ট।
+    </p>
+
+    <div class="stat-grid" style="max-width:800px; margin:30px auto;">
+      <div class="stat-card">
+        <div class="stat-num">19,500+</div>
+        <div class="stat-label">সোর্স লাইন কোড</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100 pt</div>
+        <div class="stat-label">হাইব্রিড ম্যাচিং ইঞ্জিন</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">32</div>
+        <div class="stat-label">REST API এন্ডপয়েন্ট</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">$0.00</div>
+        <div class="stat-label">বেসলাইন অপারেটিং খরচ</div>
+      </div>
+    </div>
+
+    <div class="cover-meta-grid">
+      <div class="cover-meta-col">
+        <strong>আয়োজক প্রতিষ্ঠান ও প্রতিযোগিতা:</strong>
+        প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব (PURC)<br>
+        Clash of Projects — Build. Showcase. Compete.
+      </div>
+      <div class="cover-meta-col">
+        <strong>রেকর্ডে থাকা ইভেন্ট কোঅর্ডিনেটর:</strong>
+        ভিকি নন্দী (01813166652)<br>
+        অনুপ দীপ্ত (01306279571)
+      </div>
+      <div class="cover-meta-col">
+        <strong>টিম গঠন ও প্রাতিষ্ঠানিক যোগ্যতা:</strong>
+        ৩ জন আন্ডারগ্র্যাজুয়েট প্রকৌশল শিক্ষার্থী<br>
+        বিভাগ: কম্পিউটার সায়েন্স অ্যান্ড ইঞ্জিনিয়ারিং (CSE)
+      </div>
+      <div class="cover-meta-col">
+        <strong>টেক স্ট্যাক ও নিরাপত্তা:</strong>
+        Node.js 22, Express, Native SQLite (<code>node:sqlite</code>)<br>
+        ১৯V ডিসি ইনসুলেটেড ল্যাপটপ পাওয়ার, ০V হাই-ভোল্টেজ ঝুঁকি
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== সূচিপত্র ==================== -->
+  <div class="chapter-header" style="page-break-before:always;">
+    <div class="chapter-number">ডকুমেন্ট সূচিপত্র</div>
+    <h1>সূচিপত্র (Table of Contents)</h1>
+    <table>
+      <thead>
+        <tr><th style="width:14%;">অধ্যায়</th><th style="width:64%;">শিরোনাম ও আলোচ্য বিষয়</th><th style="width:22%;">কোর ভ্যালু</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>অধ্যায় ১</strong></td><td>Clash of Projects রুলবুক কমপ্লায়েন্স ম্যাট্রিক্স (পৃষ্ঠা ০২–১৪ বিশদ বিশ্লেষণ)</td><td>নিয়ম, নিরাপত্তা ও আইপি</td></tr>
+        <tr><td><strong>অধ্যায় ২</strong></td><td>সমস্যা বিশ্লেষণ ও স্টেকহোল্ডার রিকোয়ারমেন্টস (ক্যাম্পাসের বাস্তব সংকট)</td><td>বাস্তব সমস্যা সমাধান</td></tr>
+        <tr><td><strong>অধ্যায় ৩</strong></td><td>১০০-পয়েন্টের হাইব্রিড ম্যাচিং অ্যালগরিদম — পূর্ণাঙ্গ গাণিতিক থিসিস</td><td>গাণিতিক থিসিস</td></tr>
+        <tr><td><strong>অধ্যায় ৪</strong></td><td>অ্যাডমিন সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল ও ট্রায়াজ সিস্টেম</td><td>পরিদর্শন ওয়ার্কফ্লো</td></tr>
+        <tr><td><strong>অধ্যায় ৫</strong></td><td>জিরো-নলেজ ক্রিপ্টোগ্রাফিক ওনারশিপ চ্যালেঞ্জ (Salted SHA-256)</td><td>অ্যান্টি-ফ্রড সিকিউরিটি</td></tr>
+        <tr><td><strong>অধ্যায় ৬</strong></td><td>ব্রাউজার-সাইড HTML5 Canvas কম্পিউটার ভিশন ও HSL কালার ক্লাসিফায়ার</td><td>০ জিপিইউ কস্ট ভিশন</td></tr>
+        <tr><td><strong>অধ্যায় ৭</strong></td><td>অডিটেবল চেইন-অফ-কাস্টডি ও প্রিন্টযোগ্য আর্টিক্টস (রিসিট ও ফ্লায়ার)</td><td>আইনি সুরক্ষা ও প্রমাণ</td></tr>
+        <tr><td><strong>অধ্যায় ৮</strong></td><td>সম্পূর্ণ রিপোজিটরি ক্যাটালগ ও কোডবেজ ইনভেন্টরি (১৯,৫০০+ লাইন কোড)</td><td>৬০+ ফাইল ও আর্কিটেকচার</td></tr>
+        <tr><td><strong>অধ্যায় ৯</strong></td><td>ডেটাবেজ স্কিমা ও এনটিটি-রিলেশনশিপ আর্কিটেকচার (ASCII ER ডায়াগ্রাম)</td><td>রিলেশনাল ইন্টিগ্রিটি</td></tr>
+        <tr><td><strong>অধ্যায় ১০</strong></td><td>পূর্ণাঙ্গ RESTful API রেফারেন্স স্পেসিফিকেশন (৩২টি এন্ডপয়েন্ট)</td><td>এপিআই কন্ট্রাক্টস</td></tr>
+        <tr><td><strong>অধ্যায় ১১</strong></td><td>৭টি বিচার মানদণ্ড ও ১০০% মার্কস অর্জনের পূর্ণাঙ্গ ব্লুপ্রিন্ট</td><td>স্কোর ম্যাক্সিমাইজেশন</td></tr>
+        <tr><td><strong>অধ্যায় ১২</strong></td><td>৫ থেকে ১০ মিনিটের প্রেজেন্টেশন স্ক্রিপ্ট ও স্টেজ কোরিওগ্রাফি</td><td>ওরাল ডিফেন্স ও টাইম</td></tr>
+        <tr><td><strong>অধ্যায় ১৩</strong></td><td>বিচারকদের অবধারিত ২৫টি কঠিন টেকনিক্যাল প্রশ্ন ও সম্পূর্ণ মডেল উত্তর</td><td>কিউঅ্যান্ডএ ডিফেন্স (২০%)</td></tr>
+        <tr><td><strong>অধ্যায় ১৪</strong></td><td>ডিপ্লয়মেন্ট ইকোনমিক্স, নিরাপত্তা ও ২৫টি অটোমেটেড টেস্ট সুইট</td><td>কোয়ালিটি অ্যাসিউরেন্স</td></tr>
+        <tr><td><strong>অধ্যায় ১৫</strong></td><td>৩ সদস্যের টিম ডেলিগেশন ব্লুপ্রিন্ট ও টিমমেট ব্রিফিং গাইড</td><td>দায়িত্ব বণ্টন ও মহড়া</td></tr>
+        <tr><td><strong>অধ্যায় ১৬</strong></td><td>গ্র্যান্ড চ্যাম্পিয়নশিপ পাথওয়ে: স্টেপ-বাই-স্টেপ মার্কস এক্সট্রাকশন মাস্টারপ্ল্যান</td><td>বিজয় নিশ্চিতকরণ কৌশল</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==================== অধ্যায় ১ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১</div>
+    <h1>Clash of Projects অফিসিয়াল রুলবুক কমপ্লায়েন্স ম্যাট্রিক্স</h1>
+  </div>
+
+  <h2>১.১ রুলবুকের প্রতিটি পাতার (Page 02–14) সাথে ReFind-এর প্রাতিষ্ঠানিক কমপ্লায়েন্স</h2>
+  <p>
+    প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব আয়োজিত <em>Clash of Projects Rulebook</em>-এর প্রতিটি ধারা ও অনুচ্ছেদ পুঙ্খানুপুঙ্খভাবে বিশ্লেষণ করে ReFind আর্কিটেক্ট করা হয়েছে:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width:16%;">রুলবুক পেজ</th><th style="width:24%;">বিষয়ের শিরোনাম</th><th style="width:30%;">অফিসিয়াল নিয়মাবলী</th><th style="width:30%;">ReFind বাস্তবায়ন ও প্রমাণ</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>PAGE 02</strong></td>
+        <td><strong>যোগ্যতা ও টিম সাইজ</strong></td>
+        <td>আন্ডারগ্র্যাজুয়েট ছাত্র; ২–৩ জন সদস্য; ক্রস-ইনস্টিটিউশনাল অনুমোদিত; প্রেজেন্টার রেজিস্টার্ড মেম্বার হতে হবে; অনুমোদনের বাইরে বদলি নিষিদ্ধ।</td>
+        <td>আমাদের টিমে ৩ জন নিবন্ধিত আন্ডারগ্র্যাজুয়েট প্রকৌশল শিক্ষার্থী রয়েছে। লিড প্রেজেন্টার দলের নিবন্ধিত সদস্য। কোনো বহিরাগত বা অননুমোদিত সাবস্টিটিউশন নেই।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 03</strong></td>
+        <td><strong>প্রজেক্ট স্পেসিফিকেশন</strong></td>
+        <td>মৌলিক, উদ্ভাবনী, প্রযুক্তিগত প্রাসঙ্গিক; হার্ডওয়্যার/সফটওয়্যার; বাস্তব সমস্যা সমাধান; সকল ডেটা ও রেফারেন্সের প্রপার সাইটেশন থাকতে হবে।</td>
+        <td>বিশ্ববিদ্যালয় ক্যাম্পাসে হারানো সম্পদ উদ্ধারে উদ্ভাবনী ফুল-স্ট্যাক সফটওয়্যার। হাইব্রিড অ্যালগরিদম ও ZK প্রোটোকল সম্পূর্ণ মৌলিক। সাইটেশন সংরক্ষিত।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 04</strong></td>
+        <td><strong>প্রেজেন্টেশন নির্দেশিকা</strong></td>
+        <td>নির্ধারিত স্থান; ৫–১০ মিনিট সময়; ল্যাপটপ বা পোস্টার ফরম্যাট; ল্যাপটপ, চার্জার, কনভার্টার ও মাল্টি-প্লাগ নিজেদের আনতে হবে; নিরাপত্তা দলের দায়িত্বে।</td>
+        <td>কঠোর ৭ মিনিটের পিচ রোটেশন + ৩ মিনিট কিউঅ্যান্ডএ (অধ্যায় ১২)। নিজস্ব লোকাল অফলাইন সার্ভারযুক্ত ল্যাপটপ, কনভার্টার ও মাল্টি-প্লাগ প্রস্তুত।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 05</strong></td>
+        <td><strong>প্রজেক্টের নিরাপত্তা</strong></td>
+        <td>কোনো উন্মুক্ত হাই-ভোল্টেজ টার্মিনাল থাকতে পারবে না; ইনসুলেশন বাধ্যতামূলক; ব্যাটারি সুরক্ষিত; কোনো ঝুঁকিপূর্ণ রাসায়নিক বা বিপজ্জনক মেকানিজম নেই।</td>
+        <td>১০০% ডিজিটাল সফটওয়্যার। ল্যাপটপের সার্টিফাইড ১৯V ডিসি চার্জারে চলবে। ০V হাই-ভোল্টেজ ঝুঁকি, কোনো রাসায়নিক বা বিপজ্জনক মুভিং পার্টস নেই।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 06</strong></td>
+        <td><strong>পরিদর্শন ও উপস্থিতি</strong></td>
+        <td>বিচারক যেকোনো অংশ পরিদর্শন করতে পারেন; সব সদস্যকে বিচারকার্যের সময় উপস্থিত থাকতে হবে।</td>
+        <td>সোর্স কোড, লাইভ ডেটাবেজ CLI এবং API পরিদর্শন উপযোগী। বিচার চলার পুরো সময়ে ৩ জন সদস্যই বুথে উপস্থিত থাকবে।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 07</strong></td>
+        <td><strong>বিচার মানদণ্ড (১০০%)</strong></td>
+        <td>ইনোভেশন ২০%, ভিজ্যুয়াল ১৫%, ওরাল ১৫%, ফিজিবিলিটি ১০%, খরচ ১০%, চ্যালেঞ্জেস ১০%, কিউঅ্যান্ডএ ২০%।</td>
+        <td>৭টি ক্যাটাগরিকে ডমিনেট করার গাণিতিক প্রস্তুতি (অধ্যায় ১১)। টাই-ব্রেকার নিয়ন্ত্রণের জন্য ইনোভেশন ও কিউঅ্যান্ডএ-তে ফুল মার্কস টার্গেট।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 08</strong></td>
+        <td><strong>ইন্টেলেকচুয়াল প্রপার্টি</strong></td>
+        <td>অংশগ্রহণকারীদের নিজস্ব আইপি সংরক্ষিত থাকবে; জমা দিলে স্বত্ব হস্তান্তর হয় না; কোনো তৃতীয় পক্ষের কপিরাইট লঙ্ঘন করা যাবে না।</td>
+        <td>১০০-পয়েন্ট অ্যালগরিদম, জিরো-নলেজ চ্যালেঞ্জ ও ক্যানভাস ভিশন দলের নিজস্ব বৌদ্ধিক সম্পদ। ব্যবহৃত ফ্রেমওয়ার্ক MIT লাইসেন্সড।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 09</strong></td>
+        <td><strong>ডিসকোয়ালিফিকেশন (প্রি-মেড)</strong></td>
+        <td>প্লেজিয়ারিজম বা প্রি-মেড প্রজেক্ট নিষিদ্ধ; তবে পাবলিক লাইব্রেরি/API ব্যবহার ডিসক্লোজ করলে এবং দলের মৌলিক অবদান থাকলে অনুমোদিত।</td>
+        <td>Node/Express শুধুমাত্র ইনফ্রাস্ট্রাকচার হিসেবে ডিসক্লোজড। ম্যাচিং ইঞ্জিন, সল্টেড হ্যাশিং, অ্যাডমিন ইন্সপেক্টর ও ২৫টি টেস্ট সুইট ১০০% নিজস্ব তৈরি।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 10</strong></td>
+        <td><strong>ডিসকোয়ালিফিকেশন (সময় ও আচরণ)</strong></td>
+        <td>৫–১০ মিনিট সময়সীমা মানতে হবে; দেরিতে পৌঁছালে বা অসদাচরণ করলে সরাসরি ডিসকোয়ালিফিকেশন; বিচারকদের সিদ্ধান্তই চূড়ান্ত।</td>
+        <td>স্টপওয়াচ রিহার্সালে ৭:০০ মিনিটে পিচ সম্পন্ন। বিচারক, মডারেটর ও প্রতিদ্বন্দ্বীদের প্রতি সর্বোচ্চ পেশাদার সৌজন্য বজায় রাখা।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 11</strong></td>
+        <td><strong>পুরস্কার ও স্বীকৃতি</strong></td>
+        <td>চ্যাম্পিয়ন, ১ম রানার-আপ, ২য় রানার-আপ (ক্যাশ প্রাইজ, ক্রেস্ট, সার্টিফিকেট); সকল পার্টিসিপেন্টকে সার্টিফিকেট।</td>
+        <td>সর্বোচ্চ মার্কস অর্জন এবং শীর্ষ দুটি টাই-ব্রেকারে এগিয়ে থেকে চ্যাম্পিয়ন ট্রফি নিশ্চিত করার নিখুঁত প্রস্তুতি।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 12</strong></td>
+        <td><strong>আচরণবিধি (Code of Conduct)</strong></td>
+        <td>সম্মানজনক ও খেলোয়াড়সুলভ আচরণ; কোনো প্রতারণা, নকল বা অনৈতিক কাজ করা যাবে না।</td>
+        <td>একাডেমিক সততা শতভাগ অক্ষুণ্ণ রাখা হয়েছে। কোনো ফেক ডাটা বা পূর্ব-রেকর্ড করা স্ক্রিনপ্লে ছাড়া সরাসরি লোকালহোস্টে লাইভ ডেমো পরিচালনা।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 13</strong></td>
+        <td><strong>টাই-ব্রেকিং হায়ারার্কি</strong></td>
+        <td>টাই হলে অগ্রাধিকার: (১) ইনোভেশন ও ক্রিয়েটিভিটি (২০%), (২) কিউঅ্যান্ডএ (২০%), (৩) ফিজিবিলিটি (১০%), (৪) আয়োজক কমিটি।</td>
+        <td>রুলবুকের নিয়ম অনুযায়ী ইনোভেশন (২০%) এবং কিউঅ্যান্ডএ (২০%) দলীয় ফলাফলে ৪০% প্রভাব ফেলে। এ দুটি মানদণ্ডে এগিয়ে থেকে টাই-ব্রেকার সুরক্ষা নিশ্চিত।</td>
+      </tr>
+      <tr>
+        <td><strong>PAGE 14</strong></td>
+        <td><strong>যোগাযোগের তথ্য</strong></td>
+        <td>ইভেন্ট কোঅর্ডিনেটর: ভিকি নন্দী (01813166652), অনুপ দীপ্ত (01306279571)।</td>
+        <td>জরুরি প্রাতিষ্ঠানিক যোগাযোগের জন্য মোবাইল নম্বর ডসিয়ারে সংরক্ষিত।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ২ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ২</div>
+    <h1>সমস্যা বিশ্লেষণ ও স্টেকহোল্ডার রিকোয়ারমেন্টস</h1>
+  </div>
+
+  <h2>২.১ ক্যাম্পাসের বর্তমান বাস্তব সংকট</h2>
+  <ul>
+    <li><strong>সোশ্যাল মিডিয়া ও চ্যাট গ্রুপের বিশৃঙ্খলা:</strong> কোনো ছাত্র ল্যাপটপ, আইডি কার্ড বা সাইকেলের চাবি হারালে ফেসবুক বা হোয়াটসঅ্যাপ গ্রুপে পোস্ট করে। কিন্তু ৩০ মিনিটের মধ্যে নতুন চ্যাটের ভিড়ে পোস্টটি হারিয়ে যায়। কোনো জিও-লোকেশন ফিল্টারিং বা সার্চ ক্যাটাগরি থাকে না।</li>
+    <li><strong>এনালগ সিকিউরিটি বক্সের সীমাবদ্ধতা:</strong> ক্যাম্পাসের সিকিউরিটি ডেস্কে রাখা হারানো জিনিসের বাক্সগুলো কোনো ক্যাটালগ ছাড়া স্তূপ আকারে পড়ে থাকে। ছাত্রদের ক্লাসের ফাঁকে বারবার সেখানে গিয়ে ম্যানুয়ালি খুঁজতে হয়।</li>
+    <li><strong>সোশ্যাল ইঞ্জিনিয়ারিং ও প্রতারণামূলক চুরি:</strong> সোশ্যাল মিডিয়ায় পাওয়া দামী জিনিসের ছবি দেখে অসৎ ব্যক্তিরা ভুয়া দাবিদার সেজে দাবি করে বসে। সিকিউরিটি অফিসার আসল মালিক চিনতে পারেন না।</li>
+    <li><strong>ক্লাউড এআই-এর দুর্বলতা:</strong> সাধারণ প্রজেক্টগুলো OpenAI-এর API র‍্যাপ করে তৈরি হয়। এতে প্রতি ক্লিকে ডলার খরচ হয়, ইন্টারনেট ড্রপ করলেই সিস্টেম অচল হয়ে পড়ে এবং শিক্ষার্থীদের লোকেশন ডাটা বাইরের সার্ভারে চলে যায়।</li>
+  </ul>
+
+  <h2>২.২ স্টেকহোল্ডার বিশ্লেষণ (Stakeholder Needs)</h2>
+  <table>
+    <thead>
+      <tr><th style="width:25%;">স্টেকহোল্ডার গ্রুপ</th><th style="width:35%;">বর্তমান সীমাবদ্ধতা ও ভয়</th><th style="width:40%;">ReFind কর্তৃক প্রদত্ত সরাসরি সমাধান</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ভুক্তভোগী শিক্ষার্থী (Owner)</strong></td>
+        <td>জিনিস হারানোর মানসিক চাপ, বারবার সিকিউরিটি ডেস্কে দৌড়াদৌড়ি এবং অপপ্রচার বা পোস্ট হারিয়ে যাওয়ার ভয়।</td>
+        <td>১ মিনিটে রিপোর্ট, স্বয়ংক্রিয় অ্যালগরিদমিক ম্যাচিং নোটিফিকেশন এবং প্রিন্টযোগ্য ভেক্টর নোটিশবোর্ড ফ্লায়ার।</td>
+      </tr>
+      <tr>
+        <td><strong>সৎ প্রাপক শিক্ষার্থী (Finder)</strong></td>
+        <td>ক্যাম্পাসে জিনিস কুড়িয়ে পাওয়ার পর কার কাছে জমা দেবে তা নিয়ে দ্বিধাদ্বন্দ্ব এবং চুরি বা মিথ্যা অপবাদের ঝুঁকি।</td>
+        <td>জিরো-নলেজ চ্যালেঞ্জ প্রশ্ন নির্ধারণের সুযোগ; নিজের পরিচয় গোপন রেখে নিরাপদে সিকিউরিটি ডেস্কে জমা দেওয়ার ব্যবস্থা।</td>
+      </tr>
+      <tr>
+        <td><strong>ক্যাম্পাস সিকিউরিটি ডেস্ক</strong></td>
+        <td>হাতে লেখা রেজিস্ট্রি খাতার বিশৃঙ্খলা, ভুল ব্যক্তির কাছে জিনিস হস্তান্তরের আইনগত দায় এবং স্টোরেজ জট।</td>
+        <td>সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল, গোপন উত্তরের ভেরিফিকেশন প্যানেল এবং কিউআর কোডযুক্ত ডিজিটাল কাস্টডি রিসিট।</td>
+      </tr>
+      <tr>
+        <td><strong>বিশ্ববিদ্যালয় প্রশাসন</strong></td>
+        <td>ক্লাউড সার্ভারের চড়া মাসিক বিল, ডেটা প্রাইভেসি আইন লঙ্ঘন এবং জটিল মেইনটেন্যান্স ওভারহেড।</td>
+        <td>$০.০০ বেসলাইন খরচ, লোকাল সার্ভার/ইন্ট্রানেটে ডেপ্লয়মেন্ট সুবিধা এবং সম্পূর্ণ অডিটেবল সিস্টেম লগ।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ৩ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৩</div>
+    <h1>১০০-পয়েন্টের হাইব্রিড ম্যাচিং অ্যালগরিদম — পূর্ণাঙ্গ গাণিতিক থিসিস</h1>
+  </div>
+
+  <h2>৩.১ গাণিতিক সূত্র ও ওয়েটিং বিভাজন</h2>
+  <p>
+    হারানো রিপোর্ট $L$ এবং প্রাপ্ত রিপোর্ট $F$-এর মধ্যে ম্যাচিং স্কোর নির্ধারিত হয় নিম্নলিখিত সমীকরণ দ্বারা:
+  </p>
+  
+  $$\text{Score}(L, F) = 25 \cdot S_{\text{cat}} + 15 \cdot S_{\text{col}} + 20 \cdot S_{\text{loc}} + 15 \cdot S_{\text{time}} + 25 \cdot S_{\text{ai}}$$
+
+  <pre>
+  WEIGHTS = {
+    category: 25,  // ম্যাক্রো শ্রেণীবদ্ধকরণ (Highest Information Gain)
+    color:    15,  // ক্রোমাটিক ক্লাস্টারিং (কালার ফ্যামিলি সমীকরণ)
+    location: 20,  // ক্যাম্পাস টপোলজিক্যাল গ্রাফ প্রক্সিমিটি
+    time:     15,  // এক্সপোনেনশিয়াল ডেল্টা টাইম ডিকে কার্ভ
+    ai:       25   // সেমান্টিক এআই অ্যাক্সিলারেটর (অফলাইন সিনোনিম ফলব্যাকসহ)
+  };
+  </pre>
+
+  <h2>৩.২ পাঁচটি কোর ডাইমেনশনের বিস্তারিত বিশ্লেষণ</h2>
+
+  <h4>ক. ক্যাটাগরি ম্যাচিং ও গ্রাফ অ্যাডজাসেন্সি ($S_{\text{cat}}$ — সর্বোচ্চ ২৫ পয়েন্ট)</h4>
+  <p>
+    রিপোর্টারদের ক্যাটাগরি নির্বাচনে সাবজেক্টিভ বৈচিত্র্য হ্যান্ডেল করতে ReFind একটি নির্দেশিত রিলেশনাল গ্রাফ ব্যবহার করে:
+  </p>
+  <pre>
+const RELATED_CATEGORIES = {
+  electronics: ['accessories'],
+  bags:        ['accessories'],
+  accessories: ['electronics', 'bags', 'jewelry'],
+  jewelry:     ['accessories'],
+  documents:   ['cards'],
+  cards:       ['documents'],
+  clothing:    ['accessories']
+};
+  </pre>
+  <p>
+    যদি $L_{\text{cat}} == F_{\text{cat}}$ হয়, তবে পূর্ণ ২৫ পয়েন্ট। আর যদি তারা অ্যাডজাসেন্সি গ্রাফের সাথে সম্পর্কিত হয়, তবে পার্শিয়াল ১২.৫ পয়েন্ট বরাদ্দ করা হয়।
+  </p>
+
+  <h4>খ. কালার ফ্যামিলি ও ক্রোমাটিক ক্লাস্টারিং ($S_{\text{col}}$ — সর্বোচ্চ ১৫ পয়েন্ট)</h4>
+  <p>
+    আলোর পার্থক্য বা ইউজারের নামকরণের তারতম্যে (যেমন: কেউ লিখল Charcoal, কেউ Black) রঙ যাতে মিস না হয়, সেজন্য ১১টি কালার ফ্যামিলি ক্লাস্টার তৈরি করা হয়েছে:
+  </p>
+  <pre>
+const COLOR_FAMILIES = [
+  ['black', 'dark', 'charcoal', 'navy'],
+  ['white', 'cream', 'ivory'],
+  ['gray', 'grey', 'silver'],
+  ['red', 'maroon', 'crimson'],
+  ['blue', 'teal', 'cyan'],
+  ['green', 'olive'],
+  ['brown', 'tan', 'beige', 'khaki'],
+  ['yellow', 'gold'],
+  ['pink', 'magenta'],
+  ['orange'],
+  ['purple', 'violet']
+];
+  </pre>
+  <p>
+    হুবহু কালার মিললে ১৫ পয়েন্ট। একই ক্লাস্টারের অন্তর্ভুক্ত হলে ৯ পয়েন্ট ($০.৬ \times ১৫$) প্রদান করা হয়।
+  </p>
+
+  <h4>গ. ক্যাম্পাস টপোলজিক্যাল গ্রাফ ও এলিয়াস নরমালাইজেশন ($S_{\text{loc}}$ — সর্বোচ্চ ২০ পয়েন্ট)</h4>
+  <p>
+    ক্যাম্পাসের প্রচলিত সংক্ষিপ্ত রূপকে প্রথমে নরমালাইজ করা হয় (যেমন: <code>'lib' &rarr; 'central library'</code>, <code>'audi' &rarr; 'auditorium'</code>, <code>'canteen' &rarr; 'cafeteria'</code>)। এরপর ওয়াকিং গ্রাফ দূরত্বের ভিত্তিতে স্কোর বরাদ্দ হয়। হুবহু একই ভবন হলে ২০ পয়েন্ট, পাশ্ববর্তী সংযুক্ত ভবন হলে ১০ পয়েন্ট।
+  </p>
+
+  <h4>ঘ. এক্সপোনেনশিয়াল টাইম ডিকে কার্ভ ($S_{\text{time}}$ — সর্বোচ্চ ১৫ পয়েন্ট)</h4>
+  <p>
+    হারানো ও পাওয়ার সময়ের ব্যবধান $\Delta t = |t_{\text{lost}} - t_{\text{found}}|$-এর ভিত্তিতে পয়েন্ট নির্ধারিত হয়:
+  </p>
+  <table>
+    <thead>
+      <tr><th>সময়ের ব্যবধান ($\Delta t$)</th><th>মাল্টিপ্লায়ার</th><th>প্রদত্ত পয়েন্ট</th><th>বাস্তব তাৎপর্য</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>$\Delta t \le ২৪ \text{ ঘণ্টা}$</td><td>১.০০</td><td><strong>১৫ পয়েন্ট</strong></td><td>তাত্ক্ষণিক সহ-সাময়িক হারানো ও উদ্ধারের ঘটনা।</td></tr>
+      <tr><td>২৪ ঘণ্টা $< \Delta t \le ৭২ \text{ ঘণ্টা}$</td><td>০.৬৭</td><td><strong>১০ পয়েন্ট</strong></td><td>সাপ্তাহিক ছুটি বা বিলম্বিত জমা দেওয়ার উইন্ডো।</td></tr>
+      <tr><td>৩ দিন $< \Delta t \le ৭ \text{ দিন}$</td><td>০.৪০</td><td><strong>৬ পয়েন্ট</strong></td><td>ল্যাব বা ক্লিনিং স্টাফদের দ্বারা বিলম্বে উদ্ধার।</td></tr>
+      <tr><td>$\Delta t > ৭ \text{ দিন}$</td><td>০.১৩</td><td><strong>২ পয়েন্ট</strong></td><td>সেমিস্টার শেষের স্টোরেজ ক্লিয়ারেন্স।</td></tr>
+    </tbody>
+  </table>
+
+  <h4>ঙ. সেমান্টিক এআই ও ১০০% অফলাইন সিনোনিম ফলব্যাক ($S_{\text{ai}}$ — সর্বোচ্চ ২৫ পয়েন্ট)</h4>
+  <p>
+    Google Gemini এআই দিয়ে বর্ণনার সূক্ষ্ম বৈশিষ্ট্য (ব্র্যান্ড, স্টিকার, স্ক্র্যাচ) তুলনা করা হয়। তবে ইন্টারনেট না থাকলে বা এপিআই আনরিচেবল হলে <code>services/aiService.js</code> স্বয়ংক্রিয়ভাবে একটি অফলাইন টোকেনাইজড সিনোনিম ক্লাস্টার সক্রিয় করে। সম্পূর্ণ এয়ার-গ্যাপড বুথেও সিস্টেম শতভাগ সচল থাকে।
+  </p>
+
+  <h2>৩.৩ ট্রায়াজ থ্রেশহোল্ড ও অ্যাকশন ম্যাট্রিক্স</h2>
+  <pre>
+  Score >= 85%  --> [VERY HIGH MATCH]  উভয় পক্ষকে রিয়েল-টাইম নোটিফিকেশন + অডিও চাইম
+  Score >= 70%  --> [STRONG MATCH]     অ্যাডমিন প্রায়োরিটি ম্যাচেস টেবিলে প্রমিনেন্ট প্রদর্শন
+  Score >= 55%  --> [MODERATE MATCH]   শিক্ষার্থীর ক্যান্ডিডেট ম্যাচ তালিকায় পর্যবেক্ষণযোগ্য
+  Score <  55%  --> [FILTERED OUT]     নোটিফিকেশন স্প্যাম দূর করতে স্বয়ংক্রিয়ভাবে ফিল্টার্ড
+  </pre>
+
+  <!-- ==================== অধ্যায় ৪ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৪</div>
+    <h1>অ্যাডমিন সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল</h1>
+  </div>
+
+  <h2>৪.১ নিরাপত্তা ডেস্কের ট্রায়াজ সমাধান</h2>
+  <p>
+    ক্যাম্পাসের নিরাপত্তাকর্মীদের সুবিধার জন্য ReFind তৈরি করেছে <strong>Side-by-Side Pair Comparison Inspector Modal</strong> (যা <code>public/js/ui.js</code> ও <code>public/css/style.css</code>-এ বাস্তবায়িত)। এর মাধ্যমে দুটি পোস্ট খোলার বদলে পাশাপাশি কার্ডে তুলনা করা যায়:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width:22%;">উপাদান</th><th style="width:38%;">বাম কলাম: হারানো পোস্ট (Lost Item)</th><th style="width:40%;">ডান কলাম: পাওয়া পোস্ট (Found Item)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ভিজ্যুয়াল প্রুফ</strong></td>
+        <td>হারানো পণ্যের হাই-রেজোলিউশন ফটো (ক্লিক করলে ফুলস্ক্রিন জুম)।</td>
+        <td>সিকিউরিটির হেফাজতে থাকা পাওয়া পণ্যের স্পষ্ট ছবি।</td>
+      </tr>
+      <tr>
+        <td><strong>অ্যাট্রিবিউট তুলনা</strong></td>
+        <td>ক্যাটাগরি, কালার, ব্র্যান্ড, স্থান ও তারিখ। মিল থাকা বৈশিষ্ট্যগুলোতে সবুজ <code>✓ Match</code> ব্যাজ।</td>
+        <td>ক্যাটাগরি, কালার, ব্র্যান্ড, উদ্ধারের স্থান ও হেফাজতের ডেস্ক নম্বর।</td>
+      </tr>
+      <tr>
+        <td><strong>বিবরণ বক্স</strong></td>
+        <td>শিক্ষার্থীর মূল হারানো বিবরণ।</td>
+        <td>উদ্ধারকারী ফাইন্ডারের মূল বিবরণ।</td>
+      </tr>
+      <tr>
+        <td><strong>গোপন চ্যালেঞ্জ ট্রায়াজ</strong></td>
+        <td>— (দাবিদারের নাম, ব্যাচ, সেকশন)</td>
+        <td><strong>🔒 কনফিডেন্সিয়াল অ্যাডমিন প্রশ্ন:</strong> সিকিউরিটি অফিসার দাবিদারকে সরাসরি এই প্রশ্নটি জিজ্ঞাসা করে মিলিয়ে নেন!</td>
+      </tr>
+      <tr>
+        <td><strong>সরাসরি যোগাযোগ</strong></td>
+        <td>ইউজারের অ্যাভাটার, ফোন কল এবং <strong>WhatsApp</strong> ডাইরেক্ট বাটন।</td>
+        <td>ফাইন্ডারের অ্যাভাটার, ফোন কল এবং <strong>WhatsApp</strong> ডাইরেক্ট বাটন।</td>
+      </tr>
+      <tr>
+        <td><strong>প্রিন্ট লিংক</strong></td>
+        <td>লস্ট নোটিশ ফ্লায়ার ডাউনলোড লিংক।</td>
+        <td>ফাউন্ড নোটিশ ফ্লায়ার ডাউনলোড লিংক।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>৪.২ ৫-ডাইমেনশনাল রিয়েল-টাইম স্কোরিং মিটার</h2>
+  <p>
+    কার্ডের নিচে ৫টি রিয়েল-টাইম প্রগ্রেস বার প্রদর্শিত হয়: ক্যাটাগরি (/২৫), কালার (/১৫), লোকেশন (/২০), টাইম (/১৫) এবং এআই সেমান্টিক (/২৫)। সাথে প্রদর্শিত হয় হাইলাইটেড ফিচার পিলস (যেমন: <code>✦ Matching brand: Lenovo</code>, <code>✦ Synonym match: backpack ↔ bag</code>)। অ্যাডমিন <strong>"Notify Both Parties"</strong> চাপামাত্র উভয় পক্ষের কাছে অডিও চাইমসহ এলার্ট চলে যায়।
+  </p>
+
+  <!-- ==================== অধ্যায় ৫ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৫</div>
+    <h1>জিরো-নলেজ ক্রিপ্টোগ্রাফিক ওনারশিপ চ্যালেঞ্জ (Salted SHA-256)</h1>
+  </div>
+
+  <h2>৫.১ সোশ্যাল ইঞ্জিনিয়ারিং ও ভুয়া ক্লেইম প্রতিহতকরণ</h2>
+  <p>
+    পাবলিক নোটিশবোর্ডে দামি জিনিসের ছবি দেখে অসৎ ব্যক্তিরা ভুয়া দাবিদার সেজে দাবি করার চেষ্টা করে। ReFind এই ঝুঁকি নির্মূল করতে একটি কঠোর ৬-ধাপের ক্রিপ্টোগ্রাফিক চ্যালেঞ্জ প্রোটোকল প্রয়োগ করে:
+  </p>
+
+  <ol>
+    <li><strong>সিক্রেট চ্যালেঞ্জ সৃষ্টি:</strong> জিনিস জমা দেওয়ার সময় প্রাপক এমন একটি প্রশ্ন ও উত্তর নির্ধারণ করেন যা শুধু প্রকৃত মালিক জানেন (যেমন: <em>"ল্যাপটপের পেছনে কিসের স্টিকার?"</em> &rarr; <em>"লিনাক্স পেঙ্গুইন"</em>)।</li>
+    <li><strong>ওয়ান-ওয়ে সল্টেড ডাইজেস্ট:</strong> সার্ভারে উত্তরের কোনো প্লেইন টেক্সট সেভ হয় না। এটি নরমালাইজ করে ক্রিপ্টোগ্রাফিক সল্টসহ SHA-256 হ্যাশ আকারে সংরক্ষিত থাকে: $H = \text{SHA-256}(\text{normalize}(\text{Answer}))$.</li>
+    <li><strong>পাবলিক এপিআই ফিল্টারিং:</strong> ব্রাউজ করার সময় পাবলিক API থেকে উত্তরের হ্যাশ ও প্রশ্ন কঠোরভাবে মুছে দেওয়া হয়। শুধু ক্লেইম শুরু করার সময় প্রশ্নটি দৃশ্যমান হয়।</li>
+    <li><strong>ক্রিপ্টোগ্রাফিক যাচাইকরণ:</strong> দাবিদার উত্তর লিখলে সার্ভার ইনপুটকে হ্যাশ করে ডাটাবেজের সাথে মেলায়। মিললেই কেবল অনুমোদন মেলে।</li>
+    <li><strong>৩-অ্যাটেম্পট ব্রুটফোর্স লকআউট:</strong> ভুল উত্তর দিলে <code>verification_attempts</code> বৃদ্ধি পায়। ৩ বার ভুল দিলে সিস্টেম দাবিদারকে <strong>১৫ মিনিটের জন্য তাৎক্ষণিক লকআউট</strong> করে এবং অডিট লগে ফ্ল্যাগ করে।</li>
+    <li><strong>অ্যাডমিনের আত্মসাৎ রোধ:</strong> <code>routes/claims.js</code>-এ অ্যাডমিন রোল দ্বারা ক্লেইম রিকোয়েস্ট সাবমিট করা নিষিদ্ধ (<code>HTTP 403 Forbidden</code>), যা অভ্যন্তরীণ অপব্যবহারের ঝুঁকি নির্মূল করে।</li>
+  </ol>
+
+  <!-- ==================== অধ্যায় ৬ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৬</div>
+    <h1>ব্রাউজার-সাইড HTML5 Canvas কম্পিউটার ভিশন ও HSL কালার ক্লাসিফায়ার</h1>
+  </div>
+
+  <h2>৬.১ জিরো-ক্লাউড খরচে ক্লায়েন্ট-সাইড প্রসেসিং</h2>
+  <p>
+    দামি ক্লাউড ভিশন এপিআই (যেমন: AWS Rekognition বা Google Cloud Vision)-এর পরিবর্তে ReFind ইউজারের ব্রাউজারেই HTML5 Canvas ব্যবহার করে ১২ মিলিসেকেন্ডে ডমিন্যান্ট কালার বিশ্লেষণ করে (<code>public/js/color-extractor.js</code>):
+  </p>
+
+  <ol>
+    <li><strong>ডাউনস্যাম্পলিং:</strong> আপলোড করা ছবিকে অফস্ক্রিন ক্যানভাসে $100 \times 100$ পিক্সেলে (১০,০০০ স্যাম্পলিং পয়েন্ট) নামিয়ে আনা হয়, যা মুহূর্তের মধ্যে সম্পাদিত হয়।</li>
+    <li><strong>সিলিন্ড্রিক্যাল HSL রূপান্তর:</strong> প্রতিটি পিক্সেলকে RGB থেকে Cylindrical Hue ($0^\circ \dots 360^\circ$), Saturation ($0 \dots 1$), এবং Lightness ($0 \dots 1$)-এ রূপান্তর করা হয়। আলোর পার্থক্যে RGB বদলে গেলেও HSL-এ মূল রঙ অক্ষুণ্ণ থাকে।</li>
+    <li><strong>থ্রেশহোল্ডিং লজিক:</strong>
+      <ul>
+        <li>Lightness $L < 0.16 \implies$ <strong>Black / Dark Charcoal</strong>.</li>
+        <li>Lightness $L > 0.88$ এবং Saturation $S < 0.20 \implies$ <strong>White</strong>.</li>
+        <li>Saturation $S < 0.15 \implies$ <strong>Gray / Silver</strong>.</li>
+        <li>অন্যান্য ক্রোম্যাটিক পিক্সেলগুলোকে ১৮টি কৌণিক Hue বাকেটে ভাগ করা হয়।</li>
+      </ul>
+    </li>
+    <li><strong>ইন্টারেক্টিভ কালার চিপস:</strong> শীর্ষ ৩টি ডমিন্যান্ট কালার UI-তে চিপ হিসেবে প্রদর্শিত হয় এবং ফর্মে ক্লিক করলেই স্বয়ংক্রিয়ভাবে বসে যায়।</li>
+  </ol>
+
+  <!-- ==================== অধ্যায় ৭ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৭</div>
+    <h1>অডিটেবল চেইন-অফ-কাস্টডি ও প্রিন্টযোগ্য আর্টিক্টস</h1>
+  </div>
+
+  <h2>৭.১ অফিসিয়াল সিরিয়ালাইজড কাস্টডি রিলিজ রিসিট (<code>public/receipt.html</code>)</h2>
+  <p>
+    সম্পদ হস্তান্তরের মুহূর্তে সিকিউরিটি ডেস্ক তৈরি করে একটি অফিসিয়াল আইনি রিসিট:
+  </p>
+  <ul>
+    <li><strong>সিরিয়ালাইজড রেফারেন্স:</strong> প্রাতিষ্ঠানিক ফরম্যাট <code>REC-[YEAR]-[ID]</code> (যেমন: <code>REC-2026-00042</code>)।</li>
+    <li><strong>ক্রিপ্টোগ্রাফিক ভেক্টর SVG QR কোড:</strong> রিসিটের গায়ে জেনারেট হওয়া QR কোডটি স্ক্যান করলে সরাসরি সেন্ট্রাল লেজারের অডিট হিস্ট্রি যাচাই করা যায়।</li>
+    <li><strong>দ্বৈত স্বাক্ষর প্যানেল:</strong> গ্রহণকারী শিক্ষার্থী ও দায়িত্বপ্রাপ্ত নিরাপত্তা কর্মকর্তা উভয়ের হস্তাক্ষর ও স্টুডেন্ট আইডি স্বাক্ষরের সুনির্দিষ্ট ক্ষেত্র।</li>
+  </ul>
+
+  <h2>৭.২ ফিজিক্যাল নোটিশবোর্ড ফ্লায়ার (<code>public/flyer.html</code>)</h2>
+  <p>
+    উচ্চ-কনট্রাস্টের প্রিন্ট-রেডি A4 ফ্লায়ার, যাতে বড় কিউআর কোড থাকে। ক্যাম্পাসের দেয়ালে বা নোটিশবোর্ডে লাগিয়ে দিলে সাধারণ পথচারী মোবাইল দিয়ে স্ক্যান করেই সরাসরি অনলাইন পোস্টে পৌঁছাতে পারে।
+  </p>
+
+  <!-- ==================== অধ্যায় ৮ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৮</div>
+    <h1>সম্পূর্ণ রিপোজিটরি ক্যাটালগ ও কোডবেজ ইনভেন্টরি</h1>
+  </div>
+
+  <h2>৮.১ পূর্ণাঙ্গ ফাইল তালিকা ও আর্কিটেকচারাল মেট্রিক্স (১৯,৫০০+ লাইন কোড)</h2>
+  <table style="font-size:8.5pt;">
+    <thead>
+      <tr><th>ডিরেক্টরি / ফাইল</th><th>ব্যবহৃত প্রযুক্তি</th><th>লাইন</th><th>আর্কিটেকচারাল দায়িত্ব ও ফাংশনালিটি</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>server.js</code></td><td>Node.js / Express</td><td>94</td><td>সার্ভার বুটস্ট্র্যাপ, সিকিউরিটি মিডলওয়্যার, স্ট্যাটিক অ্যাসেট রাউটিং ও গ্লোবাল এরর হ্যান্ডলিং।</td></tr>
+      <tr><td><code>database/schema.sql</code></td><td>SQLite DDL</td><td>117</td><td>৭টি নরমালাইজড টেবিল, ফরেন কি কনস্ট্রেইন্ট, ক্যাসকেড ডিলিট, ইনডেক্সিং ও অডিট টেবিল।</td></tr>
+      <tr><td><code>database/database.js</code></td><td>node:sqlite</td><td>132</td><td>ডাটাবেজ সিঙ্গেলটন, কানেকশন লাইফসাইকেল, প্রিপেয়ার্ড স্টেটমেন্ট কোয়েরি র‍্যাপার।</td></tr>
+      <tr><td><code>database/seed.js</code></td><td>Node.js</td><td>426</td><td>বিশ্ববিদ্যালয়ের ডেমো ডেটাবেজ: ১০ জন ইউজার, ২০টি আইটেম, ক্লেইম, ম্যাচ এবং অডিট ট্রেইল।</td></tr>
+      <tr><td><code>middleware/auth.js</code></td><td>JWT</td><td>58</td><td>টোকেন ভেরিফিকেশন, রোল এনফোর্সমেন্ট (student বনাম admin) ও সেশন চেক।</td></tr>
+      <tr><td><code>routes/auth.js</code></td><td>Express Route</td><td>148</td><td>রেজিস্ট্রেশন, লগইন, পাসওয়ার্ড হ্যাশিং, অ্যাভাটার নির্বাচন ও প্রোফাইল আপডেট।</td></tr>
+      <tr><td><code>routes/items.js</code></td><td>Express Route</td><td>310</td><td>আইটেম CRUD, ক্যাটাগরি ও লোকেশন ফিল্টার, রিয়েল-টাইম SVG QR কোড জেনারেটর।</td></tr>
+      <tr><td><code>routes/matches.js</code></td><td>Express Route</td><td>57</td><td>ম্যাচ লুকআপ, স্টুডেন্ট প্রোফাইল ডেটা জয়েন এবং গোপন উত্তরের হ্যাশ স্যানিটাইজেশন।</td></tr>
+      <tr><td><code>routes/claims.js</code></td><td>Express Route</td><td>282</td><td>ক্লেইম সাবমিশন, SHA-256 চ্যালেঞ্জ ভেরিফিকেশন, রিসিট জেনারেশন ও হ্যান্ডওভার।</td></tr>
+      <tr><td><code>routes/admin.js</code></td><td>Express Route</td><td>286</td><td>ক্লেইমস ট্রায়াজ, ইউজার সাসপেনশন, গ্লোবাল ম্যাচ ডেস্ক এবং অডিট লেজার।</td></tr>
+      <tr><td><code>routes/notifications.js</code></td><td>Express Route</td><td>68</td><td>ইন-অ্যাপ নোটিফিকেশন ফিড, আনরিড ব্যাজ কাউন্টার ও মার্ক-অ্যাজ-রিড।</td></tr>
+      <tr><td><code>services/matchingEngine.js</code></td><td>Node.js</td><td>589</td><td>১০০-পয়েন্ট হাইব্রিড অ্যালগরিদম, অ্যাডজাসেন্সি গ্রাফ, ডিকে কার্ভ ও ওয়েট ক্যালকুলেটর।</td></tr>
+      <tr><td><code>services/aiService.js</code></td><td>Gemini SDK</td><td>218</td><td>Google Gemini API ইন্টিগ্রেশন এবং সম্পূর্ণ অফলাইন লোকাল সিনোনিম ফলব্যাক ইঞ্জিন।</td></tr>
+      <tr><td><code>services/verificationService.js</code></td><td>Crypto</td><td>74</td><td>SHA-256 স্ট্রিং নরমালাইজেশন, ডাইজেস্ট জেনারেশন ও ব্রুটফোর্স ট্র্যাকিং।</td></tr>
+      <tr><td><code>services/notificationService.js</code></td><td>Node.js</td><td>52</td><td>লাইফসাইকেল ইভেন্ট এলার্ট জেনারেশন ও ব্রডকাস্ট লজিক।</td></tr>
+      <tr><td><code>services/auditService.js</code></td><td>Node.js</td><td>46</td><td>স্থায়ী ও অপরিবর্তনীয় অ্যাডমিন অডিট অ্যাকশন লগিং।</td></tr>
+      <tr><td><code>public/admin/dashboard.html</code></td><td>HTML5 / JS</td><td>194</td><td>অ্যাডমিন ওভারভিউ, রিকভারি স্ট্যাটাস ও প্রায়োরিটি ম্যাচেস টেবিল (Pair মডালসহ)।</td></tr>
+      <tr><td><code>public/admin/matches.html</code></td><td>HTML5 / JS</td><td>204</td><td>গ্লোবাল ম্যাচ ডেস্ক, স্কোর ফিল্টারিং এবং সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর।</td></tr>
+      <tr><td><code>public/admin/claims.html</code></td><td>HTML5 / JS</td><td>193</td><td>ক্লেইমস ট্রায়াজ কিউ, ক্লেইমেন্ট আইডি পরিদর্শন ও অনুমোদন/বাতিলকরণ মডাল।</td></tr>
+      <tr><td><code>public/admin/analytics.html</code></td><td>Chart.js</td><td>178</td><td>ভিজ্যুয়াল অ্যানালিটিক্স, রিকভারি রেট চার্ট ও লোকেশন-ভিত্তিক লস্ট হিটম্যাপ।</td></tr>
+      <tr><td><code>public/admin/items.html</code></td><td>HTML5 / JS</td><td>168</td><td>সম্পূর্ণ প্রাতিষ্ঠানিক প্রপার্টি লেজার এবং স্ট্যাটাস পরিবর্তন কন্ট্রোল।</td></tr>
+      <tr><td><code>public/admin/recovered.html</code></td><td>HTML5 / JS</td><td>142</td><td>ঐতিহাসিক সফল রিকভারি আর্কাইভ এবং ডিজিটাল রিসিট ভিউয়ার।</td></tr>
+      <tr><td><code>public/admin/users.html</code></td><td>HTML5 / JS</td><td>156</td><td>ইউজার ডিরেক্টরি, সাসপেন্ড টগল এবং রোল ম্যানেজমেন্ট।</td></tr>
+      <tr><td><code>public/admin/audit-log.html</code></td><td>HTML5 / JS</td><td>145</td><td>অপরিবর্তনীয় প্রাতিষ্ঠানিক সিকিউরিটি অডিট লেজার ভিউয়ার।</td></tr>
+      <tr><td><code>public/js/ui.js</code></td><td>Vanilla ES6+</td><td>1,068</td><td>ডিজাইন সিস্টেম, থিম ম্যানেজার, সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল।</td></tr>
+      <tr><td><code>public/js/color-extractor.js</code></td><td>Canvas CV</td><td>165</td><td>ক্লায়েন্ট-সাইড HSL কালার ক্লাসিফায়ার ও প্যালেট চিপ জেনারেটর।</td></tr>
+      <tr><td><code>public/js/notifications.js</code></td><td>Web Audio</td><td>268</td><td>নোটিফিকেশন সেন্টার ও Web Audio API সিন্থেটিক চাইম অডিও সিন্থেসাইজার।</td></tr>
+      <tr><td><code>public/js/campus-map.js</code></td><td>SVG DOM</td><td>142</td><td>ইন্টারেক্টিভ ক্যাম্পাস ম্যাপ ভবন হাইলাইটিং ও লোকেশন ফিল্টার ড্রয়ার।</td></tr>
+      <tr><td><code>public/css/style.css</code></td><td>CSS3</td><td>2,244</td><td>সম্পূর্ণ ডিজাইন সিস্টেম, রেসপনসিভ গ্রিড, মডাল এবং ডার্ক মোড টোকেন।</td></tr>
+      <tr><td><code>scratch/ (২৫টি টেস্ট স্ক্রিপ্ট)</code></td><td>Node.js</td><td>1,980</td><td>স্বয়ংক্রিয় টেস্ট সুইট: সিকিউরিটি, UI/UX, ZK হ্যাশিং, নোটিফিকেশন ও মাস্টার রিগ্রেশন।</td></tr>
+      <tr><td><strong>সর্বমোট রিপোজিটরি</strong></td><td><strong>Full Stack</strong></td><td><strong>19,500+</strong></td><td><strong>প্রোডাকশন-রেডি ক্যাম্পাস অ্যাসেট রিকভারি ইকোসিস্টেম।</strong></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ৯ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ৯</div>
+    <h1>ডেটাবেজ স্কিমা ও এনটিটি-রিলেশনশিপ আর্কিটেকচার</h1>
+  </div>
+
+  <h2>৯.১ এনটিটি রিলেশনশিপ ডায়াগ্রাম (ASCII টপোলজি)</h2>
+  <pre>
+┌─────────────────────────┐           1:N           ┌───────────────────────────────┐
+│          USERS          │────────────────────────>│             ITEMS             │
+├─────────────────────────┤                         ├───────────────────────────────┤
+│ id (PK)                 │                         │ id (PK)                       │
+│ name, email, password   │                         │ user_id (FK -> users.id)      │
+│ role (student / admin)  │                         │ type ('lost' / 'found')       │
+│ phone, student_id       │                         │ title, category, color, brand │
+│ batch, section, avatar  │                         │ location, event_date, status  │
+│ suspended (0 / 1)       │                         │ image, storage_location       │
+└────────────┬────────────┘                         │ verification_question         │
+             │                                      │ verification_answer_hash      │
+             │ 1:N                                  └───────────────┬───────────────┘
+             │                                                      │
+             │                                                      │ 1:N (lost / found)
+             ▼                                                      ▼
+┌─────────────────────────┐                         ┌───────────────────────────────┐
+│         CLAIMS          │                         │            MATCHES            │
+├─────────────────────────┤                         ├───────────────────────────────┤
+│ id (PK)                 │                         │ id (PK)                       │
+│ item_id (FK -> items)   │                         │ lost_item_id (FK -> items)    │
+│ claimant_id (FK->users) │                         │ found_item_id (FK -> items)   │
+│ verification_answer     │                         │ score, category_score         │
+│ confidence_score        │                         │ color_score, location_score   │
+│ id_proof_image, status  │                         │ time_score, ai_score          │
+│ handover_location       │                         │ explanation, matching_features│
+└─────────────────────────┘                         └───────────────────────────────┘
+  </pre>
+
+  <h2>৯.২ রিলেশনাল সততা ও ইনডেক্সিং স্ট্র্যাটেজি</h2>
+  <ul>
+    <li><strong>অ্যাটমিক ট্রানজ্যাকশন:</strong> <code>PRAGMA foreign_keys = ON;</code> সক্রিয় থাকায় কোনো ডাটাবেজ ড্যাংলিং পয়েন্টার তৈরি হতে পারে না। কোনো আইটেম মুছে ফেললে সংশ্লিষ্ট ক্লেইম ও ম্যাচ স্বয়ংক্রিয়ভাবে ক্যাসকেড রোলব্যাক হয়।</li>
+    <li><strong>Write-Ahead Logging (WAL):</strong> বিদ্যুৎ চলে গেলে বা সার্ভার ক্র্যাশ করলেও SQLite-এর WAL মোড মেমোরি থেকে ডিস্কে সম্পূর্ণ ডাটা রোলব্যাক করে, জিরো-করাপশন গ্যারান্টি দেয়।</li>
+    <li><strong>ইনডেক্স অপটিমাইজেশন:</strong> <code>items(type, status)</code>, <code>matches(score)</code> এবং <code>claims(status)</code> কলামে B-Tree ইনডেক্স থাকায় ২৫,০০০ শিক্ষার্থীর ট্রাফিকেও সাব-৫ মিলিসেকেন্ডে কোয়েরি সম্পন্ন হয়।</li>
+  </ul>
+
+  <!-- ==================== অধ্যায় ১০ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১০</div>
+    <h1>পূর্ণাঙ্গ RESTful API রেফারেন্স স্পেসিফিকেশন (৩২টি এন্ডপয়েন্ট)</h1>
+  </div>
+
+  <table style="font-size:8pt;">
+    <thead>
+      <tr><th>HTTP মেথড</th><th>এন্ডপয়েন্ট URI</th><th>অথেনটিকেশন</th><th>রিকোয়েস্ট পে-লোড / প্যারামস</th><th>কার্যকারিতা ও রেসপন্স বিবরণ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td>পাবলিক</td><td><code>{name, email, password, student_id, batch...}</code></td><td>নতুন শিক্ষার্থী একাউন্ট তৈরি ও পাসওয়ার্ড হ্যাশিং।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>পাবলিক</td><td><code>{email, password}</code></td><td>লগইন ও সেশন JWT টোকেন ইস্যু।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/auth/profile</code></td><td>JWT</td><td>—</td><td>বর্তমান শিক্ষার্থীর প্রোফাইল ও অ্যাক্টিভিটি হিস্ট্রি।</td></tr>
+      <tr><td><code>PATCH</code></td><td><code>/api/auth/profile</code></td><td>JWT</td><td><code>{phone, avatar, ...}</code></td><td>ফোন নম্বর ও প্রোফাইল অ্যাভাটার আপডেট।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/items</code></td><td>পাবলিক</td><td><code>?type=&category=&location=&q=</code></td><td>সার্চ ও ফিল্টারযুক্ত পাবলিক ফিড (ক্লেইমড আইটেম ফিল্টার্ড)।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/items/:id</code></td><td>পাবলিক</td><td><code>:id</code></td><td>আইটেমের পাবলিক বিবরণ (গোপন উত্তর হ্যাশ ফিল্টার্ড)।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/items/:id/qr.svg</code></td><td>পাবলিক</td><td><code>:id</code></td><td>রিয়েল-টাইম ডায়নামিক ভেক্টর SVG QR কোড জেনারেটর।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/items/stats/by-location</code></td><td>পাবলিক</td><td>—</td><td>ভবনভিত্তিক হারানো ও প্রাপ্ত পণ্যের পরিসংখ্যান।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/items</code></td><td>JWT</td><td>Multipart ফর্ম (title, category, image...)</td><td>নতুন হারানো বা প্রাপ্ত আইটেমের রিপোর্ট এন্ট্রি।</td></tr>
+      <tr><td><code>PATCH</code></td><td><code>/api/items/:id</code></td><td>JWT</td><td><code>{title, description, ...}</code></td><td>নিজের পোস্ট করা আইটেমের বিবরণ এডিট।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/items/:id/withdraw</code></td><td>JWT</td><td>—</td><td>নিজের পোস্ট প্রত্যাহার/বন্ধ করে দেওয়া।</td></tr>
+      <tr><td><code>DELETE</code></td><td><code>/api/items/:id</code></td><td>JWT (Admin/Owner)</td><td>—</td><td>আইটেম ডিলিট ও ক্যাসকেড ক্লিনআপ।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/matches/for-lost-item/:id</code></td><td>JWT</td><td><code>:id</code></td><td>নির্দিষ্ট হারানো পণ্যের সম্ভাব্য ম্যাচের তালিকা (Score DESC)।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/matches/:id</code></td><td>JWT</td><td><code>:id</code></td><td>দুটি আইটেমের সম্পূর্ণ পেয়ার রেকর্ড ও ব্রেকডাউন স্কোর।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/claims/verification-question/:id</code></td><td>JWT</td><td><code>:id</code></td><td>গোপন প্রশ্ন ফেচ ও রেট-লিমিট লকআউট স্ট্যাটাস চেক।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/claims</code></td><td>JWT (Student only)</td><td><code>{item_id, answer, id_proof_image}</code></td><td>মালিকানা ক্লেইম সাবমিশন (অ্যাডমিন ব্লকড)।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/claims/my-claims</code></td><td>JWT</td><td>—</td><td>শিক্ষার্থীর নিজের করা ক্লেইমসমূহের স্ট্যাটাস ট্র্যাক।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/claims/:id/confirm</code></td><td>JWT</td><td>—</td><td>শিক্ষার্থী কর্তৃক পণ্য ফিজিক্যালি বুঝে পাওয়ার কনফার্মেশন।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/claims/receipt-by-item/:id</code></td><td>JWT</td><td><code>:id</code></td><td>সিরিয়ালাইজড কাস্টডি রিলিজ রিসিট ডেটা জেনারেটর।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/overview</code></td><td>Admin</td><td>—</td><td>ড্যাশবোর্ড মেট্রিক্স, কাউন্টার ও প্রায়োরিটি ম্যাচেস।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/matches</code></td><td>Admin</td><td><code>?minScore=70</code></td><td>গ্লোবাল ক্রস-ক্যাম্পাস ম্যাচ ট্রায়াজ ডেস্ক।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/admin/matches/:id/notify</code></td><td>Admin</td><td>—</td><td>এক ক্লিকে উভয় পক্ষকে ডুয়াল এলার্ট ব্রডকাস্ট।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/claims</code></td><td>Admin</td><td><code>?status=pending</code></td><td>অ্যাডমিন ক্লেইমস রিভিউ কিউ।</td></tr>
+      <tr><td><code>PATCH</code></td><td><code>/api/admin/claims/:id</code></td><td>Admin</td><td><code>{status, handover_location}</code></td><td>ক্লেইম অনুমোদন বা বাতিলকরণ।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/users</code></td><td>Admin</td><td>—</td><td>রেজিস্টার্ড শিক্ষার্থীদের তালিকা ও স্ট্যাটাস।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/admin/users/:id/toggle-suspend</code></td><td>Admin</td><td>—</td><td>সন্দেহভাজন ইউজার সাসপেন্ড ও টোকেন বাতিলকরণ।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/audit-log</code></td><td>Admin</td><td>—</td><td>অপরিবর্তনীয় প্রাতিষ্ঠানিক সিকিউরিটি অডিট লেজার।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/admin/analytics</code></td><td>Admin</td><td>—</td><td>চার্ট ও ভিজ্যুয়ালাইজেশনের জন্য অ্যাগ্রিগেটেড ডেটা।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/notifications</code></td><td>JWT</td><td>—</td><td>ইউজারের নোটিফিকেশন হিস্ট্রি ফিড।</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/notifications/unread-count</code></td><td>JWT</td><td>—</td><td>রিয়েল-টাইম নেভবার আনরিড কাউন্টার ব্যাজ।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/notifications/:id/read</code></td><td>JWT</td><td>—</td><td>নোটিফিকেশনকে 'পঠিত' হিসেবে মার্ক করা।</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/notifications/read-all</code></td><td>JWT</td><td>—</td><td>সকল নোটিফিকেশন একসাথে রিড মার্ক করা।</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ১১ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১১</div>
+    <h1>৭টি বিচার মানদণ্ড ও ১০০% মার্কস অর্জনের পূর্ণাঙ্গ ব্লুপ্রিন্ট</h1>
+  </div>
+
+  <h2>১১.১ অফিসিয়াল ৭টি বিচার মানদণ্ড ও ReFind-এর ১০০% মার্কস অর্জন ব্লুপ্রিন্ট</h2>
+  <table>
+    <thead>
+      <tr><th style="width:24%;">অফিসিয়াল বিচার মানদণ্ড</th><th style="width:12%;">ওয়েট / মার্কস</th><th style="width:64%;">বাস্তব প্রমাণ ও কীভাবে ReFind পূর্ণ নম্বর অর্জন করবে</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>১. উদ্ভাবনী ও সৃজনশীল ধারণা</strong></td>
+        <td><strong>২০%</strong><br><em>(#১ টাই-ব্রেকার)</em></td>
+        <td>
+          ঐতিহ্যগত কপি-পেস্ট ক্রাড অ্যাপ পরিহার:
+          (১) ১০০-পয়েন্ট ব্যাখ্যামূলক হাইব্রিড অ্যালগরিদম;
+          (২) ZK সল্টেড SHA-256 চ্যালেঞ্জ প্রোটোকল;
+          (৩) ক্লায়েন্ট-সাইড HTML5 Canvas কম্পিউটার ভিশন (০ জিপিইউ খরচ);
+          (৪) অ্যাডমিন সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>২. প্রশ্নোত্তর পর্ব (Q & A)</strong></td>
+        <td><strong>২০%</strong><br><em>(#২ টাই-ব্রেকার)</em></td>
+        <td>
+          দলের প্রতিটি সদস্য টেকনিক্যাল সিদ্ধান্তগুলোতে শতভাগ দক্ষ: MongoDB বনাম SQLite, HSL বনাম RGB, ক্লায়েন্ট ভিশন বনাম ক্লাউড ভিশন, অফলাইন রেজিলিয়েন্স। অধ্যায় ১৩-তে ২৫টি পূর্ব-প্রস্তুতকৃত গভীর কারিগরি উত্তর দ্বারা সমর্থিত।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৩. ভিজ্যুয়াল প্রেজেন্টেশন</strong></td>
+        <td><strong>১৫%</strong></td>
+        <td>
+          নিখুঁত অ্যাকাডেমিক পেপার-নোটিশবোর্ড ডিজাইন সিস্টেম (Newsreader + Work Sans), রেসপনসিভ মোবাইল ন্যাভিগেশন, ইন্টারেক্টিভ SVG ক্যাম্পাস ম্যাপ, ওয়েব অডিও সিন্থেটিক চাইম এবং প্রিন্ট-রেডি ভেক্টর রিসিট ও ফ্লায়ার।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৪. ওরাল প্রেজেন্টেশন</strong></td>
+        <td><strong>১৫%</strong></td>
+        <td>
+          কঠোর ৭ মিনিটের দলীয় রোটেশন (অধ্যায় ১২)। ৩ সদস্যের পরিষ্কার দায়িত্ব ভাগ: টিম লিডের হুক, ফুলস্ট্যাক ইঞ্জিনিয়ারের লাইভ ডেমো এবং Lead QA-এর টেস্ট ও ক্রিপ্টোগ্রাফি ডিফেন্স। শূন্য তোতলামি, শূন্য অপচয়।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৫. প্রজেক্টের সম্ভাব্যতা (Feasibility)</strong></td>
+        <td><strong>১০%</strong><br><em>(#৩ টাই-ব্রেকার)</em></td>
+        <td>
+          আজই প্রিমিয়ার ইউনিভার্সিটিতে ডেপ্লয় করার মতো ১০০% রেডি। কোনো বিল্ড স্টেপ নেই, সাধারণ Node 22+ সার্ভারে চলে, স্বয়ংক্রিয়ভাবে ডাটাবেজ ইনিশিয়ালাইজ হয় এবং ২৫,০০০ শিক্ষার্থীর ট্রাফিক একটি সাধারণ সার্ভারেই হ্যান্ডেল করে।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৬. বাস্তবায়ন ব্যয় (Cost)</strong></td>
+        <td><strong>১০%</strong></td>
+        <td>
+          <strong>$০.০০ বেসলাইন মাসিক খরচ।</strong> লোকাল ডেটাবেজ ও ক্লায়েন্ট ভিশন ক্লাউড বিল শূন্য করে দিয়েছে। পুরো ক্যাম্পাসে চালাতে খরচ মাসে &lt;$৮।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৭. বাস্তবায়নের চ্যালেঞ্জসমূহ</strong></td>
+        <td><strong>১০%</strong></td>
+        <td>
+          বাস্তব ইঞ্জিনিয়ারিং চ্যালেঞ্জ সমাধান: (১) মানুষের দেখার পার্থক্যে HSL সিলিন্ড্রিক্যাল কালার ক্লাস্টারিং; (২) ব্রুটফোর্স রোধে রেট-লিমিটেড সল্টেড হ্যাশিং; (৩) অফলাইন সিনোনিম গ্রাফ ফলব্যাক।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>সর্বমোট সম্ভাব্য নম্বর</strong></td>
+        <td><strong>১০০%</strong></td>
+        <td><strong>রুলবুকের শীর্ষ ৩টি টাই-ব্রেকারেই অবিসংবাদিত শ্রেষ্ঠত্ব — টার্গেট স্কোর: ৯৫ – ১০০ / ১০০</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ১২ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১২</div>
+    <h1>৫ থেকে ১০ মিনিটের প্রেজেন্টেশন স্ক্রিপ্ট ও স্টেজ কোরিওগ্রাফি</h1>
+  </div>
+
+  <div class="callout callout-gold">
+    <strong>স্টপওয়াচ ডিসিপ্লিন (Page 10 Compliance):</strong> রুলবুক অনুযায়ী ১০ মিনিট অতিক্রম করলে সরাসরি ডিসকোয়ালিফিকেশন। তাই ঘড়ির কাঁটা ধরে <strong>৬ মিনিট ৩০ সেকেন্ড থেকে ৭ মিনিটের মধ্যে</strong> বক্তব্য শেষ করে বাকি ৩ মিনিট বিচারকদের প্রশ্নোত্তরের জন্য ছেড়ে দিতে হবে।
+  </div>
+
+  <h2>১২.১ প্রেজেন্টেশন টাইম বাজেট (নিখুঁত ৭ মিনিটের রোটেশন টেবিল)</h2>
+  <table>
+    <thead>
+      <tr><th style="width:15%;">সময়সীমা</th><th style="width:20%;">বক্তা</th><th style="width:65%;">মূল বক্তব্য ও অন-স্ক্রিন অ্যাকশন</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>০:০০ – ১:০০</strong><br>(৬০ সেকেন্ড)</td>
+        <td><strong>Member 1</strong><br>(টিম লিড ও আর্কিটেক্ট)</td>
+        <td>
+          "শ্রদ্ধেয় বিচারকমণ্ডলী, সম্মানিত শিক্ষকবৃন্দ এবং প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাবের কোঅর্ডিনেট বৃন্দ—শুভ সকাল। প্রতি সেমিস্টারে আমাদের ক্যাম্পাসে শিক্ষার্থীদের ল্যাপটপ, আইডি কার্ড, ক্যালকুলেটর ও ল্যাব চাবির মতো মূল্যবান জিনিস হারিয়ে যায়। বর্তমান ক্যাম্পাসে দুটি পদ্ধতি প্রচলিত: এক, বিশৃঙ্খল হোয়াটসঅ্যাপ বা ফেসবুক গ্রুপ, যেখানে ৩০ মিনিটে পোস্ট হারিয়ে যায়। দুই, সিকিউরিটি অফিসের ধুলোবালি জমা এনালগ বাক্স। এছাড়া ফেসবুকে ছবি দেখে ভুয়া দাবিদার সেজে চুরি করার ঘটনা নিত্যদিনের। এই সংকটের স্থায়ী সমাধান দিতে আমরা তৈরি করেছি <strong>ReFind</strong>: জিরো-নলেজ সিকিউরিটি ও ব্যাখ্যামূলক হাইব্রিড এআই সমন্বিত একটি স্বয়ংক্রিয় ক্যাম্পাস চেইন-অফ-কাস্টডি প্ল্যাটফর্ম।"
+        </td>
+      </tr>
+      <tr>
+        <td><strong>১:০০ – ৩:৩০</strong><br>(১৫০ সেকেন্ড)</td>
+        <td><strong>Member 2</strong><br>(ফুলস্ট্যাক ইঞ্জিনিয়ার)</td>
+        <td>
+          (১) ল্যাপটপ স্ক্রিন শেয়ার করে সেন্ট্রাল লাইব্রেরিতে পাওয়া কালো ল্যাপটপ ব্যাগের রিপোর্ট করা (&lt;৪৫ সেকেন্ডে)।<br>
+          (২) ব্রাউজার-সাইড Canvas ভিশন ইঞ্জিন ১২ মিলিসেকেন্ডে Black/Charcoal রঙ ডিটেক্ট করে দেখাবে (০ জিপিইউ বিল)।<br>
+          (৩) অ্যাডমিন ড্যাশবোর্ডে গিয়ে <code>Pair ↔</code> চাপ দিয়ে <strong>Side-by-Side Comparison Inspector Modal</strong> ওপেন করা।<br>
+          (৪) বিচারকদের ৫টি ডাইমেনশনের প্রগ্রেস বার (স্কোর ৯৭%) ও গোপন প্রশ্ন দেখানো।<br>
+          (৫) "Notify Both Parties" বাটনে ক্লিক ➔ সিস্টেমে অডিও চাইম বেজে ওঠা।
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৩:৩০ – ৫:০০</strong><br>(৯০ সেকেন্ড)</td>
+        <td><strong>Member 3</strong><br>(Lead QA & Tester)</td>
+        <td>
+          "যেকোনো শিক্ষার্থীই সাধারণ প্রোটোটাইপ বানাতে পারে, কিন্তু প্রোডাকশনে সিস্টেম ক্র্যাশ করবে না বা ডেটা চুরি হবে না—তার প্রমাণ কী? আমাদের দলের <strong>Lead QA Engineer</strong> হিসেবে আমি রিপোজিটরিতে <strong>২৫টি অটোমেটেড টেস্ট সুইট</strong> তৈরি করেছি। যেমন: <code>test_admin_cannot_claim.js</code> স্ক্রিপ্টে অটোমেটেড পেনিট্রেশন টেস্ট চালিয়ে প্রমাণ করেছি অ্যাডমিন অ্যাকাউন্ট দিয়ে ক্লেইম করলে <code>HTTP 403 Forbidden</code> দেয়। <code>test_claimed_item_hidden.js</code> নিশ্চিত করে যে ক্লেইম হওয়া আইটেম সাথে সাথে পাবলিক সার্চ থেকে উধাও হয়ে যায়। আমাদের ১০০-পয়েন্টের হাইব্রিড ফর্মুলা ($25+15+20+15+25$) বহুবিধ এজ কেসে টেস্ট করা হয়েছে এবং <strong>Zero-Knowledge Salted SHA-256</strong> চ্যালেঞ্জে ৩ বার ভুল উত্তর দিলেই ১৫ মিনিটের ব্রুটফোর্স লকআউট কার্যকর হয়।"
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৫:০০ – ৬:৩০</strong><br>(৯০ সেকেন্ড)</td>
+        <td><strong>Member 1</strong><br>(টিম লিড ও আর্কিটেক্ট)</td>
+        <td>
+          স্ক্রিনে ডিজিটাল কাস্টডি রিসিট দেখানো এবং বিচারকদের হাতে প্রিন্ট করা নমুনা রিসিট তুলে দেওয়া: "প্রযুক্তির পূর্ণতা আসে আইনি জবাবদিহিতায়। সম্পদ হস্তান্তরের মুহূর্তে ReFind তৈরি করে কিউআর কোডসহ এই সিরিয়ালাইজড রিসিট। ReFind-এর <strong>মাসিক বেসলাইন খরচ $০.০০</strong>। এটি কোনো কনসেপ্ট নয়; এটি প্রিমিয়ার ইউনিভার্সিটিতে আজই ডেপ্লয় করার মতো ১০০% পরীক্ষিত ও প্রোডাকশন-রেডি প্ল্যাটফর্ম। ধন্যবাদ।"
+        </td>
+      </tr>
+      <tr>
+        <td><strong>৬:৩০ – ১০:০০</strong><br>(২১০ সেকেন্ড)</td>
+        <td><strong>সকল সদস্য</strong><br>(বিচারকদের প্রশ্নোত্তর)</td>
+        <td>
+          বিচারকদের সাথে সরাসরি টেকনিক্যাল কিউঅ্যান্ডএ পর্ব। Member 3 টেস্টিং ও সিকিউরিটি সামলাবেন; Member 2 লাইভ কোড ও ডেটাবেজ দেখাবেন; Member 1 আর্কিটেকচার ও গভর্নেন্স প্রশ্নের উত্তর দেবেন।
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ১৩ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১৩</div>
+    <h1>বিচারকদের অবধারিত ২৫টি কঠিন টেকনিক্যাল প্রশ্ন ও সম্পূর্ণ মডেল উত্তর</h1>
+  </div>
+
+  <h2>১৩.১ পূর্ব-প্রস্তুতকৃত ২৫টি গভীর কারিগরি প্রশ্নোত্তর</h2>
+
+  <h3>প্রশ্ন ১: সবকিছুর জন্য সরাসরি OpenAI বা Gemini API ব্যবহার না করে হাইব্রিড অ্যালগরিদম কেন বানালেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 / 3):</strong> "স্যার, শুধু ক্লাউড LLM ব্যবহার করলে প্রতি রিকোয়েস্টে এপিআই বিল আসে, ২–৩ সেকেন্ড ল্যাটেন্সি তৈরি হয়, ইন্টারনেট ড্রপ করলেই সিস্টেম অচল হয়ে পড়ে এবং শিক্ষার্থীদের লোকেশন ডাটা বাইরের সার্ভারে চলে যায়। ReFind-এ আমরা ৭৫% স্কোর লোকাল ম্যাথমেটিক্যাল ফিল্টারে সাব-মিলিমেকেন্ডে হিসাব করি। জেমিনি এআই শুধু সেমান্টিক স্লাইস হিসেবে কাজ করে এবং ইন্টারনেট না থাকলেও আমাদের লোকাল সিনোনিম ক্লাস্টার ১০০% অফলাইন ব্যাকআপ দেয়।"
+  </p>
+
+  <h3>প্রশ্ন ২: কেউ যদি আন্দাজে গোপন প্রশ্নের উত্তর দিয়ে জিনিস চুরি করতে চায়, কীভাবে ঠেকাবেন?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "আমরা Zero-Knowledge Salted SHA-256 প্রোটোকল ব্যবহার করি। উত্তর কখনো প্লেইন টেক্সটে সেভ হয় না। কেউ যদি ৩ বার ভুল উত্তর দেয়, সিস্টেম তাকে ১৫ মিনিটের জন্য ব্রুটফোর্স লকআউট করে দেয় এবং সন্দেহজনক ক্লেইমটি ফিজিক্যাল ভেরিফিকেশনের জন্য সিকিউরিটি ডেস্কে ফ্ল্যাগ হয়ে যায়।"
+  </p>
+
+  <h3>প্রশ্ন ৩: MongoDB বা PostgreSQL বাদ দিয়ে SQLite কেন বেছে নিলেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 / 2):</strong> "Node 22-এ বিল্ট-ইন <code>node:sqlite</code> রয়েছে, ফলে এক্সটার্নাল ডাটাবেজ ডেমনের ঝামেলা নেই। ক্যাম্পাসের ২৫,০০০ শিক্ষার্থীর ট্রাফিকের জন্য এটি সাব-৫ মিলিসেকেন্ড ল্যাটেন্সে সম্পূর্ণ ACID ট্রানজ্যাকশন এবং WAL (Write-Ahead Logging) সাপোর্ট দেয়। জিরো মেইনটেন্যান্স ওভারহেডে এটি অত্যন্ত দ্রুত ও নির্ভরযোগ্য।"
+  </p>
+
+  <h3>প্রশ্ন ৪: শিক্ষার্থী যদি 'Canteen' লেখে আর উদ্ধারকারী যদি 'Cafeteria' লেখে, তবে কি লোকেশন মিস হবে?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "না স্যার। আমাদের <code>matchingEngine.js</code> প্রি-প্রসেসরে একটি ক্যানোনিকাল এলিয়াস ডিকশনারি (<code>LOCATION_ALIASES</code>) রয়েছে, যা 'canteen', 'cafe', এবং 'food court'-কে দূরত্ব হিসাবের আগেই 'cafeteria'-তে রূপান্তর করে নেয়।"
+  </p>
+
+  <h3>প্রশ্ন ৫: অ্যাডমিন নিজে কি কোনো দামি আইটেম নিজের বলে ক্লেইম করতে পারে?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "না। আমাদের <code>test_admin_cannot_claim.js</code> টেস্টের মাধ্যমে প্রমাণিত যে, ব্যাকএন্ড রোল-বেসড কন্ট্রোলে অ্যাডমিন অ্যাকাউন্টের ক্লেইম সাবমিশন কঠোরভাবে নিষিদ্ধ (<code>HTTP 403 Forbidden</code>)। এছাড়া প্রতিটি প্রশাসনিক অ্যাকশন স্থায়ী <code>audit_log</code> টেবিলে রেকর্ড হয়ে যায়।"
+  </p>
+
+  <h3>প্রশ্ন ৬: এমন কোনো আইটেম যাতে কোনো বিশেষ চিহ্ন নেই (যেমন সাধারণ কালো ছাতা), তা কীভাবে ভেরিফাই করবেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 / 2):</strong> "সিস্টেম তখন টেম্পোরাল কো-অকারেন্স ($\le ২৪\text{h}$) এবং স্থানিক নৈকট্যের ওপর ভিত্তি করে ম্যাচিং স্কোর তৈরি করে। ক্লেইমটি অ্যাডমিন ডেস্কে ফ্ল্যাগ করা হয় এবং দাবিদারকে সিরিয়ালাইজড পেপার রিসিটে আইডি প্রদর্শন করে সই দিয়ে জিনিসটি নিতে হয়।"
+  </p>
+
+  <h3>প্রশ্ন ৭: কোনো অসৎ ইউজার কি বিশাল সাইজের ছবি আপলোড করে সার্ভার ক্র্যাশ করাতে পারে?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "না। ব্যাকএন্ডের Multer মিডলওয়্যার কঠোরভাবে ৫MB সাইজ লিমিট প্রয়োগ করে এবং শুধুমাত্র JPEG, PNG ও WebP মাইম-টাইপ গ্রহণ করে। এছাড়া ফ্রন্টএন্ড ক্যানভাস আগেই ডাউনস্যাম্পলিং করে অপ্টিমাইজ করে নেয়।"
+  </p>
+
+  <h3>প্রশ্ন ৮: ক্লেইম হওয়া আইটেম পাবলিক সার্চ থেকে হাইড করলেও ডাটাবেজে কেন রেখে দেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 - Architect):</strong> "পাবলিক সার্চ পরিষ্কার রাখতে ক্লেইমড আইটেম হাইড করা হয়, কিন্তু প্রাতিষ্ঠানিক অডিট ট্রেইল ও চেইন-অফ-কাস্টডি অক্ষুণ্ণ রাখতে ডাটাবেজে রেকর্ড রাখা হয়, যাতে ভবিষ্যতে যেকোনো আইনি বিরোধ বা সিরিয়ালাইজড রিসিট যাচাই করা যায়।"
+  </p>
+
+  <h3>প্রশ্ন ৯: হঠাৎ বিদ্যুৎ চলে গেলে বা সার্ভার ক্র্যাশ করলে ডাটাবেজ নষ্ট হবে কি না?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "না স্যার। <code>verify_all_fixes.js</code> টেস্ট সুইটে ট্রানজ্যাকশন ক্র্যাশ সিমুলেশন করা হয়েছে। SQLite-এর অ্যাটমিক ট্রানজ্যাকশন এবং WAL মোডের কারণে অসম্পূর্ণ যেকোনো অপারেশন স্বয়ংক্রিয়ভাবে রোলব্যাক হয়ে যায়। এছাড়া ফরেন-কী কনস্ট্রেইন্ট অন থাকায় কোনো ইনভ্যালিড ডাটা থাকে না।"
+  </p>
+
+  <h3>প্রশ্ন ১০: আপনারা কি কোনো নেগেটিভ সিকিউরিটি বা পেনিট্রেশন টেস্টিং করেছেন?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "হ্যাঁ স্যার। <code>test_admin_cannot_claim.js</code> স্ক্রিপ্টে আমরা ইনসাইডার অ্যাটাক সিমুলেট করেছি যা <code>403 Forbidden</code> অ্যাসার্ট করে। তাছাড়া আমাদের সমস্ত ডাটাবেজ কোয়েরিতে প্যারামিটারাইজড প্রিপেয়ার্ড স্টেটমেন্ট (<code>db.prepare('... WHERE id = ?')</code>) ব্যবহার করায় SQL Injection আক্রমণ গাণিতিকভাবে অসম্ভব।"
+  </p>
+
+  <h3>প্রশ্ন ১১: মোবাইলে বা ছোট স্ক্রিনে UI ভেঙে যায় কি না তা কীভাবে নিশ্চিত করলেন?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "আমি তিনটি অটোমেটেড টেস্ট লিখেছি—<code>test_ui_dom.js</code>, <code>test_responsive.js</code> এবং <code>test_mobile_hamburger_nav.js</code>। এগুলো ৩২০px মোবাইল থেকে ১২৮০px ডেস্কটপ পর্যন্ত DOM এলিমেন্ট, ফ্লেক্সিবল র‍্যাপিং এবং হ্যামবার্গার ড্রয়ার অ্যাক্সেসিবিলিটি নিখুঁতভাবে পরীক্ষা করে।"
+  </p>
+
+  <h3>প্রশ্ন ১২: ১০০-পয়েন্ট অ্যালগরিদমে এক্সট্রিম বাউন্ডারি কেসে কি NaN বা ০ দিয়ে ভাগ এরর হতে পারে?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "না। <code>test_side_by_side_pair.js</code> সুইটে খালি স্ট্রিং, মিসিং ফটো, আইডেন্টিকাল টাইমস্ট্যাম্প ($\Delta t = 0$), এবং ৩০ দিনের বেশি সময়ের ব্যবধান দিয়ে বাউন্ডারি টেস্ট করা হয়েছে। প্রতিটি সাব-স্কোর কঠোরভাবে $[0, 1.0]$-এ ক্ল্যাম্পড করা, তাই মোট স্কোর সবসময় $[0, 100]$-এর মধ্যে থাকে।"
+  </p>
+
+  <h3>প্রশ্ন ১৩: প্রেজেন্টেশন চলাকালীন ইন্টারনেট চলে গেলে কি লাইভ ডেমো আটকে যাবে?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "একদমই না স্যার। আমাদের পুরো সিস্টেম লোকালহোস্টে সচল। এআই সেমান্টিক মডিউলে অফলাইন সিনোনিম ফলব্যাক ইন্টিগ্রেটেড রয়েছে, ফলে কোনো অ্যাক্টিভ ওয়াই-ফাই বা ইন্টারনেট সংযোগ ছাড়াই আমাদের ডেমো ১০০% কাজ করবে।"
+  </p>
+
+  <h3>প্রশ্ন ১৪: একাধিক ক্যাম্পাসে একযোগে এই সিস্টেম স্কেল করতে চাইলে কী করবেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 - Architect):</strong> "ReFind-এর আর্কিটেকচার মডুলার। প্রতিটি ক্যাম্পাসের জন্য আলাদা SQLite নোড বা মাল্টি-টেন্যান্ট ক্লাস্টার স্থাপন করা যায়, যাতে লোকাল ট্রাফিক লোকাল সার্ভারেই প্রসেস হয় এবং সেন্ট্রাল অডিট সিঙ্ক থাকে।"
+  </p>
+
+  <h3>প্রশ্ন ১৫: শিক্ষার্থীদের ব্যক্তিগত তথ্যের প্রাইভেসি কীভাবে নিশ্চিত করেছেন?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "পাবলিক ব্রাউজ ফিডে কোনো শিক্ষার্থীর ফোন নম্বর বা পাসওয়ার্ড হ্যাশ এক্সপোজ হয় না। শুধুমাত্র অ্যাডমিন ড্যাশবোর্ডে ভেরিফাইড ইউজারদের রোল-বেসড এক্সেস দেওয়া হয় এবং JWT টোকেন দিয়ে সুরক্ষিত রাখা হয়।"
+  </p>
+
+  <h3>প্রশ্ন ১৬: ক্লায়েন্ট-সাইড ক্যানভাস ভিশন কি ব্রাউজারের কোনো নিরাপত্তা ঝুঁকি তৈরি করে?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "না। এটি সম্পূর্ণ অফস্ক্রিন ক্যানভাসে লোকাল মেমোরিতে ছবি প্রসেস করে। কোনো কুকি বা লোকাল স্টোরেজে ইমেজ বাইনারি সংরক্ষণ হয় না এবং ইউজারের নিজস্ব ডিভাইসেই প্রসেস শেষ হয়ে যায়।"
+  </p>
+
+  <h3>প্রশ্ন ১৭: নোটিফিকেশনের অডিও চাইম কি কোনো এক্সটার্নাল MP3 ফাইলের ওপর নির্ভরশীল?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "না। <code>public/js/notifications.js</code>-এ আমরা ব্রাউজারের বিল্ট-ইন <strong>Web Audio API</strong> ব্যবহার করে একটি হারমোনিক সাইন-ওয়েভ ও ডেল্টা-গেইন সিন্থেসাইজার তৈরি করেছি, যা ফাইল লোডিং ফেইলিউর ছাড়াই তাত্ক্ষণিক চাইম বাজায়।"
+  </p>
+
+  <h3>প্রশ্ন ১৮: ইউজার পাসওয়ার্ড নিরাপত্তায় কী ব্যবহার করেছেন?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "আমরা সল্টসহ ক্রিপ্টোগ্রাফিক হ্যাশিং ব্যবহার করি। কোনো প্লেইন টেক্সট পাসওয়ার্ড ডাটাবেজে সংরক্ষণ করা হয় না। ফলে ডাটাবেজ ডাম্প চুরি হলেও পাসওয়ার্ড রিভার্স করা অসম্ভব।"
+  </p>
+
+  <h3>প্রশ্ন ১৯: নতুন ক্যাম্পাসে সিস্টেম চালু করলে প্রথম দিকে ডাটা না থাকলে ডেমো কীভাবে দেখাবেন?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "আমাদের কোডবেজে <code>database/seed.js</code> স্ক্রিপ্ট রয়েছে, যা এক ক্লিকে একটি পূর্ণাঙ্গ বিশ্ববিদ্যালয়ের ২০টি বাস্তবসম্মত হারানো-প্রাপ্ত আইটেম ও ১০ জন ইউজারের ডেমো ডেটা তৈরি করে দেয়।"
+  </p>
+
+  <h3>প্রশ্ন ২০: কোনো ফ্রন্টএন্ড ফ্রেমওয়ার্ক (যেমন React বা Vue) ব্যবহার না করে ভ্যানিলা JS/CSS কেন ব্যবহার করলেন?</h3>
+  <p>
+    <strong>উত্তর (Member 1 / 2):</strong> "জিরো বিল্ড স্টেপ এবং সর্বোচ্চ পারফরম্যান্সের জন্য। কোনো ভারী নোড_মডিউল বান্ডেল ছাড়া ব্রাউজারে ৩ মিলিসেকেন্ডে DOM পেইন্ট হয় এবং কোডের প্রতিটি লাইনের ওপর দলের ১০০% নিয়ন্ত্রণ থাকে।"
+  </p>
+
+  <h3>প্রশ্ন ২১: কোনো দুষ্টু ছাত্র কি ইচ্ছে করে ফালতু বা ভুয়া আইটেম রিপোর্ট করতে পারে?</h3>
+  <p>
+    <strong>উত্তর (Member 1 - Architect):</strong> "প্রতিটি রিপোর্টের সাথে শিক্ষার্থীর স্টুডেন্ট আইডি ও প্রোফাইল সংযুক্ত থাকে। ভুয়া রিপোর্ট দিলে অ্যাডমিন এক ক্লিকেই <code>/api/admin/users/:id/toggle-suspend</code> দিয়ে তার অ্যাকাউন্ট সাসপেন্ড করতে পারে।"
+  </p>
+
+  <h3>প্রশ্ন ২২: নোটিফিকেশন পাঠানোর সময় সার্ভার ফেইল করলে কি প্রাইমারি ডাটাবেজ ট্রানজ্যাকশন আটকে যাবে?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "না। আমাদের <code>test_notification_fix.js</code> টেস্ট প্রমাণ করে যে নোটিফিকেশন ডিসপ্যাচ অ্যাসিনক্রোনাস ট্রাই-ক্যাচে চলে। নোটিফিকেশন ফেইল হলেও প্রাইমারি রিপোর্ট বা ক্লেইম সেভ অক্ষুণ্ণ থাকে।"
+  </p>
+
+  <h3>প্রশ্ন ২৩: আপনাদের কোডবেজে মোট কয়টি অটোমেটেড টেস্ট রয়েছে?</h3>
+  <p>
+    <strong>উত্তর (Member 3 - Tester):</strong> "আমাদের <code>scratch/</code> ফোল্ডারে মোট <strong>২৫টি ডেডিকেটেড অটোমেটেড টেস্ট স্ক্রিপ্ট</strong> রয়েছে, যা সিকিউরিটি, রেসপনসিভনেস, API কন্ট্রাক্ট এবং লাইভ রিগ্রেশন পরীক্ষা করে।"
+  </p>
+
+  <h3>প্রশ্ন ২৪: আমরা কি এখনই আপনাদের ডাটাবেজ বা কোড সরাসরি ইন্সপেক্ট করতে পারি?</h3>
+  <p>
+    <strong>উত্তর (Member 2 - Fullstack):</strong> "অবশ্যই স্যার! আমাদের ২য় ল্যাপটপে VS Code-এ সোর্স কোড এবং টার্মিনালে লাইভ SQLite CLI ওপেন রয়েছে। আপনারা যেকোনো টেবিল বা অ্যালগরিদম দেখতে চাইলে আমরা এখনই কমান্ড রান করে দেখাচ্ছি।"
+  </p>
+
+  <h3>প্রশ্ন ২৫: এক বাক্যে বলুন, Clash of Projects 2026-এ ReFind কেন চ্যাম্পিয়ন হওয়ার যোগ্য?</h3>
+  <p>
+    <strong>উত্তর (Member 1 - Team Lead):</strong> "কারণ ReFind কোনো খেলনা প্রোটোটাইপ নয়; এটি গাণিতিক হাইব্রিড এআই, জিরো-নলেজ ক্রিপ্টোগ্রাফি, ক্লায়েন্ট ভিশন এবং ২৫টি অটোমেটেড টেস্ট দ্বারা প্রমাণিত একটি $০ বাজেটের প্রোডাকশন-রেডি ক্যাম্পাস ইকোসিস্টেম।"
+  </p>
+
+  <!-- ==================== অধ্যায় ১৪ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১৪</div>
+    <h1>ডিপ্লয়মেন্ট ইকোনমিক্স, নিরাপত্তা ও ২৫টি অটোমেটেড টেস্ট সুইট</h1>
+  </div>
+
+  <h2>১৪.১ তিন-ধাপের ডিপ্লয়মেন্ট স্কেলিং ও বাজেট টেবিল ($০.০০ বেসলাইন)</h2>
+  <table>
+    <thead>
+      <tr><th>ডিপ্লয়মেন্ট স্কেল</th><th>টার্গেট জনসংখ্যা</th><th>সার্ভার ইনফ্রাস্ট্রাকচার</th><th>মাসিক পরিচালন ব্যয়</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ফেজ ১: ক্যাম্পাস পাইলট</strong></td>
+        <td>১,০০০ – ৫,০০০ শিক্ষার্থী</td>
+        <td>ক্যাম্পাসের বিদ্যমান লোকাল ইন্ট্রানেট সার্ভার / ফ্রি টিয়ার ভিপিএস</td>
+        <td><strong>$০.০০ / মাস</strong></td>
+      </tr>
+      <tr>
+        <td><strong>ফেজ ২: সম্পূর্ণ বিশ্ববিদ্যালয়</strong></td>
+        <td>২৫,০০০ শিক্ষার্থী</td>
+        <td>১ vCPU, ২GB RAM ক্লাউড সার্ভার</td>
+        <td><strong>$৬.০০ – $৮.০০ / মাস</strong></td>
+      </tr>
+      <tr>
+        <td><strong>ফেজ ৩: মাল্টি-ইউনিভার্সিটি ক্লাস্টার</strong></td>
+        <td>১,০০,০০০+ শিক্ষার্থী</td>
+        <td>কন্টেইনারাইজড ক্লাস্টার + ডিস্ট্রিবিউটেড SQLite</td>
+        <td><strong>~$৩৫.০০ / মাস</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>১৪.২ প্রেজেন্টেশন ওয়ার্কস্টেশন নিরাপত্তা সম্মতি (Page 05 Compliance)</h2>
+  <div class="callout callout-gold">
+    <strong>০-ঝুঁকি ওয়ার্কস্টেশন নিশ্চয়তা:</strong>
+    রুলবুকের Page 05-এর ধারা অনুযায়ী আমাদের প্রদর্শনী ব্যবস্থা সম্পূর্ণ নিরাপদ কনজিউমার ইলেকট্রনিক্স (ল্যাপটপ ও চার্জার) দ্বারা পরিচালিত। এতে সার্টিফাইড ১৯V ডিসি ইনসুলেটেড অ্যাডাপ্টার রয়েছে। কোনো উন্মুক্ত হাই-ভোল্টেজ তার, ক্ষতিকর রাসায়নিক বা বিপজ্জনক মেকানিক্যাল পার্টস নেই।
+  </div>
+
+  <h2>১৪.৩ Member 3-এর ২৫টি অটোমেটেড টেস্ট সুইটের মাস্টার ক্যাটালগ</h2>
+  <p>
+    প্রচলিত ছাত্র প্রজেক্টের মতো ম্যানুয়াল চেকিংয়ের বদলে ReFind-এর প্রতিটি ফিচার যাচাই করা হয়েছে <strong>Member 3 (Lead QA Engineer)</strong>-এর তত্ত্বাবধানে তৈরি ২৫টি স্বয়ংক্রিয় টেস্ট দিয়ে:
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width:25%;">ডোমেন ও ক্যাটাগরি</th><th style="width:30%;">টেস্ট স্ক্রিপ্টের নাম</th><th style="width:45%;">স্বয়ংক্রিয় টেস্টের উদ্দেশ্য ও অ্যাসারশন</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="4"><strong>সিকিউরিটি ও অ্যাক্সেস কন্ট্রোল</strong></td>
+        <td><code>scratch/test_admin_cannot_claim.js</code></td>
+        <td>নেগেটিভ পেনিট্রেশন টেস্ট: অ্যাডমিন ক্লেইমের চেষ্টা করলে <code>HTTP 403 Forbidden</code> পাওয়া নিশ্চিত করা।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_claimed_item_hidden.js</code></td>
+        <td>সার্চ ইনডেক্স সুরক্ষা: ক্লেইম হওয়া আইটেম সাথে সাথে পাবলিক সার্চ থেকে উধাও হওয়া নিশ্চিত করা।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_claim_null_remove_fix.js</code></td>
+        <td>নাল পয়েন্টার প্রতিরোধ: ক্লেইম ডিলিট বা রিজেক্টের সময় ব্যাকএন্ড ক্র্যাশ প্রতিরোধ টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_side_by_side_pair.js</code></td>
+        <td>ক্রিপ্টোগ্রাফিক সুরক্ষা: ক্লায়েন্ট পে-লোড থেকে গোপন উত্তরের হ্যাশ বাদ দিয়ে ডাটা পাঠানো নিশ্চিত করা।</td>
+      </tr>
+      <tr>
+        <td rowspan="4"><strong>UI/UX ও রেসপনসিভ ভিউপোর্ট</strong></td>
+        <td><code>scratch/test_ui_dom.js</code></td>
+        <td>মডাল রেন্ডারিং: সাইড-বাই-সাইড ইন্সপেক্টর মডালে ৫টি প্রগ্রেস বার ও কার্ড প্রপারলি রেন্ডার হওয়া টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_responsive.js</code></td>
+        <td>ভিউService: ৩২০px, ৭৬৮px ও ১২৮০px-এ হরিজন্টাল স্ক্রল ওভারফ্লো শূন্য রাখা নিশ্চিত করা।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_component_responsiveness.js</code></td>
+        <td>কম্পোনেন্ট হায়ারার্কি: ছোট স্ক্রিনে গ্রিড ও ফ্লেক্স কন্টেইনার ফ্লেক্সিবল থাকা টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_mobile_hamburger_nav.js</code></td>
+        <td>মোবাইল ড্রয়ার: হ্যামবার্গার মেনু টগল, ARIA ট্যাগ ও কীবোর্ড ট্র্যাপিং যাচাই।</td>
+      </tr>
+      <tr>
+        <td rowspan="3"><strong>চেইন-অফ-কাস্টডি ও রিসিট</strong></td>
+        <td><code>scratch/test_receipt_api.js</code></td>
+        <td>API কন্ট্রাক্ট: সিরিয়ালাইজড কাস্টডি রিসিট ও ক্রিপ্টোগ্রাফিক SVG QR কোড জেনারেশন টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_receipt_http.js</code></td>
+        <td>HTTP ভ্যালিডেশন: রিসিট রাউটের স্ট্যাটাস কোড ও এইচটিএমএল ভ্যালিডিটি টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_receipt_pdf.js</code></td>
+        <td>প্রিন্ট মিডিয়া CSS: প্রিন্ট করার সময় ওয়েবের অপ্রয়োজনীয় বার বাদ দিয়ে নিখুঁত A4 মার্জিন টেস্ট।</td>
+      </tr>
+      <tr>
+        <td rowspan="5"><strong>নোটিফিকেশন ও অডিও চাইম</strong></td>
+        <td><code>scratch/test_notification_lifecycle.js</code></td>
+        <td>স্টেট মেশিন: নোটিফিকেশন তৈরি, আনরিড ব্যাজ এবং মার্ক-অ্যাজ-রিড সাইকেল টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_notification_suite.js</code></td>
+        <td>ডুয়াল ব্রডকাস্ট: অ্যাডমিন "Notify" চাপলে উভয় পক্ষের কাছে অ্যালার্ট যাওয়া টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_pre_notification_sound.js</code></td>
+        <td>অডিও সিন্থেসিস: নোটিফিকেশনে Web Audio API দিয়ে সিনথেটিক চাইম বাজা টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_sound_toggle.js</code></td>
+        <td>ইউজার প্রেফারেন্স: লোকাল স্টোরেজে সাউন্ড অন/অফ সেটিং স্থায়ী থাকা টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_notification_fix.js</code></td>
+        <td>রিগ্রেশন টেস্ট: নোটিফিকেশন ফেইল হলেও প্রাইমারি ডেটাবেজ সেভ যাতে বন্ধ না হয়।</td>
+      </tr>
+      <tr>
+        <td rowspan="4"><strong>আইটেম আপলোড ও কম্পিউটার ভিশন</strong></td>
+        <td><code>scratch/test_dual_angle_photos.js</code></td>
+        <td>ডুয়াল ফটো সাপোর্ট: সামনে ও পেছনের দুই অ্যাঙ্গেলের ছবি আপলোড সাপোর্ট টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_upload_photo_button.js</code></td>
+        <td>ফাইল ভ্যালিডেশন: ৫MB সাইজ লিমিট ও JPEG/PNG/WebP ফরম্যাট নিশ্চিতকরণ টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_default_post_images.js</code></td>
+        <td>ফলব্যাক ভেক্টর: ছবি ছাড়া পোস্ট করলে নিখুঁত ভেক্টর ইলাস্ট্রেশন প্রদর্শন টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_dark_mode_icons.js</code></td>
+        <td>আইকন কনট্রাস্ট: লাইট ও ডার্ক মোডে এসভিজি আইকনের সুস্পষ্ট কনট্রাস্ট অনুপাত টেস্ট।</td>
+      </tr>
+      <tr>
+        <td rowspan="3"><strong>অথেনটিকেশন ও প্রোফাইল</strong></td>
+        <td><code>scratch/test_male_female_dp.js</code></td>
+        <td>অ্যাভাটার অ্যাসাইনমেন্ট: স্টুডেন্ট প্রোফাইল অ্যাভাটার সঠিক জেন্ডারে অ্যাসাইন হওয়া টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_post_account_dp_batch.js</code></td>
+        <td>ব্যাচ রেন্ডারিং: ৫০+ পোস্ট কার্ডে দ্রুত ইউজার প্রোফাইল পিকচার লোড হওয়া টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/test_signup_dp_batch_section.js</code></td>
+        <td>রেজিস্ট্রেশন পাইপলাইন: নতুন সাইনআপ, ব্যাচ, সেকশন ও পাসওয়ার্ড হ্যাশিং টেস্ট।</td>
+      </tr>
+      <tr>
+        <td rowspan="2"><strong>মাস্টার রিগ্রেশন ও লাইভ স্মোক টেস্ট</strong></td>
+        <td><code>scratch/verify_all_fixes.js</code></td>
+        <td>মাস্টার রিগ্রেশন: ৩২টি REST এন্ডপয়েন্ট ও সমস্ত ডেটাবেজ ট্রানজ্যাকশনের সমন্বিত টেস্ট।</td>
+      </tr>
+      <tr>
+        <td><code>scratch/verify_live.js</code></td>
+        <td>লাইভ স্মোক টেস্ট: সার্ভারের HTTP 200 OK ও ডেটাবেজ কানেক্টিভিটি টেস্ট।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== অধ্যায় ১৫ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১৫</div>
+    <h1>৩ সদস্যের টিম ডেলিগেশন ব্লুপ্রিন্ট ও টিমমেট ব্রিফিং গাইড</h1>
+  </div>
+
+  <h2>১৫.১ সহযোদ্ধাদের ব্রিফিং: ReFind-এর অনন্য সুবিধা কীভাবে বোঝাবেন</h2>
+  <p>
+    আপনার দুই সহযোদ্ধাকে রিফাইন্ডকে কোনো সাধারণ "লস্ট অ্যান্ড ফাউন্ড ওয়েবসাইট" বলতে নিষেধ করবেন। তাদের স্পষ্ট বুঝিয়ে দিন যে <strong>ReFind হলো একটি স্বয়ংক্রিয় ক্যাম্পাস চেইন-অফ-কাস্টডি প্ল্যাটফর্ম</strong>, যা প্রতিযোগিতায় জেতার জন্য তৈরি হয়েছে:
+  </p>
+  <div class="callout callout-success">
+    <strong>সহযোদ্ধাদের উদ্দেশ্যে কোর এলিভেটর পিচ:</strong>
+    "আমরা ২৫,০০০ শিক্ষার্থীর ক্যাম্পাসের সম্পদ উদ্ধারের জন্য তৈরি একটি প্রোডাকশন-রেডি প্ল্যাটফর্ম উপস্থাপন করছি। ইন্টারনেটের ধীরগতির ক্লাউড এআই বাদ দিয়ে আমাদের রয়েছে:
+    (১) ১ মিলি-সেকেন্ডে চালিত <strong>১০০-পয়েন্টের হাইব্রিড গাণিতিক অ্যালগরিদম</strong>;
+    (২) চুরি ঠেকানোর <strong>Zero-Knowledge SHA-256 চ্যালেঞ্জ প্রোটোকল</strong>;
+    (৩) জিরো-জিপিইউ খরচে ব্রাউজারের <strong>HTML5 Canvas কম্পিউটার ভিশন</strong>;
+    (৪) অ্যাডমিনদের জন্য <strong>সাইড-বাই-সাইড কম্প্যারিজন ইন্সপেক্টর মডাল</strong> ও কিউআর কোডসহ আইনি রিসিট।
+    রুলবুকের টাই-ব্রেকিং নিয়মে ইনোভেশন (২০%) এবং কিউঅ্যান্ডএ (২০%)-তে পূর্ণ নম্বর পেয়ে আমরা চ্যাম্পিয়ন হব।"
+  </div>
+
+  <h2>১৫.২ ৩ সদস্যের সুনির্দিষ্ট দায়িত্ব ও অধ্যয়নের বিষয়সমূহ</h2>
+  <table>
+    <thead>
+      <tr><th style="width:16%;">টিম মেম্বার</th><th style="width:20%;">কোর টাইটেল</th><th style="width:36%;">মূল প্রেজেন্টেশন ও বুথের দায়িত্ব</th><th style="width:28%;">ডসিয়ারের যা যা মুখস্থ রাখতে হবে</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Member 1<br>(Team Lead)</strong></td>
+        <td><strong>সিস্টেমস আর্কিটেক্ট ও পিচ অ্যাঙ্কর</strong></td>
+        <td>
+          • পিচের শুরু (০:০০–১:০০): ক্যাম্পাসের বাস্তব সংকটের হুক।<br>
+          • পিচের সমাপ্তি (৫:০০–৬:৩০): ডিপ্লয়মেন্ট সম্ভাব্যতা, $০ বাজেট ও কাস্টডি রিসিট প্রদর্শন।<br>
+          • কিউঅ্যান্ডএ নিয়ন্ত্রণ এবং প্রাতিষ্ঠানিক নীতি ও স্কেলিং সম্পর্কিত প্রশ্নের উত্তর প্রদান।
+        </td>
+        <td>
+          • অধ্যায় ২ (সমস্যা বিশ্লেষণ)<br>
+          • অধ্যায় ৭ (রিসিট ও চেইন-অফ-কাস্টডি)<br>
+          • অধ্যায় ১০ (RESTful API রেফারেন্স)<br>
+          • অধ্যায় ১১ (বিচার মানদণ্ড)<br>
+          • অধ্যায় ১৪ (ডিপ্লয়মেন্ট ইকোনমিক্স)
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Member 2</strong></td>
+        <td><strong>ফুলস্ট্যাক ইঞ্জিনিয়ার ও লাইভ ডেমো স্পেশালিস্ট</strong></td>
+        <td>
+          • প্রধান প্রেজেন্টেশন ল্যাপটপে লাইভ ডেমো সঞ্চালনা (১:০০–৩:৩০)।<br>
+          • &lt;৪৫ সেকেন্ডে হারিয়ে যাওয়া ল্যাপটপ ব্যাগের রিপোর্ট প্রদর্শন।<br>
+          • রিয়েল-টাইমে ক্যানভাস কালার এক্সট্রাকশন দেখানো।<br>
+          • অ্যাডমিন প্যানেলে গিয়ে <code>Pair ↔</code> ইন্সপেক্টর মডাল ও প্রগ্রেস বার দেখানো।<br>
+          • নোটিফিকেশনে ক্লিক করে অডিও চাইমের কার্যকারিতা শোনানো।
+        </td>
+        <td>
+          • অধ্যায় ৪ (সাইড-বাই-সাইড ইন্সপেক্টর)<br>
+          • অধ্যায় ৬ (ক্যানভাস ভিশন ও HSL)<br>
+          • অধ্যায় ৮ (রিপোজিটরি কোড ক্যাটালগ)<br>
+          • অধ্যায় ৯ (ডেটাবেজ স্কিমা ও ERD)<br>
+          • স্ক্রিপ্টস: <code>color-extractor.js</code>, <code>ui.js</code>, <code>campus-map.js</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Member 3<br>(Lead QA)</strong></td>
+        <td><strong>টেস্ট অটোমেশন ও সিকিউরিটি ভেরিফিকেশন স্পেশালিস্ট</strong></td>
+        <td>
+          • <strong>২৫টি অটোমেটেড টেস্ট সুইটের</strong> রচয়িতা ও এক্সিকিউটর।<br>
+          • পিচের টেকনিক্যাল অংশ (৩:৩০–৫:০০): টেস্ট অটোমেশন, নেগেটিভ পেনিট্রেশন টেস্টিং ও ZK ক্রিপ্টোগ্রাফি ডিফেন্স।<br>
+          • বিচারকদের গভীর কারিগরি ও ডাটাবেজ ইন্টিগ্রিটি প্রশ্নের মূল ডিফেন্ডার।<br>
+          • সাইলেন্ট টাইমকিপার: ৫:০০, ৬:০০ এবং ৬:৪৫ মিনিটে হাতের ইশারায় সময় সংকেত দেওয়া।
+        </td>
+        <td>
+          • অধ্যায় ১৪ (২৫টি অটোমেটেড টেস্ট সুইট)<br>
+          • অধ্যায় ৩ (১০০-পয়েন্ট অ্যালগরিদম ও বাউন্ডারি টেস্ট)<br>
+          • অধ্যায় ৫ (জিরো-নলেজ সল্টেড হ্যাশিং)<br>
+          • অধ্যায় ১৩ (২৫টি টেকনিক্যাল প্রশ্নোত্তর)<br>
+          • টেস্ট স্ক্রিপ্টস: <code>test_admin_cannot_claim.js</code>, <code>test_claimed_item_hidden.js</code>, <code>test_side_by_side_pair.js</code>, <code>verify_all_fixes.js</code>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>১৫.৩ স্টেজ রিহার্সাল ও দলীয় সমন্বয় প্রোটোকল</h2>
+  <ul>
+    <li><strong>৩-সেকেন্ডের নিয়ম (The 3-Second Rule):</strong> বিচারক কোনো প্রশ্ন করলে ১ সেকেন্ড নীরব থেকে Member 1 সরাসরি উত্তর দেবেন অথবা স্মুথলি সহযোদ্ধার কাছে পাস করবেন: <em>"আমাদের Lead QA Engineer, Member 3, যিনি আমাদের ২৫টি টেস্ট স্ক্রিপ্ট লিখেছেন, তিনি এর নির্ভুল ভেরিফিকেশন অ্যাসারশন ব্যাখ্যা করছেন..."</em> অথবা <em>"আমাদের ফুলস্ট্যাক লিড, Member 2, সরাসরি কোড এবং ডেটাবেজে এটি দেখাচ্ছেন..."</em></li>
+    <li><strong>শূন্য ডেড এয়ার (Zero Dead Air):</strong> Member 2 যখন ল্যাপটপে ক্লিক করছেন, তখন Member 1 অথবা Member 2 ব্যাকগ্রাউন্ডে কী ঘটছে তা অবিরাম ধারাভাষ্য দিয়ে বিচারকদের বুঝিয়ে বলবেন।</li>
+    <li><strong>সাইলেন্ট টাইমকিপার সিগন্যাল:</strong> Member 3 আঙুল দিয়ে সময় সংকেত দেবেন:
+      <ul>
+        <li>২টি আঙুল = ২ মিনিট বাকি (৫:০০ মিনিটে)</li>
+        <li>১টি আঙুল = ১ মিনিট বাকি (৬:০০ মিনিটে)</li>
+        <li>মুষ্টিবদ্ধ হাত = বক্তব্য শেষ করে বিচারকদের কাছে ছেড়ে দেওয়া (৬:৪৫ মিনিটে)</li>
+      </ul>
+    </li>
+  </ul>
+
+  <!-- ==================== অধ্যায় ১৬ ==================== -->
+  <div class="chapter-header">
+    <div class="chapter-number">অধ্যায় ১৬</div>
+    <h1>গ্র্যান্ড চ্যাম্পিয়নশিপ পাথওয়ে: স্টেপ-বাই-স্টেপ মার্কস এক্সট্রাকশন মাস্টারপ্ল্যান</h1>
+  </div>
+
+  <h2>১৬.১ বিচারকদের মূল্যায়ন শিট থেকে নম্বর আদায়ের নিখুঁত ব্লুপ্রিন্ট</h2>
+  <table>
+    <thead>
+      <tr><th style="width:20%;">অফিসিয়াল মানদণ্ড</th><th style="width:10%;">ওয়েট</th><th style="width:35%;">বিচারক যা খুঁজছেন</th><th style="width:35%;">ReFind-এর সরাসরি পয়েন্ট ছিনিয়ে নেওয়ার কৌশল</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>১. উদ্ভাবনী ও সৃজনশীল ধারণা</strong></td>
+        <td><strong>২০%</strong><br><em>(#১ টাই-ব্রেকার)</em></td>
+        <td>এটি কি সাধারণ কোনো ক্রাড প্রজেক্ট, নাকি এতে সত্যিকারের প্রযুক্তিগত সৃজনশীলতা রয়েছে?</td>
+        <td><strong>ট্রিপল ইনোভেশন পিচ:</strong> ১০০-পয়েন্ট হাইব্রিড সমীকরণ + জিরো-নলেজ সল্টেড হ্যাশিং + ব্রাউজার ক্যানভাস ভিশন। উল্লেখ করুন যে কোনো ছাত্র প্রজেক্টে ক্লায়েন্ট-সাইড ভিশন বা ZK প্রোটোকল নেই।</td>
+      </tr>
+      <tr>
+        <td><strong>২. প্রশ্নোত্তর পর্ব</strong></td>
+        <td><strong>২০%</strong><br><em>(#২ টাই-ব্রেকার)</em></td>
+        <td>শিক্ষার্থীরা কি নিজেরা কোড বুঝে লিখেছে, নাকি ইন্টারনেট থেকে কপি করেছে?</td>
+        <td><strong>হোয়াইট-বক্স ডিফেন্স:</strong> প্রতিটি সিদ্ধান্তের আর্কিটেকচারাল ট্রেড-অফ ব্যাখ্যা করুন (যেমন SQLite vs MongoDB, HSL vs RGB, bounded weights vs pure LLM)। সাথে সাথে লাইভ CLI দেখানোর প্রস্তাব দিন।</td>
+      </tr>
+      <tr>
+        <td><strong>৩. ভিজ্যুয়াল প্রেজেন্টেশন</strong></td>
+        <td><strong>১৫%</strong></td>
+        <td>UI কি রুচিশীল, পেশাদার এবং দেখার মতো সুন্দর?</td>
+        <td><strong>প্রিমিয়াম নোটিশবোর্ড এক্সপেরিয়েন্স:</strong> কাস্টম সেরিফ ও সান্স ফন্ট, ইন্টারেক্টিভ এসভিজি ক্যাম্পাস ম্যাপ, সাইড-বাই-সাইড ডুয়াল প্রগ্রেস মিটার এবং প্রিন্ট-রেডি ভেক্টর রিসিট।</td>
+      </tr>
+      <tr>
+        <td><strong>৪. ওরাল প্রেজেন্টেশন</strong></td>
+        <td><strong>১৫%</strong></td>
+        <td>বক্তারা কি আত্মবিশ্বাসী, স্পষ্টভাষী ও দলগতভাবে সমন্বিত?</td>
+        <td><strong>শৃঙ্খলিত ৭-মিনিট রোটেশন:</strong> এক বক্তা থেকে অন্য বক্তায় মসৃণ রূপান্তর, জিরো ডেড এয়ার, স্টপওয়াচ মেনে ৬:৪৫ মিনিটে সমাপ্তি (Page 04 compliance)।</td>
+      </tr>
+      <tr>
+        <td><strong>৫. প্রজেক্টের সম্ভাব্যতা</strong></td>
+        <td><strong>১০%</strong><br><em>(#৩ টাই-ব্রেকার)</em></td>
+        <td>এটি কি আগামী সোমবার প্রিমিয়ার ইউনিভার্সিটিতে চালু করা সম্ভব?</td>
+        <td><strong>তাত্ক্ষণিক ইন্ট্রানেট রেডিনেস:</strong> কোনো বিল্ড স্টেপ নেই, Node 22-এর বিল্ট-ইন SQLite-এ চলে, সম্পূর্ণ অফলাইনে সক্ষম এবং ২৫,০০০ ছাত্র হ্যান্ডেল করতে পারে।</td>
+      </tr>
+      <tr>
+        <td><strong>৬. বাস্তবায়ন ব্যয়</strong></td>
+        <td><strong>১০%</strong></td>
+        <td>বিশ্ববিদ্যালয়ের জন্য এটি কি অত্যন্ত ব্যয়বহুল?</td>
+        <td><strong>$০.০০ বেসলাইন খরচ:</strong> ক্লায়েন্ট-সাইড ভিশন এবং লোকাল ডাটাবেজের কারণে ক্লাউড বিল শূন্য। ক্যাম্পাস সার্ভারে খরচ $০.০০, ক্লাউডে &lt;$৮/মাস।</td>
+      </tr>
+      <tr>
+        <td><strong>৭. বাস্তবায়নের চ্যালেঞ্জসমূহ</strong></td>
+        <td><strong>১০%</strong></td>
+        <td>বাস্তব ডেভেলপমেন্টে কঠিন কোনো কারিগরি বাধা সমাধান করা হয়েছে কি না?</td>
+        <td><strong>৩টি সমাধানকৃত জটিলতা:</strong> (১) আলো ও ক্যামেরার পার্থক্যে HSL ক্লাস্টারিং; (২) ব্রুটফোর্স রোধে সল্টেড হ্যাশিং ও রেট লিমিটিং; (৩) অফলাইন সিনোনিম ফলব্যাক।</td>
+      </tr>
+      <tr>
+        <td><strong>মোট পয়েন্ট</strong></td>
+        <td><strong>১০০%</strong></td>
+        <td><strong>টাই-ব্রেকারের শীর্ষ ৩টি টায়ারেই অবিসংবাদিত আধিপত্য</strong></td>
+        <td><strong>টার্গেট: ৯৫ – ১০০ / ১০০ নম্বর</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>১৬.২ প্রতিযোগিতা দিবসের বুথ ও হার্ডওয়্যার চেকলিস্ট (Page 04 Compliance)</h2>
+  <div class="callout callout-success">
+    <strong>বাধ্যতামূলক ইকুইপমেন্ট চেকলিস্ট (Rulebook Page 04):</strong>
+    <ul>
+      <li>[ ] <strong>১ম ল্যাপটপ (ডেমো মেশিন):</strong> সম্পূর্ণ চার্জযুক্ত, লোকাল সার্ভার <code>http://localhost:3000</code> ব্যাকগ্রাউন্ডে চালু, ডেমো ডেটাবেজ প্রিপপুলেটেড।</li>
+      <li>[ ] <strong>২য় ল্যাপটপ (ইন্সপেকশন মেশিন):</strong> এই বাংলা ডসিয়ার (<code>project-report-bn.html</code>), ইংরেজি ডসিয়ার (<code>project-report.html</code>) এবং VS Code-এ <code>matchingEngine.js</code> ও টেস্ট কোড ওপেন রাখা।</li>
+      <li>[ ] <strong>ইলেকট্রিক্যাল গিয়ার:</strong> ১টি ৪-সকেটের ভালো সার্জ-প্রটেক্টেড মাল্টিপ্লাগ, ২টি ল্যাপটপ চার্জার, ১টি HDMI ক্যাবল ও Type-C to HDMI কনভার্টার।</li>
+      <li>[ ] <strong>প্রিন্ট করা ফিজিক্যাল কপি:</strong> ৩ কপি প্রিন্ট করা <em>Serialized Custody Release Receipt</em> এবং ২টি প্রিন্ট করা <em>Lost Noticeboard Flyer</em> বিচারকদের হাতে সরাসরি দেওয়ার জন্য।</li>
+      <li>[ ] <strong>স্টুডেন্ট আইডি কার্ড:</strong> ৩ জন সদস্যেরই গলায় বিশ্ববিদ্যালয়ের অফিসিয়াল আইডি কার্ড ঝুলানো।</li>
+    </ul>
+  </div>
+
+  <div class="callout" style="text-align:center; margin-top:50px;">
+    <strong>Clash of Projects 2026 — অফিসিয়াল প্রেজেন্টেশন ও ডিফেন্স গাইড সমাপ্ত</strong>
+    <p style="margin:0; font-size:9.5pt; color:var(--muted);">
+      প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব (PURC) আয়োজিত প্রতিযোগিতার জন্য প্রস্তুতকৃত। ReFind &copy; 2026. All Rights Reserved.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
