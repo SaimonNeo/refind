@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReFind — ম্যাচিং অ্যালগরিদম ও কনফিডেন্স স্কোর গাইড (Scoring & Confidence Specification)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Newsreader:ital,wght@0,500;0,600;1,400&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 14mm 14mm 16mm 14mm;
+    @bottom-right {
+      content: counter(page);
+      font-family: 'Hind Siliguri', 'Work Sans', sans-serif;
+      font-size: 8pt;
+      color: #78716c;
+    }
+  }
+
+  :root {
+    --ink: #1c1917;
+    --muted: #57534e;
+    --paper: #ffffff;
+    --bg: #f5f2eb;
+    --line: #e7e5e4;
+    --primary: #943425;
+    --primary-light: #fbeee9;
+    --accent: #2e6038;
+    --accent-light: #eaf3ec;
+    --gold: #b45309;
+    --gold-light: #fef3c7;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --card: #ffffff;
+    --font-bn: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-serif: 'Newsreader', Georgia, serif;
+    --font-sans: 'Work Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', Consolas, monospace;
+    --radius: 8px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-bn);
+    font-size: 11pt;
+    line-height: 1.65;
+    margin: 0;
+    padding: 30px 16px 60px;
+  }
+
+  .nav-header {
+    max-width: 960px;
+    margin: 0 auto 24px;
+    background: #1c1917;
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+  .nav-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .nav-sub {
+    font-size: 12px;
+    color: #a8a29e;
+  }
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .nav-link {
+    color: #fde68a;
+    font-size: 12px;
+    text-decoration: none;
+    border: 1px solid rgba(253, 230, 138, 0.35);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .nav-link:hover { background: rgba(253, 230, 138, 0.15); }
+  .btn-print {
+    background: #c84e36;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: var(--font-bn);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s;
+  }
+  .btn-print:hover { background: #ab3c26; }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 48px 56px;
+    border: 1px solid #dfd8cc;
+    box-shadow: var(--shadow);
+    border-radius: 10px;
+  }
+
+  h1, h2, h3, h4 {
+    color: #1c1917;
+    line-height: 1.3;
+  }
+  h1 {
+    font-size: 24pt;
+    margin: 0 0 10px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 12px;
+  }
+  h2 {
+    font-size: 16pt;
+    margin: 36px 0 16px;
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+  }
+  h3 {
+    font-size: 13pt;
+    margin: 24px 0 10px;
+    color: #292524;
+  }
+
+  p { margin: 0 0 14px; }
+
+  .formula-box {
+    background: #fafaf9;
+    border: 1px solid #d6d3d1;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0 28px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 13pt;
+    font-weight: 600;
+    color: #943425;
+  }
+  .formula-sub {
+    font-family: var(--font-bn);
+    font-size: 10.5pt;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .weight-bar {
+    display: flex;
+    height: 38px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 16px 0 28px;
+    border: 1px solid #d6d3d1;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 38px;
+  }
+  .wb-cat  { background: #943425; width: 25%; }
+  .wb-loc  { background: #b45309; width: 20%; }
+  .wb-col  { background: #2563eb; width: 15%; }
+  .wb-time { background: #4f46e5; width: 15%; }
+  .wb-ai   { background: #16a34a; width: 25%; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 10pt;
+  }
+  th, td {
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  th {
+    background: #f5f5f4;
+    font-weight: 700;
+    color: #292524;
+  }
+  tr:nth-child(even) td { background: #fafaf9; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 600;
+  }
+  .badge-success { background: #dcfce7; color: #166534; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  .badge-info    { background: #e0e7ff; color: #3730a3; }
+  .badge-gray    { background: #f3f4f6; color: #4b5563; }
+
+  .callout {
+    background: #fdf8f6;
+    border-left: 4px solid var(--primary);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .callout-success {
+    background: #f0fdf4;
+    border-left-color: #16a34a;
+  }
+  .callout-blue {
+    background: #eff6ff;
+    border-left-color: #2563eb;
+  }
+
+  /* Interactive Simulator Box */
+  .simulator-box {
+    background: #1c1917;
+    color: #f5f5f4;
+    padding: 24px 28px;
+    border-radius: var(--radius);
+    margin: 28px 0;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .sim-title {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #fde68a;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sim-desc {
+    font-size: 10pt;
+    color: #a8a29e;
+    margin-bottom: 20px;
+  }
+  .sim-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .sim-field label {
+    display: block;
+    font-size: 9.5pt;
+    font-weight: 600;
+    color: #e7e5e4;
+    margin-bottom: 6px;
+  }
+  .sim-field select, .sim-field input[type="range"] {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #44403c;
+    background: #292524;
+    color: #fff;
+    font-family: var(--font-bn);
+    font-size: 9.5pt;
+  }
+  .sim-result {
+    background: #292524;
+    border: 1px solid #44403c;
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .sim-score-num {
+    font-family: var(--font-mono);
+    font-size: 28pt;
+    font-weight: 700;
+    color: #4ade80;
+    line-height: 1;
+  }
+  .sim-score-label {
+    font-size: 10pt;
+    color: #a8a29e;
+  }
+  .sim-badge {
+    font-size: 11pt;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+
+  .script-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .script-speaker {
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .nav-header { display: none !important; }
+    .container {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      max-width: 100%;
+    }
+    .simulator-box {
+      border: 1px solid #000;
+      color: #000;
+      background: #f5f5f4;
+    }
+    .sim-field select {
+      background: #fff;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+    .sim-result {
+      background: #fff;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+    .sim-score-num { color: #000; }
+    .page-break { page-break-before: always; }
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 24px 20px; }
+    .sim-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-header">
+  <div>
+    <div class="nav-title">ReFind — স্কোরিং ইঞ্জিন ও কনফিডেন্স মেকানিজম স্পেসিফিকেশন</div>
+    <div class="nav-sub">প্রিমিয়ার ইউনিভার্সিটি রোবটিক্স ক্লাব (PURC) — Clash of Projects 2026</div>
+  </div>
+  <div class="nav-links">
+    <a href="/project-report-bn.html" class="nav-link">বাংলা ডসিয়ার</a>
+    <a href="/project-report.html" class="nav-link">English Dossier</a>
+    <a href="/dashboard.html" class="nav-link">ড্যাশবোর্ড</a>
+    <button class="btn-print" onclick="window.print()">Print / PDF (Ctrl+P)</button>
+  </div>
+</div>
+
+<div class="container">
+  <h1>ReFind ১০০-পয়েন্ট ম্যাচিং অ্যালগরিদম ও কনফিডেন্স স্পেসিফিকেশন</h1>
+  <p style="font-size:12pt; color:var(--muted); margin-bottom: 24px;">
+    হারানো পণ্যের সাথে উদ্ধারকৃত পণ্যের স্বচ্ছ, ব্যাখ্যাযোগ্য এবং নিরাপদ সংযোগ নিশ্চিতকরণ — গাণিতিক সূত্র, ৫টি সিগন্যাল বিভাজন, ট্রায়াজ থ্রেশহোল্ড এবং বিচারক ডিফেন্স গাইড।
+  </p>
+
+  <div class="formula-box">
+    Score(L, F) = Category(25) + Location(20) + Color(15) + Time(15) + Semantic/AI(25) = 100 pts
+    <div class="formula-sub">৭৫ পয়েন্ট লোকাল ডিটারমিনিস্টিক রুলস (ইনস্ট্যান্ট ও জিরো-কস্ট) + ২৫ পয়েন্ট সেমান্টিক এআই ও সিনোনিম ক্লাস্টারিং</div>
+  </div>
+
+  <div class="weight-bar">
+    <div class="wb-cat">Category (25%)</div>
+    <div class="wb-loc">Location (20%)</div>
+    <div class="wb-col">Color (15%)</div>
+    <div class="wb-time">Time (15%)</div>
+    <div class="wb-ai">Semantic/AI (25%)</div>
+  </div>
+
+  <!-- INTERACTIVE SIMULATOR -->
+  <div class="simulator-box">
+    <div class="sim-title">
+      <span>লাইভ স্কোর ও কনফিডেন্স সিমুলেটর (Live Interactive Triage)</span>
+      <span style="font-size:10pt; font-family:var(--font-mono); color:#86efac;">services/matchingEngine.js</span>
+    </div>
+    <div class="sim-desc">
+      নিচের ড্রপডাউনগুলো পরিবর্তন করে দেখুন কীভাবে ReFind প্রতিটি ফিল্ডের জন্য তাৎক্ষণিক পয়েন্ট ও কনফিডেন্স ক্যালকুলেট করে:
+    </div>
+
+    <div class="sim-grid">
+      <div class="sim-field">
+        <label>১. ক্যাটাগরি (Category - ২৫)</label>
+        <select id="sim-cat" onchange="calculateScore()">
+          <option value="25">হুবহু একই ক্যাটাগরি (২৫ পয়েন্ট)</option>
+          <option value="10">সম্পর্কিত ক্যাটাগরি (১০ পয়েন্ট - Adjacency)</option>
+          <option value="0">সম্পূর্ণ ভিন্ন ক্যাটাগরি (০ পয়েন্ট)</option>
+        </select>
+      </div>
+
+      <div class="sim-field">
+        <label>২. লোকেশন (Location - ২০)</label>
+        <select id="sim-loc" onchange="calculateScore()">
+          <option value="20">একই ভবন (২০ পয়েন্ট)</option>
+          <option value="12">নিকটবর্তী ক্যাম্পাস ভবন (১২ পয়েন্ট - Proximity)</option>
+          <option value="2">ক্যাম্পাসের ভিন্ন জোন (২ পয়েন্ট)</option>
+          <option value="0">স্থান উল্লেখ নেই (০ পয়েন্ট)</option>
+        </select>
+      </div>
+
+      <div class="sim-field">
+        <label>৩. রঙ (Color - ১৫)</label>
+        <select id="sim-col" onchange="calculateScore()">
+          <option value="15">হুবহু একই বা সাবস্ট্রিং মিল (১৫ পয়েন্ট)</option>
+          <option value="8">একই কালার ফ্যামিলি (৮ পয়েন্ট - ক্লাস্টার)</option>
+          <option value="0">ভিন্ন রঙ / অনুক্ত (০ পয়েন্ট)</option>
+        </select>
+      </div>
+
+      <div class="sim-field">
+        <label>৪. সময় (Time - ১৫)</label>
+        <select id="sim-time" onchange="calculateScore()">
+          <option value="15">৬ ঘণ্টার মধ্যে জমা (১৫ পয়েন্ট)</option>
+          <option value="12">একই দিনের মধ্যে (১২ পয়েন্ট)</option>
+          <option value="8">৩ দিনের মধ্যে (৮ পয়েন্ট)</option>
+          <option value="4">১ সপ্তাহের মধ্যে (৪ পয়েন্ট)</option>
+          <option value="0">১ সপ্তাহের বেশি ব্যবধান (০ পয়েন্ট)</option>
+        </select>
+      </div>
+
+      <div class="sim-field" style="grid-column: 1 / -1;">
+        <label>৫. সেমান্টিক এআই ও সিনোনিম ম্যাচ (Semantic/AI Similarity): <span id="sim-ai-val" style="color:#fde68a;">80%</span> (<span id="sim-ai-pts" style="color:#4ade80;">20 pts</span>)</label>
+        <input type="range" id="sim-ai" min="0" max="100" value="80" oninput="calculateScore()">
+      </div>
+    </div>
+
+    <div class="sim-result">
+      <div>
+        <div class="sim-score-label">মোট ম্যাচ স্কোর (Total Score):</div>
+        <div class="sim-score-num"><span id="sim-total">92</span> / 100</div>
+      </div>
+      <div>
+        <div class="sim-score-label">কনফিডেন্স লেবেল ও অ্যাকশন:</div>
+        <div id="sim-badge" class="sim-badge badge-success">Strong Match (উচ্চ কনফিডেন্স)</div>
+      </div>
+      <div style="font-size:10pt; color:#d6d3d1; max-width:320px;" id="sim-action">
+        তাত্ক্ষণিক পুশ নোটিফিকেশন অ্যালার্ট + অডিও চাইম + অ্যাডমিন প্রায়োরিটি ড্যাশবোর্ডের শীর্ষে উপস্থাপন।
+      </div>
+    </div>
+  </div>
+
+  <h2>১. পাঁচটি কোর ডাইমেনশনের বিস্তারিত গাণিতিক বিশ্লেষণ</h2>
+
+  <h3>১.১ ক্যাটাগরি স্কোরিং (Category — সর্বোচ্চ ২৫ পয়েন্ট)</h3>
+  <p>
+    ইউজারের ক্যাটাগরি নির্বাচনের সাবজেক্টিভ বৈচিত্র্য দূর করতে একটি নির্দেশিত অ্যাডজাসেন্সি গ্রাফ ব্যবহার করা হয়:
+  </p>
+  <table>
+    <thead>
+      <tr><th>শর্ত</th><th>প্রদত্ত পয়েন্ট</th><th>উদাহরণ / ব্যাখ্যা</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Exact Match</strong></td>
+        <td><strong>২৫ পয়েন্ট</strong> ($১০০\%$)</td>
+        <td>উভয় আইটেমই <code>electronics</code> বা <code>bags</code> হিসেবে নথিভুক্ত।</td>
+      </tr>
+      <tr>
+        <td><strong>Related Category</strong></td>
+        <td><strong>১০ পয়েন্ট</strong> ($৪০\%$)</td>
+        <td>
+          <code>RELATED_CATEGORIES</code> গ্রাফে সংযুক্ত:<br>
+          • <code>electronics</code> &harr; <code>accessories</code><br>
+          • <code>bags</code> &harr; <code>accessories</code><br>
+          • <code>documents</code> &harr; <code>cards</code><br>
+          • <code>clothing</code> &harr; <code>accessories</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Mismatch</strong></td>
+        <td><strong>০ পয়েন্ট</strong></td>
+        <td>সম্পূর্ণ ভিন্ন ক্যাটাগরি (যেমন: ল্যাপটপের সাথে পানির বোতল)।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>১.২ লোকেশন স্কোরিং ও ওয়াকিং গ্রাফ (Location — সর্বোচ্চ ২০ পয়েন্ট)</h3>
+  <p>
+    ক্যাম্পাসের লোকেশন ফিল্ডটি ফ্রন্টএন্ডে একটি <strong>কন্ট্রোল্ড ড্রপডাউন সিলেক্ট</strong> এবং <strong>ইন্টারঅ্যাক্টিভ SVG ক্যাম্পাস ম্যাপ পিকার</strong> দ্বারা সুরক্ষিত। এছাড়া ব্যাকএন্ডে যেকোনো এক্সটার্নাল এপিআই রিকোয়েস্টের জন্য একটি ক্যানোনিকাল এলিয়াস ডিকশনারি (<code>LOCATION_ALIASES</code>) রান করে:
+  </p>
+  <table>
+    <thead>
+      <tr><th>শর্ত</th><th>প্রদত্ত পয়েন্ট</th><th>লজিক ও ক্যাম্পাস টপোলজি</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Exact Building Match</strong></td>
+        <td><strong>২০ পয়েন্ট</strong> ($১০০\%$)</td>
+        <td>হুবহু একই ভবনে হারানো ও প্রাপ্তি (যেমন: Central Library &harr; Central Library)।</td>
+      </tr>
+      <tr>
+        <td><strong>Adjacent / Nearby Buildings</strong></td>
+        <td><strong>১২ পয়েন্ট</strong> ($৬০\%$)</td>
+        <td>
+          ক্যাম্পাসের ওয়াকিং গ্রাফে সরাসরি সংযুক্ত ভবন (<code>LOCATION_PROXIMITY</code>):<br>
+          • Central Library &harr; Academic Building &harr; CS Building<br>
+          • Cafeteria &harr; Student Center &harr; Main Gate<br>
+          • Auditorium &harr; Student Center &harr; Academic Building
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Non-Adjacent Campus Zone</strong></td>
+        <td><strong>২ পয়েন্ট</strong> ($১০\%$)</td>
+        <td>ক্যাম্পাসের ভেতরেই কিন্তু দূরবর্তী ভবনে (যেমন: Main Gate থেকে ল্যাবরেটরি)।</td>
+      </tr>
+      <tr>
+        <td><strong>Unspecified</strong></td>
+        <td><strong>০ পয়েন্ট</strong></td>
+        <td>লোকেশন উল্লেখ না থাকলে।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <strong>এলিয়াস রূপান্তর নিরাপত্তা:</strong>
+    ক্যাম্পাস স্ল্যাং (যেমন: <code>'canteen'</code> &rarr; <code>'cafeteria'</code>, <code>'audi'</code> &rarr; <code>'auditorium'</code>, <code>'cs building'</code> &rarr; <code>'computer science building'</code>) দূরত্ব নির্ণয়ের আগেই স্বয়ংক্রিয়ভাবে মূল ভবনে নরমালাইজ হয়ে যায়।
+  </div>
+
+  <div class="page-break"></div>
+
+  <h3>১.৩ কালার ফ্যামিলি ক্লাস্টারিং (Color — সর্বোচ্চ ১৫ পয়েন্ট)</h3>
+  <p>
+    আলোর পার্থক্য বা ইউজারের নামকরণের তারতম্যে (যেমন: Charcoal vs. Black) রঙ যাতে মিস না হয়, সেজন্য ১১টি কালার ফ্যামিলি ক্লাস্টার তৈরি করা হয়েছে:
+  </p>
+  <table>
+    <thead>
+      <tr><th>শর্ত</th><th>প্রদত্ত পয়েন্ট</th><th>উদাহরণ / ক্লাস্টার লজিক</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Exact / Substring Match</strong></td>
+        <td><strong>১৫ পয়েন্ট</strong> ($১০০\%$)</td>
+        <td>হুবহু একই রঙ অথবা সাবস্ট্রিং (যেমন: <code>"navy blue"</code> এর ভেতরে <code>"blue"</code> মিললে)।</td>
+      </tr>
+      <tr>
+        <td><strong>Color Family Cluster Match</strong></td>
+        <td><strong>৮ পয়েন্ট</strong> ($৫০\%$)</td>
+        <td>
+          ১১টি ক্লাস্টারের একটিতে যৌথ উপস্থিতি:<br>
+          • Dark: <code>['black', 'dark', 'charcoal', 'navy']</code><br>
+          • Light: <code>['white', 'cream', 'ivory']</code><br>
+          • Metallic: <code>['gray', 'grey', 'silver']</code><br>
+          • Blue: <code>['blue', 'teal', 'cyan']</code><br>
+          • Red: <code>['red', 'maroon', 'crimson']</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Different Colors</strong></td>
+        <td><strong>০ পয়েন্ট</strong></td>
+        <td>সম্পূর্ণ ভিন্ন রঙ (যেমন: লাল এবং নীল)।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>১.৪ টাইম ডিকে ফাংশন (Time — সর্বোচ্চ ১৫ পয়েন্ট)</h3>
+  <p>
+    হারানো ও পাওয়ার সময়ের পরম ব্যবধান $\Delta t = |t_{\text{lost}} - t_{\text{found}}|$-এর ভিত্তিতে স্টেপওয়াইজ স্কোর প্রদান করা হয়:
+  </p>
+  <table>
+    <thead>
+      <tr><th>সময়ের ব্যবধান ($\Delta t$)</th><th>মাল্টিপ্লায়ার</th><th>পয়েন্ট</th><th>বাস্তব তাৎপর্য</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>$\Delta t \le ৬ \text{ ঘণ্টা}$</td><td>১.০০</td><td><strong>১৫ পয়েন্ট</strong></td><td>তাত্ক্ষণিক সহ-সাময়িক হারানো ও উদ্ধারের ঘটনা (একই বেলা/দিনের মধ্যে)।</td></tr>
+      <tr><td>$৬ \text{ ঘণ্টা} < \Delta t \le ২৪ \text{ ঘণ্টা}$</td><td>০.৮০</td><td><strong>১২ পয়েন্ট</strong></td><td>একই ক্যালেন্ডার দিনের মধ্যে জমা দেওয়া।</td></tr>
+      <tr><td>$২৪ \text{ ঘণ্টা} < \Delta t \le ৭২ \text{ ঘণ্টা}$</td><td>০.৫৩</td><td><strong>৮ পয়েন্ট</strong></td><td>৩ দিনের মধ্যে জমাদান (যেমন: সাপ্তাহিক ছুটির উইন্ডো)।</td></tr>
+      <tr><td>$৩ \text{ দিন} < \Delta t \le ৭ \text{ দিন}$</td><td>০.২৭</td><td><strong>৪ পয়েন্ট</strong></td><td>১ সপ্তাহের মধ্যে জমাদান (বিলম্বিত ক্লিনিং বা স্টোরেজ চেক)।</td></tr>
+      <tr><td>$\Delta t > ৭ \text{ দিন}$</td><td>০.০০</td><td><strong>০ পয়েন্ট</strong></td><td>দীর্ঘ সময়ের ব্যবধান।</td></tr>
+      <tr><td><em>তারিখ অনির্দিষ্ট</em></td><td>০.৩৩</td><td><strong>৫ পয়েন্ট</strong></td><td>তারিখ উল্লেখ না থাকলে নিরপেক্ষ বেসলাইন ক্রেডিট।</td></tr>
+    </tbody>
+  </table>
+
+  <h3>১.৫ সেমান্টিক এআই ও জিরো-কস্ট লোকাল সিনোনিম ইঞ্জিন (Semantic/AI — সর্বোচ্চ ২৫ পয়েন্ট)</h3>
+  <p>
+    ReFind সম্পূর্ণ এআইয়ের ওপর নির্ভরশীল নয় — এটি একটি <strong>ডুয়াল ইঞ্জিন হাইব্রিড মডেল</strong>:
+  </p>
+  <ul>
+    <li>
+      <strong>ক্যাটাগরি কম্প্যাটিবিলিটি ফিল্টার:</strong> ছাতা এবং ল্যাপটপের বিবরণ তুলনা করা এআইয়ের সময় ও টোকেন অপচয়। তাই কেবল সামঞ্জস্যপূর্ণ ক্যাটাগরিতেই এআই সক্রিয় হয়; অসামঞ্জস্যপূর্ণ হলে ০ এআই পয়েন্ট।
+    </li>
+    <li>
+      <strong>লোকাল সিনোনিম ইঞ্জিন (Zero-Cost Local Tokenizer):</strong> ২০টির বেশি সিনোনিম ক্লাস্টারে (যেমন: <code>laptop/macbook</code>, <code>airpods/earbuds</code>, <code>bottle/hydroflask</code>) টাইটেল মিল ($৬৫\%$) ও ডেসক্রিপশন মিল ($৩৫\%$) হিসাব করে। ৩০টিরও বেশি পরিচিত ব্র্যান্ড শনাক্ত হলে <strong>+২০ পয়েন্ট ব্র্যান্ড বোনাস</strong> যুক্ত হয়।
+    </li>
+    <li>
+      <strong>গুগল জেমিনি এআই:</strong> বর্ণনার সূক্ষ্ম বৈশিষ্ট্য (স্ক্র্যাচ, বিশেষ স্টিকার, চেইনের ভাঙা অংশ) শনাক্ত করে একটি ০-১০০ সাদৃশ্য স্কোর প্রদান করে।
+    </li>
+    <li>
+      <strong>ফিউশন ফর্মুলা:</strong> $\text{Final Similarity} = \max(\text{Gemini}, \text{Synonym Engine})$।<br>
+      প্রাপ্ত এআই পয়েন্ট = $\text{round}\left(\frac{\text{Final Similarity}}{১০০} \times ২৫\right)$।
+    </li>
+  </ul>
+
+  <div class="callout callout-success">
+    <strong>অফলাইন রেসিলিয়েন্স গ্যারান্টি:</strong> ইন্টারনেট সংযোগ না থাকলে, জেমিনি এপিআই কি না থাকলে বা লিমিট শেষ হলেও লোকাল সিনোনিম ইঞ্জিন শতভাগ স্বয়ংক্রিয়ভাবে পূর্ণাঙ্গ সেমান্টিক স্কোর প্রদান করে। সিস্টেম কখনো ক্র্যাশ বা স্লো হয় না।
+  </div>
+
+  <h2>২. কনফিডেন্স মেকানিজম (Confidence Classification)</h2>
+
+  <h3>২.১ ম্যাচের কনফিডেন্স ও অ্যাকশন থ্রেশহোল্ড (Match Confidence)</h3>
+  <table>
+    <thead>
+      <tr><th>মোট স্কোর রেঞ্জ</th><th>কনফিডেন্স লেবেল</th><th>সিস্টেমের আচরণ ও নোটিফিকেশন প্রক্রিয়া</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$\mathbf{৮৫\% - ১০০\%}$</td>
+        <td><span class="badge badge-success">Strong Match</span></td>
+        <td>উচ্চ কনফিডেন্স। উভয় পক্ষকে তাৎক্ষণিক ইন-অ্যাপ নোটিফিকেশন + অডিও চাইম; অ্যাডমিন ড্যাশবোর্ডে সর্বোচ্চ প্রায়োরিটি।</td>
+      </tr>
+      <tr>
+        <td>$\mathbf{৬০\% - ৮৪\%}$</td>
+        <td><span class="badge badge-warning">Likely Match</span></td>
+        <td>উভয় পক্ষকে তাৎক্ষণিক ইন-অ্যাপ নোটিফিকেশন; ক্যান্ডিডেট ম্যাচ টেবিলে প্রদর্শন।</td>
+      </tr>
+      <tr>
+        <td>$\mathbf{৩৫\% - ৫৯\%}$</td>
+        <td><span class="badge badge-info">Possible Match</span></td>
+        <td>ডাটাবেজে সংরক্ষিত থাকে; ব্রাউজ ও ম্যাচ ইন্সপেক্টরে প্রদর্শিত।</td>
+      </tr>
+      <tr>
+        <td>$\mathbf{২০\% - ৩৪\%}$</td>
+        <td><span class="badge badge-gray">Weak Match</span></td>
+        <td>ডাটাবেজে সংরক্ষণের সর্বনিম্ন থ্রেশহোল্ড (<code>MIN_SCORE_TO_STORE = 20</code>); নোটিফিকেশন স্প্যাম রোধে সাইলেন্ট থাকে।</td>
+      </tr>
+      <tr>
+        <td>$\mathbf{< ২০\%}$</td>
+        <td><em>Disregarded</em></td>
+        <td>ডাটাবেজের ওভারহেড রোধে বাতিল করা হয়।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>২.২ মালিকানা দাবির কনফিডেন্স (Claim Verification Confidence)</h3>
+  <p>
+    কেউ দাবি করলেই জিনিস দেওয়া হয় না — <code>routes/claims.js</code>-এ দাবির সত্যতা পরিমাপ করা হয়:
+  </p>
+  <table>
+    <thead>
+      <tr><th>কনফিডেন্স</th><th>শর্ত ও সত্যতা যাচাই</th><th>সিস্টেমের চূড়ান্ত সিদ্ধান্ত</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:#16a34a;">৯৫% (High)</strong></td>
+        <td>উদ্ধারকারীর সেট করা গোপন প্রশ্নের উত্তরের সাথে ক্লেইমকারীর উত্তরের ক্রিপ্টোগ্রাফিক হ্যাশ (SHA-256) হুবহু মিলে গেছে।</td>
+        <td><strong>Auto-Approved:</strong> সিস্টেম স্বয়ংক্রিয়ভাবে ক্লেইম অনুমোদন করে এবং ইউনিক হ্যান্ডওভার কোড জেনারেট করে।</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#d97706;">৬০% (Medium)</strong></td>
+        <td>উত্তরটি হুবহু না মিললেও কাছাকাছি মিললে (Fuzzy Substring) অথবা আইডি প্রুফ আপলোড করা হলে।</td>
+        <td><strong>Manual Review:</strong> অ্যাডমিন ভেরিফিকেশন প্যানেলে ম্যানুয়ালি যাচাইয়ের জন্য পাঠানো হয়।</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#dc2626;">২০% (Low)</strong></td>
+        <td>কোনো গোপন প্রশ্ন ছিল না বা উত্তর ভুল হয়েছে।</td>
+        <td><strong>Strict Review:</strong> ক্লেইমকারীকে সশরীরে সিকিউরিটি ডেস্কে এসে ফটো আইডি প্রদর্শন করতে হয়।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>৩. প্রতিযোগিতার দিন বিচারকদের সামনে উত্তর দেওয়ার স্ক্রিপ্ট (Cheat Sheet)</h2>
+
+  <div class="script-box">
+    <div class="script-speaker">বিচারকের প্রশ্ন: "তোমাদের ম্যাচিং ও কনফিডেন্স কীভাবে কাজ করে?"</div>
+    <p><strong>আপনার ১ মিনিটের ডিফেন্স স্পিচ:</strong></p>
+    <p>
+      <em>"ধন্যবাদ স্যার। আমাদের ম্যাচিং সিস্টেমটি একটি <strong>১০০ পয়েন্টের হাইব্রিড ইঞ্জিন</strong>:</em>
+    </p>
+    <ul>
+      <li><em><strong>৭৫ পয়েন্ট ডিটারমিনিস্টিক রুলস থেকে আসে:</strong> ক্যাটাগরি মিললে সর্বোচ্চ ২৫, ক্যাম্পাস লোকেশন ও ওয়াকিং দূরত্বের ওপর সর্বোচ্চ ২০, রঙের মিল থাকলে ১৫, এবং সময়ের ঘনিষ্ঠতার ওপর ১৫ পয়েন্ট।</em></li>
+      <li><em><strong>বাকি ২৫ পয়েন্ট আসে সেমান্টিক এআই ও সিনোনিম ক্লাস্টার থেকে:</strong> মুক্ত টেক্সট বিবরণ এবং ব্র্যান্ড নাম বিশ্লেষণ করে এটি বের হয়। নেট না থাকলেও আমাদের ইন-হাউজ সিনোনিম ইঞ্জিন শতভাগ অফলাইনেও এই ২৫ পয়েন্ট নির্ভুলভাবে বের করতে পারে।</em></li>
+      <li><em>মোট স্কোর <strong>৮৫% এর বেশি হলে Strong Match</strong> এবং <strong>৬০% এর বেশি হলে Likely Match</strong> হিসেবে উভয় পক্ষকে নোটিফিকেশন পাঠায়।</em></li>
+      <li><em>আর দাবির সত্যতা নিশ্চিত করতে — যদি গোপন উত্তরের <strong>SHA-256 ক্রিপ্টোগ্রাফিক হ্যাশ মিলে যায়, সিস্টেম ৯৫% কনফিডেন্স দিয়ে তাৎক্ষণিক স্বয়ংক্রিয় হ্যান্ডওভার কোড তৈরি করে</strong>। অন্যথায় ম্যানুয়াল রিভিউতে যায়। ফলে কোনো ভুল ব্যক্তির হাতে জিনিস যাওয়ার সুযোগ নেই।"</em></li>
+    </ul>
+  </div>
+
+  <div style="text-align:center; margin-top:40px; color:#78716c; font-size:10pt;">
+    ReFind &copy; 2026. Premier University Robotics Club — Clash of Projects 2026 Official Dossier Companion.
+  </div>
+</div>
+
+<script>
+function calculateScore() {
+  const cat = parseInt(document.getElementById('sim-cat').value);
+  const loc = parseInt(document.getElementById('sim-loc').value);
+  const col = parseInt(document.getElementById('sim-col').value);
+  const time = parseInt(document.getElementById('sim-time').value);
+  const aiPct = parseInt(document.getElementById('sim-ai').value);
+
+  const aiPts = Math.round((aiPct / 100) * 25);
+  document.getElementById('sim-ai-val').textContent = aiPct + '%';
+  document.getElementById('sim-ai-pts').textContent = aiPts + ' pts';
+
+  const total = cat + loc + col + time + aiPts;
+  document.getElementById('sim-total').textContent = total;
+
+  const badge = document.getElementById('sim-badge');
+  const action = document.getElementById('sim-action');
+
+  if (total >= 85) {
+    badge.className = 'sim-badge badge-success';
+    badge.textContent = 'Strong Match (উচ্চ কনফিডেন্স)';
+    action.textContent = 'তাত্ক্ষণিক পুশ নোটিফিকেশন অ্যালার্ট + অডিও চাইম + অ্যাডমিন প্রায়োরিটি ড্যাশবোর্ডের শীর্ষে উপস্থাপন।';
+  } else if (total >= 60) {
+    badge.className = 'sim-badge badge-warning';
+    badge.textContent = 'Likely Match (সম্ভাব্য মিল)';
+    action.textContent = 'উভয় পক্ষকে তাৎক্ষণিক ইন-অ্যাপ নোটিফিকেশন + ক্যান্ডিডেট ম্যাচ টেবিলে প্রদর্শন।';
+  } else if (total >= 35) {
+    badge.className = 'sim-badge badge-info';
+    badge.textContent = 'Possible Match (পর্যবেক্ষণযোগ্য)';
+    action.textContent = 'ডাটাবেজে সংরক্ষিত থাকে; ব্রাউজ ও ম্যাচ ইন্সপেক্টরে প্রদর্শিত।';
+  } else if (total >= 20) {
+    badge.className = 'sim-badge badge-gray';
+    badge.textContent = 'Weak Match (দুর্বল মিল)';
+    action.textContent = 'ডাটাবেজে সংরক্ষণের সর্বনিম্ন থ্রেশহোল্ড (MIN_SCORE_TO_STORE = 20); নোটিফিকেশন স্প্যাম রোধে সাইলেন্ট থাকে।';
+  } else {
+    badge.className = 'sim-badge badge-gray';
+    badge.style.background = '#44403c';
+    badge.style.color = '#a8a29e';
+    badge.textContent = 'Filtered Out (< 20%)';
+    action.textContent = 'ডাটাবেজের ওভারহেড রোধে বাতিল করা হয়। কোনো নোটিফিকেশন যাবে না।';
+  }
+}
+calculateScore();
+</script>
+
+</body>
+</html>
